@@ -44,24 +44,34 @@ In the GitHub repository → **Settings → Secrets and variables → Actions �
 
 See [aws.md](aws.md) for the AWS secrets also required by CI.
 
-## 6. Deploy infrastructure and content
+## 6. Set stack secrets
 
-Stack config (`Pulumi.prod.yaml`) is committed to the repo — no manual `stack init` needed. `pulumi up` handles both infrastructure and content (files in `apps/homepage/public/` are synced to S3 via `@pulumi/synced-folder`).
+Two secrets must be set before the first `pulumi up`. They are encrypted and stored in Pulumi Cloud state — never commit plaintext values.
+
+```zsh
+cd infra/homepage
+pulumi config set --secret notifyEmail <your-email>
+pulumi config set --secret recaptchaSecret <recaptcha-secret-key>
+```
+
+See [recaptcha.md](recaptcha.md) for the reCAPTCHA secret key and [ses.md](ses.md) for SES sandbox restrictions that apply after the first deploy.
+
+## 7. Deploy infrastructure and content
+
+Stack config (`Pulumi.prod.yaml`) is committed to the repo — no manual `stack init` needed.
 
 ```zsh
 cd infra/homepage
 pnpm install
 pulumi preview   # dry-run, no changes
-pulumi up        # provision resources and publish content
+pulumi up
 ```
 
-**Note:** On first run, `pulumi up` will wait at ACM certificate validation until DNS is delegated to Route53. See [dns.md](dns.md) for the full delegation steps.
+**Note:** On first run, `pulumi up` will wait at ACM certificate validation until DNS is delegated to Route53. See [dns.md](dns.md).
 
-After `pulumi up` completes:
+New outputs in this iteration:
 
 ```zsh
-pulumi stack output               # all outputs
-pulumi stack output bucketName
-pulumi stack output distributionId
-pulumi stack output nameservers   # Route53 NS records
+pulumi stack output apiEndpoint        # API Gateway invoke URL
+pulumi stack output sesDomainIdentity  # lean.dev.br
 ```
