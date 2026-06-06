@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>lean.dev.br — André</title>
+  <title>lean.dev.br — Home</title>
   <link rel="stylesheet" href="./styles/main.css">
 </head>
 
@@ -12,49 +12,45 @@
 
   <nav>
     <div class="nav-inner">
-      <a class="nav-logo" href="/">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-          <use href="./assets/logo.svg#logo"></use>
+      <a class="nav-logo" href="/" aria-label="Lean Dev — home">
+        <svg class="brand-mark" viewBox="0 0 112 22" role="img" aria-label="lean::dev">
+          <use href="./assets/logo.svg#brand-mark" />
         </svg>
-        <span class="nav-wordmark">Lean Dev</span>
       </a>
 
       <ul class="nav-links">
         <li>
-          <a href="https://github.com/andregs/lean-dev-br" target="_blank" rel="noopener">
-            GitHub
-          </a>
+          <a href="https://github.com/andregs/lean-dev-br" target="_blank" rel="noopener">GitHub</a>
         </li>
         <li>
-          <a href="/contact">
-            Contact
-          </a>
+          <a href="/contact">Contact</a>
         </li>
       </ul>
     </div>
   </nav>
 
-  <section class="hero">
+  <main class="hero">
     <div class="hero-inner">
 
-      <h1>Hi, I'm <em>André</em>.</h1>
+      <h1>Hi, I'm <span class="name">André</span>.</h1>
 
-      <p class="slogan">Full-stack development with a lean philosophy.<span class="cursor"></span>
-      </p>
-
-      <div class="ornament">
-        <svg width="220" height="24" viewBox="0 0 220 24" fill="none" aria-hidden="true">
-          <use href="./assets/ornament.svg#ornament"></use>
-        </svg>
-      </div>
+      <hr class="rule">
 
       <p class="description">
-        This is where I think out loud about <strong>software engineering</strong>.
-        Posts, notes, and demos on building systems that are pleasant to maintain.
+        Here I'll publish about <strong>software engineering</strong>.
+        Posts, notes, and demos on building systems that are pleasant to
+        maintain.<span class="cursor" aria-hidden="true"></span>
       </p>
 
     </div>
-  </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>~/André</span>
+      <span>25.43°S 49.27°W</span>
+    </div>
+  </footer>
 
 </body>
 
