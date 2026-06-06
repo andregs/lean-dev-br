@@ -5,14 +5,38 @@
   --nav-border: rgba(20, 24, 28, 0.08);
   --fg: #15181B;
   --accent: #0E9D63;
-  --accent-soft: rgba(14, 157, 99, 0.08);
+  --accent-soft: rgba(14, 157, 99, 0.15);
   --muted: #5A6066;
   --hairline: rgba(20, 24, 28, 0.10);
 
-  /* typography */
+  /* typography — families */
   --font-body: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
   --font-serif: 'Georgia', 'Palatino Linotype', Palatino, 'Times New Roman', serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* typography — scale */
+  --text-xs: 0.72rem;
+  --text-sm: 0.78rem;
+  --text-body: clamp(0.95rem, 1.6vw, 1.05rem);
+  --text-display: clamp(2.8rem, 7vw, 4.75rem);
+
+  /* typography — tracking */
+  --tracking-tight: -0.02em;
+  --tracking-base: 0.04em;
+  --tracking-wide: 0.08em;
+
+  /* typography — leading & weight */
+  --leading-tight: 1.05;
+  --leading-relaxed: 1.8;
+  --weight-normal: 400;
+  --weight-semibold: 600;
+
+  /* motion */
+  --duration-fast: 0.18s;
+  --duration-base: 0.3s;
+
+  /* z-index */
+  --z-nav: 100;
 
   /* layout */
   --content-width: 860px;
