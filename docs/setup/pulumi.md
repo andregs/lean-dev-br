@@ -34,15 +34,15 @@ PULUMI_ACCESS_TOKEN=$(pass-cli item view --vault-name lean-dev-br --item-title=p
   pulumi login
 ```
 
-## 5. Deploy infrastructure
+## 5. Deploy infrastructure and content
 
-Stack config (`Pulumi.prod.yaml`) is committed to the repo — no manual `stack init` needed.
+Stack config (`Pulumi.prod.yaml`) is committed to the repo — no manual `stack init` needed. `pulumi up` handles both infrastructure and content (files in `apps/homepage/public/` are synced to S3 via `@pulumi/synced-folder`).
 
 ```zsh
 cd infra/homepage
 pnpm install
 pulumi preview   # dry-run, no changes
-pulumi up        # provision resources
+pulumi up        # provision resources and publish content
 ```
 
 **Note:** On first run, `pulumi up` will wait at ACM certificate validation until DNS is delegated to Route53. The Route53 nameservers are output after the zone is created — use them to update your registrar.

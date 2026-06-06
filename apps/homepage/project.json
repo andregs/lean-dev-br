@@ -2,6 +2,6 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "name": "homepage",
   "projectType": "application",
-  "sourceRoot": "apps/homepage",
+  "sourceRoot": "apps/homepage/public",
   "targets": {}
 }

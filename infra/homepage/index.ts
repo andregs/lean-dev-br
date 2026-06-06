@@ -1,5 +1,6 @@
 import * as aws from "@pulumi/aws";
 import * as pulumi from "@pulumi/pulumi";
+import { S3BucketFolder } from "@pulumi/synced-folder";
 
 const config = new pulumi.Config();
 const domain = config.require("domain");
@@ -72,6 +73,15 @@ new aws.s3.BucketPublicAccessBlock("bucket-public-access-block", {
   restrictPublicBuckets: true,
 });
 
+// Required for synced-folder to set ACLs on objects
+const bucketOwnership = new aws.s3.BucketOwnershipControls(
+  "bucket-ownership",
+  {
+    bucket: bucket.id,
+    rule: { objectOwnership: "BucketOwnerPreferred" },
+  }
+);
+
 // CloudFront Origin Access Control
 const oac = new aws.cloudfront.OriginAccessControl("oac", {
   name: "lean-dev-br-homepage-oac",
@@ -81,6 +91,11 @@ const oac = new aws.cloudfront.OriginAccessControl("oac", {
 });
 
 // CloudFront distribution
+// CachingDisabled policy: every request is a conditional GET to S3 (ETag-based).
+// Content is always fresh without needing explicit cache invalidations.
+// AWS managed policy ID: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+const CACHING_DISABLED_POLICY_ID = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad";
+
 const distribution = new aws.cloudfront.Distribution("distribution", {
   enabled: true,
   defaultRootObject: "index.html",
@@ -97,10 +112,7 @@ const distribution = new aws.cloudfront.Distribution("distribution", {
     viewerProtocolPolicy: "redirect-to-https",
     allowedMethods: ["GET", "HEAD"],
     cachedMethods: ["GET", "HEAD"],
-    forwardedValues: {
-      queryString: false,
-      cookies: { forward: "none" },
-    },
+    cachePolicyId: CACHING_DISABLED_POLICY_ID,
     compress: true,
   },
   priceClass: "PriceClass_100",
@@ -154,6 +166,17 @@ for (const name of [domain, wwwDomain]) {
     ],
   });
 }
+
+// Sync homepage files to S3
+new S3BucketFolder(
+  "synced-folder",
+  {
+    path: "../../apps/homepage/public",
+    bucketName: bucket.bucket,
+    acl: "private",
+  },
+  { dependsOn: [bucketOwnership] }
+);
 
 export const bucketName = bucket.bucket;
 export const distributionId = distribution.id;
