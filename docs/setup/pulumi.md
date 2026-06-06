@@ -55,7 +55,7 @@ pulumi preview   # dry-run, no changes
 pulumi up        # provision resources and publish content
 ```
 
-**Note:** On first run, `pulumi up` will wait at ACM certificate validation until DNS is delegated to Route53. The Route53 nameservers are output after the zone is created — use them to update your registrar.
+**Note:** On first run, `pulumi up` will wait at ACM certificate validation until DNS is delegated to Route53. See [dns.md](dns.md) for the full delegation steps.
 
 After `pulumi up` completes:
 
