@@ -1,6 +1,10 @@
 packages:
   - "apps/*"
   - "libs/*"
+  - "infra/*"
+
+allowBuilds:
+  protobufjs: true
 
 onlyBuiltDependencies:
   - nx

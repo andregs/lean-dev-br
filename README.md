@@ -33,6 +33,8 @@ You will also need:
 ```
 apps/
   homepage/       # static HTML site (lean.dev.br)
+infra/
+  homepage/       # Pulumi IaC — S3, CloudFront, Route53
 docs/
   setup/          # setup guides for contributors
 ```

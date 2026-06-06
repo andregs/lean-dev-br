@@ -1,0 +1,3 @@
+config:
+  aws:region: us-east-1
+  lean-dev-br-homepage:domain: lean.dev.br

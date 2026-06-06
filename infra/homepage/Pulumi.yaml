@@ -1,0 +1,6 @@
+name: lean-dev-br-homepage
+runtime:
+  name: nodejs
+  options:
+    packagemanager: pnpm
+description: Infrastructure for lean.dev.br homepage (S3 + CloudFront + Route53)

@@ -33,3 +33,25 @@ This opens a browser. Alternatively, use the token directly:
 PULUMI_ACCESS_TOKEN=$(pass-cli item view --vault-name lean-dev-br --item-title=pulumi-access-token --field=Secret) \
   pulumi login
 ```
+
+## 5. Deploy infrastructure
+
+Stack config (`Pulumi.prod.yaml`) is committed to the repo — no manual `stack init` needed.
+
+```zsh
+cd infra/homepage
+pnpm install
+pulumi preview   # dry-run, no changes
+pulumi up        # provision resources
+```
+
+**Note:** On first run, `pulumi up` will wait at ACM certificate validation until DNS is delegated to Route53. The Route53 nameservers are output after the zone is created — use them to update your registrar.
+
+After `pulumi up` completes:
+
+```zsh
+pulumi stack output               # all outputs
+pulumi stack output bucketName
+pulumi stack output distributionId
+pulumi stack output nameservers   # Route53 NS records
+```

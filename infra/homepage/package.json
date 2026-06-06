@@ -1,0 +1,13 @@
+{
+  "name": "@lean-dev-br/infra-homepage",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@pulumi/aws": "^6.0.0",
+    "@pulumi/pulumi": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "typescript": "^6.0.0"
+  }
+}
