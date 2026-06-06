@@ -1,13 +1,14 @@
 :root {
   /* colors */
-  --bg: #FAFAF8;
+  --bg: #fafaf8;
   --nav-bg: rgba(255, 255, 255, 0.72);
   --nav-border: rgba(20, 24, 28, 0.08);
-  --fg: #15181B;
-  --accent: #0E9D63;
+  --fg: #15181b;
+  --accent: #0e9d63;
   --accent-soft: rgba(14, 157, 99, 0.15);
-  --muted: #5A6066;
-  --hairline: rgba(20, 24, 28, 0.10);
+  --muted: #5a6066;
+  --hairline: rgba(20, 24, 28, 0.1);
+  --field-border: rgba(20, 24, 28, 0.22);
 
   /* typography — families */
   --font-body: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
@@ -45,13 +46,14 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0C0E11;
+    --bg: #0c0e11;
     --nav-bg: rgba(14, 17, 20, 0.72);
     --nav-border: rgba(255, 255, 255, 0.08);
-    --fg: #E8EAEC;
-    --accent: #3DDC84;
-    --accent-soft: rgba(61, 220, 132, 0.10);
-    --muted: #8A9099;
-    --hairline: rgba(255, 255, 255, 0.10);
+    --fg: #e8eaec;
+    --accent: #3ddc84;
+    --accent-soft: rgba(61, 220, 132, 0.1);
+    --muted: #8a9099;
+    --hairline: rgba(255, 255, 255, 0.1);
+    --field-border: rgba(255, 255, 255, 0.18);
   }
 }

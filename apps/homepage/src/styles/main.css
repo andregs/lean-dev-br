@@ -1,4 +1,4 @@
-@import "./tokens.css";
+@import './tokens.css';
 
 *,
 *::before,
@@ -14,7 +14,6 @@ html {
 }
 
 @media (min-width: 900px) {
-
   body::before,
   body::after {
     content: '';
@@ -38,12 +37,15 @@ html {
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-body);
-  transition: background var(--duration-base), color var(--duration-base);
+  transition:
+    background var(--duration-base),
+    color var(--duration-base);
 }
 
 /* ---------- nav ---------- */
@@ -187,7 +189,6 @@ h1 .name {
 }
 
 @keyframes blink {
-
   0%,
   100% {
     opacity: 1;
@@ -220,7 +221,6 @@ h1 .name {
 }
 
 @media (max-width: 520px) {
-
   .nav-links {
     gap: 1.1rem;
   }
@@ -228,4 +228,127 @@ h1 .name {
   h1 {
     letter-spacing: -0.015em;
   }
+}
+
+/* ---------- contact ---------- */
+.contact {
+  flex: 1;
+  padding: clamp(5.5rem, 17vh, 10rem) 0 3rem;
+}
+
+.contact h1 {
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+}
+
+.contact-inner {
+  max-width: var(--content-width);
+  width: 100%;
+  margin: 0 auto;
+  padding-left: var(--pad-x);
+  padding-right: var(--pad-x);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.4rem;
+}
+
+.contact-form {
+  width: 100%;
+  max-width: 34rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-top: 0.4rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.field-label {
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.field-label .req {
+  color: var(--accent);
+}
+
+.field-label .optional {
+  text-transform: none;
+  letter-spacing: var(--tracking-base);
+}
+
+.field input,
+.field textarea {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid var(--field-border);
+  border-radius: 6px;
+  padding: 0.65rem 0.75rem;
+  transition: border-color var(--duration-fast);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 8rem;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.field input:user-invalid,
+.field textarea:user-invalid {
+  border-color: #d6453d;
+}
+
+.submit {
+  align-self: flex-start;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  padding: 0.7rem 1.4rem;
+  cursor: pointer;
+  transition: opacity var(--duration-fast);
+}
+
+.submit:hover {
+  opacity: 0.9;
+}
+
+.submit:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.form-status {
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  min-height: 1.2em;
+}
+
+.form-status[data-state='ok'] {
+  color: var(--accent);
+}
+
+.form-status[data-state='error'] {
+  color: #d6453d;
+}
+
+.form-status[data-state='pending'] {
+  color: var(--muted);
 }

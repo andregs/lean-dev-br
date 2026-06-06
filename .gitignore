@@ -1,5 +1,7 @@
 CLAUDE.local.md
 node_modules/
+dist/
+coverage/
 
 .nx/installation
 .nx/cache

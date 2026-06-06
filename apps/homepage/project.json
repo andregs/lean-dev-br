@@ -2,6 +2,14 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "name": "homepage",
   "projectType": "application",
-  "sourceRoot": "apps/homepage/public",
-  "targets": {}
+  "sourceRoot": "apps/homepage/src",
+  "tags": ["scope:homepage", "type:app"],
+  "targets": {
+    "typecheck": {
+      "command": "tsc -p tsconfig.json",
+      "options": { "cwd": "apps/homepage" },
+      "cache": true,
+      "inputs": ["default", "^default"]
+    }
+  }
 }
