@@ -11,10 +11,9 @@ const recaptchaSecret = config.requireSecret("recaptchaSecret");
 
 const zone = new aws.route53.Zone("zone", { name: domain });
 
-const { sesIdentityArn } = createEmail({ zone, domain });
+createEmail({ zone, domain });
 
 const { apiEndpoint, executeApiDomain } = createApi({
-  sesIdentityArn,
   notifyEmail,
   recaptchaSecret,
   domain,

@@ -2,13 +2,12 @@ import * as aws from "@pulumi/aws";
 import * as pulumi from "@pulumi/pulumi";
 
 interface ApiArgs {
-  sesIdentityArn: pulumi.Output<string>;
   notifyEmail: pulumi.Output<string>;
   recaptchaSecret: pulumi.Output<string>;
   domain: string;
 }
 
-export function createApi({ sesIdentityArn, notifyEmail, recaptchaSecret, domain }: ApiArgs) {
+export function createApi({ notifyEmail, recaptchaSecret, domain }: ApiArgs) {
   const lambdaRole = new aws.iam.Role("lambda-role", {
     assumeRolePolicy: JSON.stringify({
       Version: "2012-10-17",
@@ -22,9 +21,15 @@ export function createApi({ sesIdentityArn, notifyEmail, recaptchaSecret, domain
     }),
   });
 
+  // SES checks IAM authorization against both the FROM identity and the TO identity
+  // when the TO address is a verified SES identity in the same account.
+  // Scope to all identities in this account rather than enumerate specific addresses.
+  const callerIdentity = aws.getCallerIdentityOutput();
+  const sesIdentitiesArn = pulumi.interpolate`arn:aws:ses:us-east-1:${callerIdentity.accountId}:identity/*`;
+
   new aws.iam.RolePolicy("lambda-policy", {
     role: lambdaRole.id,
-    policy: sesIdentityArn.apply((arn) =>
+    policy: sesIdentitiesArn.apply((arn) =>
       JSON.stringify({
         Version: "2012-10-17",
         Statement: [
