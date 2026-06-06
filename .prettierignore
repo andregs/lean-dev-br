@@ -1,0 +1,6 @@
+/dist
+/node_modules
+/.nx
+**/dist
+**/bin
+pnpm-lock.yaml

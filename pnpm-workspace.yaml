@@ -4,5 +4,7 @@ packages:
   - "infra/*"
 
 allowBuilds:
+  '@swc/core': true
+  esbuild: true
   nx: true
   protobufjs: true
