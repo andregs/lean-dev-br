@@ -1,41 +1,7 @@
-import { request } from 'node:https';
-
 export interface RecaptchaResult {
   success: boolean;
   score: number;
   action: string;
-}
-
-function post(url: string, params: URLSearchParams): Promise<unknown> {
-  return new Promise((resolve, reject) => {
-    const body = params.toString();
-    const req = request(
-      url,
-      {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/x-www-form-urlencoded',
-          'content-length': Buffer.byteLength(body),
-        },
-      },
-      (res) => {
-        const chunks: Buffer[] = [];
-        res.on('data', (chunk: Buffer) => {
-          chunks.push(chunk);
-        });
-        res.on('end', () => {
-          try {
-            resolve(JSON.parse(Buffer.concat(chunks).toString()));
-          } catch (err) {
-            reject(err instanceof Error ? err : new Error(String(err)));
-          }
-        });
-      },
-    );
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
 }
 
 export async function verifyToken(
@@ -46,7 +12,13 @@ export async function verifyToken(
   verifyUrl: string,
 ): Promise<RecaptchaResult> {
   const params = new URLSearchParams({ secret, response: token });
-  const raw = await post(verifyUrl, params);
+  const res = await fetch(verifyUrl, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: params.toString(),
+  });
+
+  const raw: unknown = await res.json();
 
   if (
     typeof raw !== 'object' ||

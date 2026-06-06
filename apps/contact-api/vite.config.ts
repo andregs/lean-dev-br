@@ -5,6 +5,7 @@ export default defineConfig({
     name: 'contact-api',
     environment: 'node',
     include: ['src/**/*.{test,spec}.ts'],
+    exclude: ['src/**/*.integration.test.ts'],
     reporters: ['default'],
     coverage: { reportsDirectory: '../../coverage/contact-api', provider: 'v8' },
   },

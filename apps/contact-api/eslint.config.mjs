@@ -20,6 +20,7 @@ export default [
           ],
           ignoredDependencies: [
             '@aws-sdk/client-ses',
+            '@testcontainers/localstack',
             '@types/aws-lambda',
             'vitest',
           ],

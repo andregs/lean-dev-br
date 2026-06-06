@@ -24,6 +24,18 @@
       "options": { "cwd": "apps/contact-api" },
       "cache": true,
       "inputs": ["default", "^default"]
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "options": {
+        "configFile": "apps/contact-api/vite.config.ts"
+      }
+    },
+    "test:integration": {
+      "executor": "@nx/vitest:test",
+      "options": {
+        "configFile": "apps/contact-api/vite.config.integration.ts"
+      }
     }
   }
 }

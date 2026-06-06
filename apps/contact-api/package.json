@@ -5,5 +5,8 @@
   "type": "commonjs",
   "main": "./index.cjs",
   "types": "./index.d.ts",
-  "dependencies": {}
+  "devDependencies": {
+    "@testcontainers/localstack": "^12.0.1",
+    "testcontainers": "^12.0.1"
+  }
 }
