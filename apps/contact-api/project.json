@@ -12,7 +12,7 @@
         "platform": "node",
         "main": "apps/contact-api/src/handler.ts",
         "outputPath": "apps/contact-api/dist",
-        "outputFileName": "handler.js",
+        "outputFileName": "handler.cjs",
         "tsConfig": "apps/contact-api/tsconfig.json",
         "format": ["cjs"],
         "external": ["@aws-sdk/client-ses"],

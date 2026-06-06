@@ -51,8 +51,8 @@ export function createApi({ sesIdentityArn, notifyEmail, recaptchaSecret, domain
     runtime: "nodejs22.x",
     handler: "handler.handler",
     code: new pulumi.asset.AssetArchive({
-      "handler.js": new pulumi.asset.FileAsset(
-        "../../apps/contact-api/dist/handler.js"
+      "handler.cjs": new pulumi.asset.FileAsset(
+        "../../apps/contact-api/dist/handler.cjs"
       ),
     }),
     role: lambdaRole.arn,
