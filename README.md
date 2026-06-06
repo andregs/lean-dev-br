@@ -19,7 +19,7 @@ See [docs/setup/local-tooling.md](docs/setup/local-tooling.md) for full instruct
 
 Quick start (assumes asdf and plugins already installed):
 
-```bash
+```zsh
 asdf install      # install pinned tool versions
 pnpm install      # install Node dependencies
 ```
@@ -28,13 +28,26 @@ You will also need:
 - AWS credentials configured — see [docs/setup/aws.md](docs/setup/aws.md)
 - Pulumi Cloud account and login — see [docs/setup/pulumi.md](docs/setup/pulumi.md)
 
+## Deploying
+
+Push to `main` triggers GitHub Actions which runs `pulumi up` — syncing content to S3 and applying any infra changes.
+
+For local deploys:
+
+```zsh
+cd infra/homepage && pulumi up --stack prod
+```
+
 ## Project Structure
 
 ```
 apps/
-  homepage/       # static HTML site (lean.dev.br)
+  homepage/
+    public/       # web assets (synced to S3 on deploy)
 infra/
   homepage/       # Pulumi IaC — S3, CloudFront, Route53
+.github/
+  workflows/      # CI/CD pipelines
 docs/
   setup/          # setup guides for contributors
 ```

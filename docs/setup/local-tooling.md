@@ -9,7 +9,7 @@ All tool versions are managed via [asdf](https://asdf-vm.com/). The required ver
 
 ## Install tool versions
 
-```bash
+```zsh
 # Add required plugins (one-time per machine)
 asdf plugin add nodejs
 asdf plugin add pnpm
@@ -25,7 +25,7 @@ pnpm install
 
 ## Verify
 
-```bash
+```zsh
 node --version    # matches .tool-versions
 pnpm --version
 pulumi version

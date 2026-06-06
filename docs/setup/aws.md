@@ -23,7 +23,7 @@ We use [Proton Pass CLI](https://proton.me/pass/pass-cli) to manage local secret
 
 ## 4. Configure local AWS credentials
 
-```bash
+```zsh
 aws configure
 # AWS Access Key ID: <access key from step 2>
 # AWS Secret Access Key: <secret from step 2>
@@ -33,7 +33,7 @@ aws configure
 
 Verify:
 
-```bash
+```zsh
 aws sts get-caller-identity
 ```
 

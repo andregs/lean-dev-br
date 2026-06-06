@@ -34,7 +34,17 @@ PULUMI_ACCESS_TOKEN=$(pass-cli item view --vault-name lean-dev-br --item-title=p
   pulumi login
 ```
 
-## 5. Deploy infrastructure and content
+## 5. Store token as GitHub Actions secret
+
+In the GitHub repository → **Settings → Secrets and variables → Actions → New repository secret**:
+
+| Secret name | Value |
+|---|---|
+| `PULUMI_ACCESS_TOKEN` | Token from step 2 |
+
+See [aws.md](aws.md) for the AWS secrets also required by CI.
+
+## 6. Deploy infrastructure and content
 
 Stack config (`Pulumi.prod.yaml`) is committed to the repo — no manual `stack init` needed. `pulumi up` handles both infrastructure and content (files in `apps/homepage/public/` are synced to S3 via `@pulumi/synced-folder`).
 
