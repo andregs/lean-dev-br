@@ -120,7 +120,7 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
             "default-src 'self'",
             "script-src 'self' https://www.google.com https://www.gstatic.com",
             "frame-src https://www.google.com",
-            "connect-src 'self'",
+            "connect-src 'self' https://www.google.com",
             "img-src 'self' data:",
             "style-src 'self' 'unsafe-inline'",
             "font-src 'self'",

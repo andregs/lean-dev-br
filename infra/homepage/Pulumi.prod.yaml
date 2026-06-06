@@ -5,6 +5,6 @@ config:
   #   pulumi config set --secret notifyEmail <your-email>
   #   pulumi config set --secret recaptchaSecret <secret-key>
   lean-dev-br-homepage:notifyEmail:
-    secure: AAABAL7Fm7xU+S0SIHLI7SPhA8FZSC+lb6rEauQkEV/0zzkxHpBmmUShZ8nZKJfJCQ==
+    secure: AAABAGC0ZyRKnNIAqkx0WE/m/qvz62cjUI8tqdPy9KNIKfI9kx4IPRj69ab0xVKPipOk9w==
   lean-dev-br-homepage:recaptchaSecret:
     secure: AAABALZtdQpcB6L7iXeR5UvRoOLLcuK0gyJbliwhPJtQnt4N0qOOYSdP13wsQCGwo9+GbGvU22sOK7zDNoXp76th00IGdKG4
