@@ -1,3 +1,4 @@
+import * as fs from "fs";
 import * as aws from "@pulumi/aws";
 import * as pulumi from "@pulumi/pulumi";
 import { S3BucketFolder } from "@pulumi/synced-folder";
@@ -90,6 +91,13 @@ const oac = new aws.cloudfront.OriginAccessControl("oac", {
   signingProtocol: "sigv4",
 });
 
+// Redirects www.lean.dev.br → lean.dev.br at the edge, before S3 is ever hit
+const wwwRedirectFn = new aws.cloudfront.Function("www-redirect", {
+  runtime: "cloudfront-js-2.0",
+  code: fs.readFileSync("www-redirect.js", "utf-8"),
+  publish: true,
+});
+
 // CloudFront distribution
 // CachingDisabled policy: every request is a conditional GET to S3 (ETag-based).
 // Content is always fresh without needing explicit cache invalidations.
@@ -114,6 +122,10 @@ const distribution = new aws.cloudfront.Distribution("distribution", {
     cachedMethods: ["GET", "HEAD"],
     cachePolicyId: CACHING_DISABLED_POLICY_ID,
     compress: true,
+    functionAssociations: [{
+      eventType: "viewer-request",
+      functionArn: wwwRedirectFn.arn,
+    }],
   },
   priceClass: "PriceClass_100",
   viewerCertificate: {
