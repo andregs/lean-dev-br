@@ -1,0 +1,23 @@
+:root {
+  --bg: #F0EDE6;
+  --nav-bg: #D8D2C8;
+  --nav-border: rgba(100, 90, 70, 0.22);
+  --fg: #1E1C19;
+  --green: #2E7D4F;
+  --green-muted: #3A8A5A;
+  --muted: #5C5648;
+  --border: rgba(100, 90, 70, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1E1C19;
+    --nav-bg: rgba(16, 14, 12, 0.92);
+    --nav-border: rgba(100, 90, 70, 0.18);
+    --fg: #D4CFC6;
+    --green: #52C47A;
+    --green-muted: #44AA68;
+    --muted: #9A9286;
+    --border: rgba(100, 90, 70, 0.1);
+  }
+}
