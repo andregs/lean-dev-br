@@ -1,0 +1,29 @@
+{
+  "name": "contact-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/contact-api/src",
+  "projectType": "application",
+  "tags": ["scope:contact-api", "type:app"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "platform": "node",
+        "main": "apps/contact-api/src/handler.ts",
+        "outputPath": "apps/contact-api/dist",
+        "outputFileName": "handler.js",
+        "tsConfig": "apps/contact-api/tsconfig.json",
+        "format": ["cjs"],
+        "external": ["@aws-sdk/client-ses"],
+        "assets": []
+      }
+    },
+    "typecheck": {
+      "command": "tsc -p tsconfig.json",
+      "options": { "cwd": "apps/contact-api" },
+      "cache": true,
+      "inputs": ["default", "^default"]
+    }
+  }
+}
