@@ -24,7 +24,21 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm nx affected -t lint typecheck test build
+      - name: Derive NX_BASE
         env:
-          NX_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-          NX_HEAD: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CURRENT_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            echo "NX_BASE=$PR_BASE_SHA" >> "$GITHUB_ENV"
+          elif [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            # First push to a new branch — no previous commit on remote; diff against main
+            echo "NX_BASE=origin/main" >> "$GITHUB_ENV"
+          else
+            echo "NX_BASE=$BEFORE_SHA" >> "$GITHUB_ENV"
+          fi
+          echo "NX_HEAD=$CURRENT_SHA" >> "$GITHUB_ENV"
+
+      - run: pnpm nx affected -t lint typecheck test build
