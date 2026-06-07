@@ -1,4 +1,5 @@
 // @ts-check
+import { policy } from './trusted-types.js';
 
 const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 const RECAPTCHA_SRC = `https://www.google.com/recaptcha/api.js?render=${SITE_KEY}`;
@@ -14,7 +15,7 @@ function loadRecaptcha() {
       return;
     }
     const script = document.createElement('script');
-    script.src = RECAPTCHA_SRC;
+    script.src = /** @type {any} */ (policy.createScriptURL(RECAPTCHA_SRC));
     script.async = true;
     script.defer = true;
     script.addEventListener('load', () => {

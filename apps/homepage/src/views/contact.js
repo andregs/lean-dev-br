@@ -1,5 +1,6 @@
 // @ts-check
 import { initContactForm } from '../contact-form.js';
+import { setHTML } from '../trusted-types.js';
 
 /**
  * Render the contact form view, then wire up submission behaviour.
@@ -7,7 +8,7 @@ import { initContactForm } from '../contact-form.js';
  */
 export function renderContact(root) {
   root.className = 'contact';
-  root.innerHTML = `
+  setHTML(root, `
     <div class="contact-inner">
       <h1>Contact</h1>
       <hr class="rule" />
@@ -31,7 +32,7 @@ export function renderContact(root) {
         <p class="form-status" role="status" aria-live="polite"></p>
       </form>
     </div>
-  `;
+  `);
 
   const form = root.querySelector('.contact-form');
   if (form instanceof HTMLFormElement) initContactForm(form);

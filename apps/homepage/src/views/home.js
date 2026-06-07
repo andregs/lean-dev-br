@@ -1,4 +1,5 @@
 // @ts-check
+import { setHTML } from '../trusted-types.js';
 
 /**
  * Render the landing hero.
@@ -6,7 +7,7 @@
  */
 export function renderHome(root) {
   root.className = 'hero';
-  root.innerHTML = `
+  setHTML(root, `
     <div class="hero-inner">
       <h1>Hi, I'm <span class="name">André</span>.</h1>
 
@@ -18,5 +19,5 @@ export function renderHome(root) {
         maintain, easy to understand, and reliable in production.<span class="cursor" aria-hidden="true"></span>
       </p>
     </div>
-  `;
+  `);
 }
