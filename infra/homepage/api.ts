@@ -8,6 +8,8 @@ interface ApiArgs {
   cspReportRateLimit: number;
   cspReportBurstLimit: number;
   cspReportMaxBytes: number;
+  recaptchaMinScore: number;
+  recaptchaAction: string;
 }
 
 export function createApi({
@@ -17,6 +19,8 @@ export function createApi({
   cspReportRateLimit,
   cspReportBurstLimit,
   cspReportMaxBytes,
+  recaptchaMinScore,
+  recaptchaAction,
 }: ApiArgs) {
   const lambdaRole = new aws.iam.Role('lambda-role', {
     assumeRolePolicy: JSON.stringify({
@@ -72,9 +76,9 @@ export function createApi({
         FROM_EMAIL: `do-not-reply@${domain}`,
         RECAPTCHA_SECRET: recaptchaSecret,
         RECAPTCHA_VERIFY_URL: 'https://www.google.com/recaptcha/api/siteverify',
-        RECAPTCHA_ACTION: 'contact',
+        RECAPTCHA_ACTION: recaptchaAction,
         SUBJECT_PREFIX: '[Contact]',
-        MIN_SCORE: '0.5',
+        MIN_SCORE: String(recaptchaMinScore),
         CSP_REPORT_MAX_BYTES: String(cspReportMaxBytes),
       },
     },

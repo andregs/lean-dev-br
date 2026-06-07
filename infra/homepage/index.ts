@@ -16,6 +16,10 @@ const cspReportRateLimit = config.requireNumber("cspReportRateLimit");
 const cspReportBurstLimit = config.requireNumber("cspReportBurstLimit");
 const cspReportMaxBytes = config.requireNumber("cspReportMaxBytes");
 
+// reCAPTCHA verification tunables — tweaked occasionally, so externalized.
+const recaptchaMinScore = config.requireNumber("recaptchaMinScore");
+const recaptchaAction = config.require("recaptchaAction");
+
 const zone = new aws.route53.Zone("zone", { name: domain });
 
 createEmail({ zone, domain });
@@ -27,6 +31,8 @@ const { apiEndpoint, executeApiDomain } = createApi({
   cspReportRateLimit,
   cspReportBurstLimit,
   cspReportMaxBytes,
+  recaptchaMinScore,
+  recaptchaAction,
 });
 
 const { bucketName, distributionId, distributionDomain } = createHosting({

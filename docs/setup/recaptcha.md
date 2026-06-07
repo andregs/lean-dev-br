@@ -49,6 +49,7 @@ The Lambda also needs the secret key locally if you run it directly, but unit te
 
 ## Notes
 
-- reCAPTCHA v3 returns a score from 0.0 (bot) to 1.0 (human). The threshold is controlled by the Lambda's `MIN_SCORE` env var (default: `0.5`).
-- The expected action is `contact` — submissions with a different action are rejected even if the score is passing.
+- reCAPTCHA v3 returns a score from 0.0 (bot) to 1.0 (human). The threshold lives in Pulumi config as `recaptchaMinScore` (injected as the Lambda's `MIN_SCORE`). Tune it via `pulumi config set recaptchaMinScore 0.3` — lower it if low-traffic/new-site scores cause flaky rejects.
+- v3 is frictionless — it never shows a checkbox or image challenge. A low score simply fails server-side. A visible challenge would require reCAPTCHA v2 or Enterprise.
+- The expected action lives in Pulumi config as `recaptchaAction` (injected as `RECAPTCHA_ACTION`); submissions with a different action are rejected even if the score is passing.
 - Google's admin console at https://www.google.com/recaptcha/admin shows score distributions per site key. Check it after the first real traffic.
