@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
-import { verifyToken } from './recaptcha.js';
 import { sendMail } from './mailer.js';
+import { verifyToken } from './recaptcha.js';
 
 function requireEnv(name: string): string {
   const val = process.env[name];
@@ -21,7 +21,11 @@ function getEnv() {
 }
 
 function json(statusCode: number, body: Record<string, unknown>): APIGatewayProxyResultV2 {
-  return { statusCode, body: JSON.stringify(body), headers: { 'content-type': 'application/json' } };
+  return {
+    statusCode,
+    body: JSON.stringify(body),
+    headers: { 'content-type': 'application/json' },
+  };
 }
 
 function truncate(s: string, max: number): string {
@@ -29,7 +33,23 @@ function truncate(s: string, max: number): string {
 }
 
 export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> => {
-  const { RECAPTCHA_SECRET, RECAPTCHA_VERIFY_URL, RECAPTCHA_ACTION, NOTIFY_EMAIL, FROM_EMAIL, SUBJECT_PREFIX, MIN_SCORE_NUM } = getEnv();
+  if (event.rawPath === '/api/csp-report') {
+    // Cap is supplied by infra (CSP_REPORT_MAX_BYTES); if absent, log full body
+    const maxBytes = Number(process.env.CSP_REPORT_MAX_BYTES);
+    const body = event.body ?? '';
+    console.log('csp-report:', Number.isFinite(maxBytes) ? body.slice(0, maxBytes) : body);
+    return { statusCode: 204, body: '' };
+  }
+
+  const {
+    RECAPTCHA_SECRET,
+    RECAPTCHA_VERIFY_URL,
+    RECAPTCHA_ACTION,
+    NOTIFY_EMAIL,
+    FROM_EMAIL,
+    SUBJECT_PREFIX,
+    MIN_SCORE_NUM,
+  } = getEnv();
 
   let parsed: unknown;
   try {
@@ -54,7 +74,13 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
   const visitorEmail = typeof email === 'string' && email.trim().length > 0 ? email.trim() : null;
 
   try {
-    await verifyToken(token, RECAPTCHA_SECRET, RECAPTCHA_ACTION, MIN_SCORE_NUM, RECAPTCHA_VERIFY_URL);
+    await verifyToken(
+      token,
+      RECAPTCHA_SECRET,
+      RECAPTCHA_ACTION,
+      MIN_SCORE_NUM,
+      RECAPTCHA_VERIFY_URL,
+    );
   } catch (err) {
     console.warn('reCAPTCHA rejection:', err);
     return json(403, { error: 'Bot check failed' });
