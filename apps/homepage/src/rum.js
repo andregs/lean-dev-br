@@ -1,21 +1,18 @@
 // @ts-check
 import { AwsRum } from 'aws-rum-web';
+import { rumConfig } from '@lean-dev-br/rum';
 
-const APP_MONITOR_ID = import.meta.env.VITE_RUM_APP_MONITOR_ID;
-const IDENTITY_POOL_ID = import.meta.env.VITE_RUM_IDENTITY_POOL_ID;
-const SAMPLE_RATE = Number(import.meta.env.VITE_RUM_SESSION_SAMPLE_RATE);
-const REGION = 'us-east-1';
+// Structural config lives in @lean-dev-br/rum (single source of truth shared
+// with the blog); only the env-injected identifiers are wired in here.
+const rum = rumConfig({
+  appMonitorId: import.meta.env.VITE_RUM_APP_MONITOR_ID,
+  identityPoolId: import.meta.env.VITE_RUM_IDENTITY_POOL_ID,
+  sampleRate: Number(import.meta.env.VITE_RUM_SESSION_SAMPLE_RATE),
+});
 
-if (APP_MONITOR_ID && IDENTITY_POOL_ID && Number.isFinite(SAMPLE_RATE)) {
+if (rum) {
   try {
-    new AwsRum(APP_MONITOR_ID, '1.0.0', REGION, {
-      sessionSampleRate: SAMPLE_RATE,
-      identityPoolId: IDENTITY_POOL_ID,
-      endpoint: `https://dataplane.rum.${REGION}.amazonaws.com`,
-      telemetries: ['errors', 'performance'],
-      allowCookies: false,
-      enableXRay: false,
-    });
+    new AwsRum(rum.appMonitorId, rum.appVersion, rum.region, rum.config);
   } catch (err) {
     // Non-fatal: the site works without RUM. Surface it so a misconfigured
     // monitor doesn't fail silently during development.

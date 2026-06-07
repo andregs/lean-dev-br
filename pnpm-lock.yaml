@@ -11,6 +11,9 @@ importers:
       '@lean-dev-br/csp':
         specifier: workspace:*
         version: link:libs/csp
+      '@lean-dev-br/rum':
+        specifier: workspace:*
+        version: link:libs/rum
       aws-rum-web:
         specifier: ^3.1.0
         version: 3.1.0
@@ -186,6 +189,8 @@ importers:
         version: 6.0.3
 
   libs/csp: {}
+
+  libs/rum: {}
 
 packages:
 
