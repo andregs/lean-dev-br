@@ -1,8 +1,22 @@
 import { defineConfig } from 'vitest/config';
+import { cspHeader, trustedTypesDirective } from '@lean-dev-br/csp';
+
+// Dev server: same prod CSP sources + localhost/HMR, but Trusted Types in
+// report-only so Vite's HMR/overlay tooling isn't blocked while we still see
+// violations. Preview (built app) mirrors prod exactly with TT enforced.
+const serveHeaders = {
+  'Content-Security-Policy': cspHeader({ mode: 'dev' }),
+  'Content-Security-Policy-Report-Only': trustedTypesDirective(),
+};
+const previewHeaders = {
+  'Content-Security-Policy': cspHeader({ mode: 'prod' }),
+};
 
 export default defineConfig({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/homepage',
+  server: { headers: serveHeaders },
+  preview: { headers: previewHeaders },
   build: {
     outDir: 'dist',
     emptyOutDir: true,

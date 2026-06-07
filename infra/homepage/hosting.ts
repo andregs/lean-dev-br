@@ -2,6 +2,7 @@ import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
 import { S3BucketFolder } from '@pulumi/synced-folder';
 import * as fs from 'fs';
+import { cspHeader } from '@lean-dev-br/csp';
 
 // AWS managed cache policy IDs
 const CACHING_DISABLED_POLICY_ID = '4135ea2d-6df8-44a3-9df3-4b5a84be39ad';
@@ -91,30 +92,10 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
     publish: true,
   });
 
-  const connectSrc = [
-    'https://www.google.com',
-    'https://dataplane.rum.us-east-1.amazonaws.com',
-    'https://cognito-identity.us-east-1.amazonaws.com',
-  ];
-
   const responseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(
     'response-headers-policy',
     {
       name: 'lean-dev-br-security-headers',
-      customHeadersConfig: {
-        items: [
-          {
-            // Report-only mode: observe TT violations without blocking.
-            // Promote to enforce (main CSP) once CloudWatch Logs show zero violations.
-            // Policy names: `app` (our explicit policy), `dompurify` (DOMPurify's
-            // own RETURN_TRUSTED_TYPE policy), `default` (strict-functional net).
-            header: 'Content-Security-Policy-Report-Only',
-            value:
-              "require-trusted-types-for 'script'; trusted-types default app dompurify goog#html",
-            override: true,
-          },
-        ],
-      },
       securityHeadersConfig: {
         contentTypeOptions: { override: true },
         frameOptions: { frameOption: 'DENY', override: true },
@@ -130,15 +111,8 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
           override: true,
         },
         contentSecurityPolicy: {
-          contentSecurityPolicy: [
-            "default-src 'self'",
-            "script-src 'self' https://www.google.com https://www.gstatic.com",
-            'frame-src https://www.google.com',
-            `connect-src 'self' ${connectSrc.join(' ')}`,
-            "img-src 'self' data:",
-            "style-src 'self' 'unsafe-inline'",
-            "font-src 'self'",
-          ].join('; '),
+          // Single source of truth in @lean-dev-br/csp; prod enforces Trusted Types.
+          contentSecurityPolicy: cspHeader({ mode: 'prod' }),
           override: true,
         },
       },
