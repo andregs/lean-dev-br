@@ -1,0 +1,16 @@
+{
+  "name": "blog",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/blog",
+  "projectType": "application",
+  "tags": ["scope:blog", "type:app"],
+  "// targets": "to see all targets run: nx show project blog --web",
+  "targets": {
+    "test": {
+      "executor": "@nx/vitest:test",
+      "options": {
+        "configFile": "apps/blog/vite.config.ts"
+      }
+    }
+  }
+}

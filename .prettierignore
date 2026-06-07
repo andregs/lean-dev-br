@@ -3,4 +3,6 @@
 /.nx
 **/dist
 **/bin
+**/.next
+**/next-env.d.ts
 pnpm-lock.yaml

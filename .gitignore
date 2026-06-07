@@ -11,3 +11,8 @@ coverage/
 .claude/worktrees
 .claude/settings.local.json
 vite.config.*.timestamp*
+
+# Next.js
+.next
+out
+*.tsbuildinfo
