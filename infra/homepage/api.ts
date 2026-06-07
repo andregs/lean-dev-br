@@ -1,5 +1,5 @@
-import * as aws from "@pulumi/aws";
-import * as pulumi from "@pulumi/pulumi";
+import * as aws from '@pulumi/aws';
+import * as pulumi from '@pulumi/pulumi';
 
 interface ApiArgs {
   notifyEmail: pulumi.Output<string>;
@@ -18,14 +18,14 @@ export function createApi({
   cspReportBurstLimit,
   cspReportMaxBytes,
 }: ApiArgs) {
-  const lambdaRole = new aws.iam.Role("lambda-role", {
+  const lambdaRole = new aws.iam.Role('lambda-role', {
     assumeRolePolicy: JSON.stringify({
-      Version: "2012-10-17",
+      Version: '2012-10-17',
       Statement: [
         {
-          Effect: "Allow",
-          Principal: { Service: "lambda.amazonaws.com" },
-          Action: "sts:AssumeRole",
+          Effect: 'Allow',
+          Principal: { Service: 'lambda.amazonaws.com' },
+          Action: 'sts:AssumeRole',
         },
       ],
     }),
@@ -37,38 +37,32 @@ export function createApi({
   const callerIdentity = aws.getCallerIdentityOutput();
   const sesIdentitiesArn = pulumi.interpolate`arn:aws:ses:us-east-1:${callerIdentity.accountId}:identity/*`;
 
-  new aws.iam.RolePolicy("lambda-policy", {
+  new aws.iam.RolePolicy('lambda-policy', {
     role: lambdaRole.id,
     policy: sesIdentitiesArn.apply((arn) =>
       JSON.stringify({
-        Version: "2012-10-17",
+        Version: '2012-10-17',
         Statement: [
           {
-            Effect: "Allow",
-            Action: "ses:SendEmail",
+            Effect: 'Allow',
+            Action: 'ses:SendEmail',
             Resource: arn,
           },
           {
-            Effect: "Allow",
-            Action: [
-              "logs:CreateLogGroup",
-              "logs:CreateLogStream",
-              "logs:PutLogEvents",
-            ],
-            Resource: "arn:aws:logs:*:*:*",
+            Effect: 'Allow',
+            Action: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
+            Resource: 'arn:aws:logs:*:*:*',
           },
         ],
-      })
+      }),
     ),
   });
 
-  const fn = new aws.lambda.Function("contact-api", {
-    runtime: "nodejs22.x",
-    handler: "handler.handler",
+  const fn = new aws.lambda.Function('contact-api', {
+    runtime: 'nodejs22.x',
+    handler: 'handler.handler',
     code: new pulumi.asset.AssetArchive({
-      "handler.cjs": new pulumi.asset.FileAsset(
-        "../../apps/contact-api/dist/handler.cjs"
-      ),
+      'handler.cjs': new pulumi.asset.FileAsset('../../apps/contact-api/dist/handler.cjs'),
     }),
     role: lambdaRole.arn,
     timeout: 10,
@@ -77,60 +71,60 @@ export function createApi({
         NOTIFY_EMAIL: notifyEmail,
         FROM_EMAIL: `do-not-reply@${domain}`,
         RECAPTCHA_SECRET: recaptchaSecret,
-        RECAPTCHA_VERIFY_URL:
-          "https://www.google.com/recaptcha/api/siteverify",
-        RECAPTCHA_ACTION: "contact",
-        SUBJECT_PREFIX: "[Contact]",
-        MIN_SCORE: "0.5",
+        RECAPTCHA_VERIFY_URL: 'https://www.google.com/recaptcha/api/siteverify',
+        RECAPTCHA_ACTION: 'contact',
+        SUBJECT_PREFIX: '[Contact]',
+        MIN_SCORE: '0.5',
         CSP_REPORT_MAX_BYTES: String(cspReportMaxBytes),
       },
     },
   });
 
-  const api = new aws.apigatewayv2.Api("contact-api-gw", {
-    protocolType: "HTTP",
-    name: "contact-api",
+  const api = new aws.apigatewayv2.Api('contact-api-gw', {
+    protocolType: 'HTTP',
+    name: 'contact-api',
   });
 
-  const integration = new aws.apigatewayv2.Integration(
-    "contact-api-integration",
+  const integration = new aws.apigatewayv2.Integration('contact-api-integration', {
+    apiId: api.id,
+    integrationType: 'AWS_PROXY',
+    integrationUri: fn.arn,
+    payloadFormatVersion: '2.0',
+  });
+
+  new aws.apigatewayv2.Route('contact-api-route', {
+    apiId: api.id,
+    routeKey: 'POST /api/contact',
+    target: pulumi.interpolate`integrations/${integration.id}`,
+  });
+
+  const cspReportRoute = new aws.apigatewayv2.Route('csp-report-route', {
+    apiId: api.id,
+    routeKey: 'POST /api/csp-report',
+    target: pulumi.interpolate`integrations/${integration.id}`,
+  });
+
+  new aws.apigatewayv2.Stage(
+    'contact-api-stage',
     {
       apiId: api.id,
-      integrationType: "AWS_PROXY",
-      integrationUri: fn.arn,
-      payloadFormatVersion: "2.0",
-    }
+      name: '$default',
+      autoDeploy: true,
+      routeSettings: [
+        {
+          routeKey: 'POST /api/csp-report',
+          throttlingRateLimit: cspReportRateLimit,
+          throttlingBurstLimit: cspReportBurstLimit,
+        },
+      ],
+    },
+    { dependsOn: [cspReportRoute] },
   );
 
-  new aws.apigatewayv2.Route("contact-api-route", {
-    apiId: api.id,
-    routeKey: "POST /api/contact",
-    target: pulumi.interpolate`integrations/${integration.id}`,
-  });
-
-  new aws.apigatewayv2.Route("csp-report-route", {
-    apiId: api.id,
-    routeKey: "POST /api/csp-report",
-    target: pulumi.interpolate`integrations/${integration.id}`,
-  });
-
-  new aws.apigatewayv2.Stage("contact-api-stage", {
-    apiId: api.id,
-    name: "$default",
-    autoDeploy: true,
-    routeSettings: [
-      {
-        routeKey: "POST /api/csp-report",
-        throttlingRateLimit: cspReportRateLimit,
-        throttlingBurstLimit: cspReportBurstLimit,
-      },
-    ],
-  });
-
-  new aws.lambda.Permission("contact-api-invoke-permission", {
-    action: "lambda:InvokeFunction",
+  new aws.lambda.Permission('contact-api-invoke-permission', {
+    action: 'lambda:InvokeFunction',
     function: fn.name,
-    principal: "apigateway.amazonaws.com",
+    principal: 'apigateway.amazonaws.com',
     sourceArn: pulumi.interpolate`${api.executionArn}/*/*`,
   });
 
