@@ -1,6 +1,10 @@
 config:
   aws:region: us-east-1
   lean-dev-br-homepage:domain: lean.dev.br
+  # CSP-report endpoint guardrails (API Gateway throttle + Lambda log cap)
+  lean-dev-br-homepage:cspReportRateLimit: "10"
+  lean-dev-br-homepage:cspReportBurstLimit: "20"
+  lean-dev-br-homepage:cspReportMaxBytes: "2048"
   # Set secrets via CLI — never commit plaintext values:
   #   pulumi config set --secret notifyEmail <your-email>
   #   pulumi config set --secret recaptchaSecret <secret-key>

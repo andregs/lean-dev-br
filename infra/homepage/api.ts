@@ -5,9 +5,19 @@ interface ApiArgs {
   notifyEmail: pulumi.Output<string>;
   recaptchaSecret: pulumi.Output<string>;
   domain: string;
+  cspReportRateLimit: number;
+  cspReportBurstLimit: number;
+  cspReportMaxBytes: number;
 }
 
-export function createApi({ notifyEmail, recaptchaSecret, domain }: ApiArgs) {
+export function createApi({
+  notifyEmail,
+  recaptchaSecret,
+  domain,
+  cspReportRateLimit,
+  cspReportBurstLimit,
+  cspReportMaxBytes,
+}: ApiArgs) {
   const lambdaRole = new aws.iam.Role("lambda-role", {
     assumeRolePolicy: JSON.stringify({
       Version: "2012-10-17",
@@ -72,6 +82,7 @@ export function createApi({ notifyEmail, recaptchaSecret, domain }: ApiArgs) {
         RECAPTCHA_ACTION: "contact",
         SUBJECT_PREFIX: "[Contact]",
         MIN_SCORE: "0.5",
+        CSP_REPORT_MAX_BYTES: String(cspReportMaxBytes),
       },
     },
   });
@@ -97,10 +108,23 @@ export function createApi({ notifyEmail, recaptchaSecret, domain }: ApiArgs) {
     target: pulumi.interpolate`integrations/${integration.id}`,
   });
 
+  new aws.apigatewayv2.Route("csp-report-route", {
+    apiId: api.id,
+    routeKey: "POST /api/csp-report",
+    target: pulumi.interpolate`integrations/${integration.id}`,
+  });
+
   new aws.apigatewayv2.Stage("contact-api-stage", {
     apiId: api.id,
     name: "$default",
     autoDeploy: true,
+    routeSettings: [
+      {
+        routeKey: "POST /api/csp-report",
+        throttlingRateLimit: cspReportRateLimit,
+        throttlingBurstLimit: cspReportBurstLimit,
+      },
+    ],
   });
 
   new aws.lambda.Permission("contact-api-invoke-permission", {

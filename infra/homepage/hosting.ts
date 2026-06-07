@@ -101,6 +101,20 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
     "response-headers-policy",
     {
       name: "lean-dev-br-security-headers",
+      customHeadersConfig: {
+        items: [
+          {
+            // Report-only mode: observe TT violations without blocking.
+            // Promote to enforce (main CSP) once CloudWatch Logs show zero violations.
+            // Policy names: `app` (our explicit policy), `dompurify` (DOMPurify's
+            // own RETURN_TRUSTED_TYPE policy), `default` (strict-functional net).
+            header: "Content-Security-Policy-Report-Only",
+            value:
+              "require-trusted-types-for 'script'; trusted-types app dompurify default",
+            override: true,
+          },
+        ],
+      },
       securityHeadersConfig: {
         contentTypeOptions: { override: true },
         frameOptions: { frameOption: "DENY", override: true },
@@ -120,7 +134,7 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
             "default-src 'self'",
             "script-src 'self' https://www.google.com https://www.gstatic.com",
             "frame-src https://www.google.com",
-            "connect-src 'self' https://www.google.com",
+            "connect-src 'self' https://www.google.com https://dataplane.rum.us-east-1.amazonaws.com",
             "img-src 'self' data:",
             "style-src 'self' 'unsafe-inline'",
             "font-src 'self'",
