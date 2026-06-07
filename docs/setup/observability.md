@@ -32,8 +32,9 @@ The RUM identifiers don't exist until the infra is created. After the first `pul
 cd infra/homepage
 pulumi stack output appMonitorId
 pulumi stack output identityPoolId
-pulumi stack output guestRoleArn
 ```
+
+The SDK uses Cognito's enhanced (simplified) flow, so no guest role ARN is needed client-side — the role is resolved from the identity pool's role attachment.
 
 ## 3. Client-side config (GitHub Actions variables)
 
@@ -43,14 +44,13 @@ The frontend embeds these at build time. Add under **Settings → Secrets and va
 |---|---|
 | `VITE_RUM_APP_MONITOR_ID` | `pulumi stack output appMonitorId` |
 | `VITE_RUM_IDENTITY_POOL_ID` | `pulumi stack output identityPoolId` |
-| `VITE_RUM_GUEST_ROLE_ARN` | `pulumi stack output guestRoleArn` |
 | `VITE_RUM_SESSION_SAMPLE_RATE` | Sampling fraction `0.0`–`1.0` (start at `0.1`) |
 
 If any RUM variable is missing the SDK logs a warning and skips init — the site keeps working. The CSP-report endpoint is independent and needs no client config.
 
 ## 4. Local development
 
-RUM stays disabled locally unless you set the four `VITE_RUM_*` values in `apps/homepage/.env.local` (git-ignored). Leaving them unset is the normal local state.
+RUM stays disabled locally unless you set the `VITE_RUM_*` values in `apps/homepage/.env.local` (git-ignored). Leaving them unset is the normal local state.
 
 ## Notes
 

@@ -42,11 +42,17 @@ export const policy = tt.createPolicy('app', {
 // implicit default instead of an explicit policy (tech debt).
 tt.createPolicy('default', {
   createHTML: (/** @type {string} */ s) => {
-    console.warn('TT default createHTML used — migrate caller to an explicit policy');
+    // First-party HTML should go through setHTML(); reaching the default policy
+    // signals a caller to migrate. Log the value + stack to locate it.
+    console.warn('TT default createHTML used — migrate caller to an explicit policy. value:', s);
     return /** @type {any} */ (DOMPurify.sanitize(s, { RETURN_TRUSTED_TYPE: true }));
   },
   createScriptURL: (/** @type {string} */ s) => {
-    console.warn('TT default createScriptURL used — migrate caller to an explicit policy');
+    // Only allowlisted URLs reach here (assertAllowedScriptURL throws otherwise),
+    // and the only allowlisted injector that bypasses our explicit `app` policy
+    // is third-party reCAPTCHA loading its gstatic script — expected, not tech
+    // debt. Logged at debug for traceability without warn-level noise.
+    console.debug('TT default createScriptURL (allowlisted third-party):', s);
     return assertAllowedScriptURL(s);
   },
   createScript: () => {

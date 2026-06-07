@@ -66,14 +66,14 @@ describe('trusted-types policies', () => {
     expect(() => def?.createScript?.('alert(1)')).toThrow(TypeError);
   });
 
-  it('default.createScriptURL warns and allowlists', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  it('default.createScriptURL allowlists (debug-logged, no warn)', async () => {
+    const debug = vi.spyOn(console, 'debug').mockImplementation(() => undefined);
     await load();
     const def = policies.get('default');
     expect(def?.createScriptURL?.('https://www.google.com/recaptcha/x')).toBe(
       'https://www.google.com/recaptcha/x',
     );
-    expect(warn).toHaveBeenCalled();
+    expect(debug).toHaveBeenCalled();
     expect(() => def?.createScriptURL?.('https://evil.com/x')).toThrow(TypeError);
   });
 

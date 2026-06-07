@@ -41,9 +41,9 @@ const { bucketName, distributionId, distributionDomain } = createHosting({
   executeApiDomain,
 });
 
-const { identityPoolId, guestRoleArn, appMonitorId } = createObservability({ domain });
+const { identityPoolId, appMonitorId } = createObservability({ domain });
 
 export { bucketName, distributionId, distributionDomain, apiEndpoint };
-export { identityPoolId, guestRoleArn, appMonitorId };
+export { identityPoolId, appMonitorId };
 export const nameservers = zone.nameServers;
 export const sesDomainIdentity = domain;

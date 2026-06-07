@@ -63,8 +63,6 @@ export function createObservability({ domain }: ObservabilityArgs) {
 
   return {
     identityPoolId: identityPool.id,
-    guestRoleArn: rumRole.arn,
-    // The GUID the aws-rum-web SDK expects as its applicationId (not the name)
     appMonitorId: appMonitor.appMonitorId,
   };
 }
