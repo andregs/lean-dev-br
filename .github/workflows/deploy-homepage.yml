@@ -23,6 +23,10 @@ jobs:
       - run: pnpm nx run-many -t build -p homepage,contact-api --skip-nx-cache
         env:
           VITE_RECAPTCHA_SITE_KEY: ${{ vars.VITE_RECAPTCHA_SITE_KEY }}
+          VITE_RUM_APP_MONITOR_ID: ${{ vars.VITE_RUM_APP_MONITOR_ID }}
+          VITE_RUM_IDENTITY_POOL_ID: ${{ vars.VITE_RUM_IDENTITY_POOL_ID }}
+          VITE_RUM_GUEST_ROLE_ARN: ${{ vars.VITE_RUM_GUEST_ROLE_ARN }}
+          VITE_RUM_SESSION_SAMPLE_RATE: ${{ vars.VITE_RUM_SESSION_SAMPLE_RATE }}
 
       - uses: aws-actions/configure-aws-credentials@v6
         with:
