@@ -352,3 +352,15 @@ h1 .name {
 .form-status[data-state='pending'] {
   color: var(--muted);
 }
+
+/* ---------- reCAPTCHA badge ---------- */
+/* Loaded lazily on /contact and appended to document.body, so it persists
+   across SPA navigations. Show it only on the contact route. !important is
+   required to override the inline styles grecaptcha sets on the badge. */
+.grecaptcha-badge {
+  visibility: hidden !important;
+}
+
+body.route-contact .grecaptcha-badge {
+  visibility: visible !important;
+}

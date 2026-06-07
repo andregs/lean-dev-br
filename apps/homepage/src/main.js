@@ -19,7 +19,11 @@ const routes = {
 function render() {
   const app = document.querySelector('#app');
   if (!(app instanceof HTMLElement)) return;
-  const view = routes[window.location.pathname] ?? renderHome;
+  const path = window.location.pathname;
+  // The reCAPTCHA badge is injected onto document.body and survives view swaps;
+  // CSS gates its visibility to the contact route via this class.
+  document.body.classList.toggle('route-contact', path === '/contact');
+  const view = routes[path] ?? renderHome;
   view(app);
 }
 
