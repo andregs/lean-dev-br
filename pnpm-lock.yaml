@@ -17,6 +17,9 @@ importers:
       '@lean-dev-br/styles':
         specifier: workspace:*
         version: link:libs/styles
+      '@lean-dev-br/trusted-types':
+        specifier: workspace:*
+        version: link:libs/trusted-types
       aws-rum-web:
         specifier: ^3.1.0
         version: 3.1.0
@@ -99,6 +102,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.0.0
         version: 19.2.3(@types/react@19.2.17)
+      '@types/trusted-types':
+        specifier: ^2.0.7
+        version: 2.0.7
       '@vitejs/plugin-react':
         specifier: ^6.0.2
         version: 6.0.2(vite@8.0.16(@types/node@25.9.1)(esbuild@0.27.7)(jiti@2.4.2)(less@4.5.1)(sass-embedded@1.100.0)(sass@1.62.1)(terser@5.48.0)(yaml@2.9.0))
@@ -202,6 +208,12 @@ importers:
   libs/rum: {}
 
   libs/styles: {}
+
+  libs/trusted-types:
+    dependencies:
+      dompurify:
+        specifier: ^3.4.8
+        version: 3.4.8
 
 packages:
 
@@ -12757,8 +12769,7 @@ snapshots:
 
   '@types/tmp@0.2.6': {}
 
-  '@types/trusted-types@2.0.7':
-    optional: true
+  '@types/trusted-types@2.0.7': {}
 
   '@types/unist@2.0.11': {}
 
