@@ -1,0 +1,64 @@
+/* Fixed top nav shared by the apex site and the blog (same markup contract:
+   nav > .nav-inner > .nav-logo > svg.brand-mark, and ul.nav-links > li > a). */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-nav);
+  background: var(--nav-bg);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--nav-border);
+  padding: 1rem 0;
+}
+
+.nav-inner {
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding-left: var(--pad-x);
+  padding-right: var(--pad-x);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.brand-mark {
+  height: 20px;
+  width: auto;
+  display: block;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  list-style: none;
+  line-height: 1;
+}
+
+.nav-links a {
+  text-decoration: none;
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color var(--duration-fast);
+}
+
+.nav-links a:hover {
+  color: var(--fg);
+}
+
+@media (max-width: 520px) {
+  .nav-links {
+    gap: 1.1rem;
+  }
+}

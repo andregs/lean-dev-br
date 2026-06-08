@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
-import { allPosts, getPost } from '../../lib/posts';
 import { formatDate } from '../../lib/format';
+import { allPosts, getPost } from '../../lib/posts';
 
 export function generateStaticParams() {
   return allPosts.map((post) => ({ slug: post.slug }));

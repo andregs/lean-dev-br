@@ -4,6 +4,9 @@
   "private": true,
   "description": "Shared design tokens (CSS custom properties) for the apex site and the blog — single source of visual identity.",
   "exports": {
-    "./tokens.css": "./tokens.css"
+    "./tokens.css": "./tokens.css",
+    "./base.css": "./base.css",
+    "./nav.css": "./nav.css",
+    "./footer.css": "./footer.css"
   }
 }

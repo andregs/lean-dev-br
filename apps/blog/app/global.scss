@@ -1,25 +1,8 @@
-// Shared design tokens — single source for apex + blog.
+// Shared foundation — tokens + structural styles, single source for apex + blog.
 @import '@lean-dev-br/styles/tokens.css';
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html {
-  -webkit-text-size-adjust: 100%;
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-body);
-  font-size: var(--text-body);
-  line-height: var(--leading-relaxed);
-}
+@import '@lean-dev-br/styles/base.css';
+@import '@lean-dev-br/styles/nav.css';
+@import '@lean-dev-br/styles/footer.css';
 
 a {
   color: var(--accent);
@@ -30,113 +13,121 @@ a:hover {
   text-decoration: underline;
 }
 
-.site-nav,
-.site-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: var(--content-width);
-  margin: 0 auto;
-  padding: 1.25rem var(--pad-x);
-}
-
-.site-nav {
-  border-bottom: 1px solid var(--hairline);
-}
-
-.site-nav .brand {
-  color: var(--fg);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-tight);
-}
-
-.site-footer {
-  border-top: 1px solid var(--hairline);
-  color: var(--muted);
-  font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wide);
-}
-
 .content {
+  flex: 1;
+  width: 100%;
   max-width: var(--content-width);
   margin: 0 auto;
-  padding: 2.5rem var(--pad-x) 4rem;
+  padding: clamp(5.5rem, 14vh, 8rem) var(--pad-x) 3rem;
 }
 
-// ---------- post list ----------
+.content h1 {
+  font-size: var(--text-heading);
+}
+
+.content .rule {
+  margin-top: 1.4rem;
+}
+
+// ---------- post index ----------
 .post-list {
   list-style: none;
-  margin: 2rem 0 0;
-  padding: 0;
+  margin-top: 2rem;
 }
 
 .post-list li {
-  padding: 1.25rem 0;
+  padding: 1.3rem 0;
   border-bottom: 1px solid var(--hairline);
 }
 
-.post-list a {
-  font-size: 1.2rem;
-  font-weight: var(--weight-semibold);
+.post-title {
+  font-family: var(--font-serif);
+  font-size: 1.45rem;
+  color: var(--fg);
+}
+
+.post-title:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.post-list time,
+.post header time {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-base);
+  color: var(--muted);
 }
 
 .post-list time {
-  display: block;
-  margin-top: 0.25rem;
-  color: var(--muted);
-  font-size: var(--text-sm);
+  margin-top: 0.3rem;
 }
 
 .post-list p {
-  margin: 0.5rem 0 0;
+  margin-top: 0.5rem;
+  max-width: 60ch;
   color: var(--muted);
+  text-wrap: pretty;
 }
 
 // ---------- single post ----------
 .post header {
-  margin-bottom: 2rem;
-}
-
-.post header h1 {
-  letter-spacing: var(--tracking-tight);
-  line-height: var(--leading-tight);
+  margin-bottom: 2.5rem;
 }
 
 .post header time {
-  display: block;
-  margin-top: 0.5rem;
-  color: var(--muted);
-  font-size: var(--text-sm);
+  margin-top: 0.6rem;
 }
 
 .post-body {
-  h2,
-  h3 {
-    margin-top: 2rem;
-  }
+  font-size: var(--text-body);
+  line-height: var(--leading-relaxed);
+  color: var(--muted);
+}
 
-  a {
-    text-decoration: underline;
-  }
+.post-body strong {
+  color: var(--fg);
+  font-weight: var(--weight-semibold);
+}
 
-  code {
-    font-family: var(--font-mono);
-    font-size: 0.9em;
-  }
+.post-body > * + * {
+  margin-top: 1.2rem;
+}
 
-  pre {
-    margin: 1.5rem 0;
-    padding: 1rem 1.25rem;
-    overflow-x: auto;
-    background: var(--nav-bg);
-    border: 1px solid var(--hairline);
-    border-radius: 8px;
-  }
+.post-body h2 {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  margin-top: 2.4rem;
+  color: var(--fg);
+}
 
-  pre code {
-    background: none;
-    padding: 0;
-  }
+.post-body h3 {
+  font-size: 1.25rem;
+  margin-top: 2rem;
+  color: var(--fg);
+}
+
+.post-body a {
+  text-decoration: underline;
+}
+
+.post-body code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+.post-body pre {
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  background: var(--nav-bg);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+}
+
+.post-body pre code {
+  padding: 0;
+  background: none;
 }
 
 // ---------- draft badge ----------

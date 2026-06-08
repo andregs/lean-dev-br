@@ -1,0 +1,21 @@
+/* Footer shared by the apex site and the blog (markup: footer.site-footer >
+   .footer-inner > two children). */
+.site-footer {
+  border-top: 1px solid var(--hairline);
+  padding: 1.1rem 0;
+}
+
+.footer-inner {
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding-left: var(--pad-x);
+  padding-right: var(--pad-x);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-base);
+  color: var(--muted);
+}

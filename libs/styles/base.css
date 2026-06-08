@@ -1,0 +1,73 @@
+/* Base reset + page shell shared by the apex site and the blog. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@media (min-width: 900px) {
+  body::before,
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--hairline);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  body::before {
+    left: calc(50% - var(--content-width) / 2);
+  }
+
+  body::after {
+    right: calc(50% - var(--content-width) / 2);
+  }
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  transition:
+    background var(--duration-base),
+    color var(--duration-base);
+}
+
+h1 {
+  font-family: var(--font-serif);
+  font-size: var(--text-display);
+  font-weight: var(--weight-normal);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  color: var(--fg);
+}
+
+@media (max-width: 520px) {
+  h1 {
+    letter-spacing: -0.015em;
+  }
+}
+
+/* Accent divider under a page heading. */
+.rule {
+  border: none;
+  width: 40px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: 0.85;
+}
