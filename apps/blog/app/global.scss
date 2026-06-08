@@ -130,6 +130,85 @@ a:hover {
   background: none;
 }
 
+// ---------- post footer (tags + prev/next) ----------
+.post-footer {
+  margin-top: 3.5rem;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  list-style: none;
+}
+
+.tag-list a {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-base);
+  color: var(--muted);
+  border: 1px solid var(--hairline);
+  border-radius: 5px;
+  padding: 0.2rem 0.6rem;
+}
+
+.tag-list a:hover {
+  color: var(--fg);
+  border-color: var(--muted);
+  text-decoration: none;
+}
+
+.post-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem 2.5rem;
+  margin-top: 1.75rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--hairline);
+}
+
+.post-nav a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.post-nav-prev a {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.post-nav-next a {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.post-nav a:hover {
+  text-decoration: none;
+}
+
+.post-nav-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color var(--duration-fast);
+}
+
+.post-nav-title {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  color: var(--fg);
+  text-wrap: pretty;
+  transition: color var(--duration-fast);
+}
+
+.post-nav a:hover .post-nav-title,
+.post-nav a:hover .post-nav-label {
+  color: var(--accent);
+}
+
 // ---------- draft badge ----------
 .draft-badge {
   display: inline-block;
@@ -145,8 +224,13 @@ a:hover {
 }
 
 // ---------- syntax highlight: GitHub light/dark (class-based, no inline styles) ----------
-// rehype-highlight emits highlight.js `hljs-*` classes; this is the GitHub theme
-// palette split across prefers-color-scheme to match the apex light/dark tokens.
+// rehype-highlight (highlight.js) emits a fixed, language-agnostic vocabulary of
+// `hljs-*` token classes; we map them to the GitHub palette, split across
+// prefers-color-scheme to track the apex light/dark tokens. Unlisted classes
+// (hljs-meta, -operator, -punctuation, -property, -params, -selector-*, -subst, …)
+// fall back to the body colour — add a rule when a post needs one coloured. The
+// full vocabulary + ready-made themes live in node_modules/highlight.js/styles/*.css.
+// Config: apps/blog/velite.config.ts. Refs: https://highlightjs.org/
 .hljs-comment,
 .hljs-quote {
   color: #6a737d;

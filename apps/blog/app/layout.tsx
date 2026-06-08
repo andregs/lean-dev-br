@@ -1,17 +1,23 @@
 import './global.scss';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { BLOG_DESCRIPTION, BLOG_TITLE, blogUrl, SITE_NAME, SITE_URL } from '../lib/site';
 
 export const metadata: Metadata = {
-  title: 'lean.dev.br — blog',
-  description: 'A dev blog by André Gomes — notes on full-stack and cloud.',
+  metadataBase: new URL(SITE_URL),
+  title: { default: BLOG_TITLE, template: `%s — ${SITE_NAME}` },
+  description: BLOG_DESCRIPTION,
+  alternates: {
+    types: { 'application/rss+xml': blogUrl('/feed.xml') },
+  },
+  openGraph: { siteName: SITE_NAME, type: 'website' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <nav>
+        <nav className="site-nav">
           <div className="nav-inner">
             {/* Logo → apex homepage at `/`; a raw anchor bypasses the basePath
                 that would otherwise rewrite it to `/blog`. */}

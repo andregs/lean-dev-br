@@ -1,6 +1,6 @@
 ---
 title: Hello, world
-date: 2026-06-07
+date: 2026-06-07T09:00:00Z
 description: First post — why this blog exists and how it's built.
 tags: [meta, nextjs]
 ---

@@ -1,6 +1,8 @@
 /* Fixed top nav shared by the apex site and the blog (same markup contract:
-   nav > .nav-inner > .nav-logo > svg.brand-mark, and ul.nav-links > li > a). */
-nav {
+   nav.site-nav > .nav-inner > .nav-logo > svg.brand-mark, ul.nav-links > li > a).
+   Scoped to the .site-nav class — never the bare `nav` element — so other nav
+   landmarks (e.g. a post's prev/next) don't inherit fixed positioning. */
+.site-nav {
   position: fixed;
   top: 0;
   left: 0;

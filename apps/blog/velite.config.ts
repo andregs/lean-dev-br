@@ -31,6 +31,13 @@ export default defineConfig({
   },
   collections: { posts },
   markdown: {
+    // Build-time syntax highlighting. rehype-highlight wraps highlight.js (via
+    // lowlight): it tokenizes fenced code by its ```lang hint and emits standard,
+    // language-agnostic `hljs-*` classes — no inline styles, so the CSP stays
+    // strict. Only the ~35 "common" languages are registered and auto-detect is
+    // off; register more via this plugin's `languages` option. Token colours are
+    // themed in apps/blog/app/global.scss.
+    // Refs: https://github.com/rehypejs/rehype-highlight  https://highlightjs.org/
     rehypePlugins: [rehypeHighlight],
   },
 });
