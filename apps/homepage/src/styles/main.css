@@ -1,4 +1,5 @@
-@import './tokens.css';
+/* Shared design tokens — single source for apex + blog. */
+@import '@lean-dev-br/styles/tokens.css';
 
 *,
 *::before,

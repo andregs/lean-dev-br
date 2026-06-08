@@ -9,7 +9,7 @@ export default defineConfig({
     name: 'blog',
     environment: 'jsdom',
     globals: true,
-    include: ['app/**/*.{test,spec}.{ts,tsx}'],
+    include: ['{app,lib}/**/*.{test,spec}.{ts,tsx}'],
     reporters: ['default'],
     coverage: {
       reportsDirectory: '../../coverage/blog',

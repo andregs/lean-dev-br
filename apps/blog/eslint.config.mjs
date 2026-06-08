@@ -7,6 +7,7 @@ export default [
   ...nx.configs['flat/react-typescript'],
   ...baseConfig,
   {
-    ignores: ['.next/**/*'],
+    // Generated output: Next build dir, static export, and Velite content.
+    ignores: ['.next/**/*', 'out/**/*', '.velite/**/*'],
   },
 ];

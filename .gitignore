@@ -16,3 +16,9 @@ vite.config.*.timestamp*
 .next
 out
 *.tsbuildinfo
+
+# Velite generated content
+.velite/
+
+# Next.js static export
+/apps/blog/out/

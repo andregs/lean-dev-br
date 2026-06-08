@@ -1,0 +1,9 @@
+{
+  "name": "@lean-dev-br/styles",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared design tokens (CSS custom properties) for the apex site and the blog — single source of visual identity.",
+  "exports": {
+    "./tokens.css": "./tokens.css"
+  }
+}

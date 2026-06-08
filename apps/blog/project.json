@@ -6,6 +6,25 @@
   "tags": ["scope:blog", "type:app"],
   "// targets": "to see all targets run: nx show project blog --web",
   "targets": {
+    "content": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "velite build",
+        "cwd": "apps/blog"
+      },
+      "cache": true,
+      "inputs": ["{projectRoot}/content/**/*", "{projectRoot}/velite.config.ts"],
+      "outputs": ["{projectRoot}/.velite"]
+    },
+    "build": {
+      "dependsOn": ["content"]
+    },
+    "typecheck": {
+      "dependsOn": ["content"]
+    },
+    "dev": {
+      "dependsOn": ["content"]
+    },
     "test": {
       "executor": "@nx/vitest:test",
       "options": {
