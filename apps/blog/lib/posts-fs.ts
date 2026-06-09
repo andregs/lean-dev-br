@@ -2,16 +2,18 @@
 // out of lib/posts.ts so the static site never imports node:fs.
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
+import { slugFromFilename } from './draft';
 
 export function postsDir(): string {
   return path.join(process.cwd(), 'content', 'posts');
 }
 
+/** Pure: pick the `.md` file in `files` whose slug matches (no fs). */
+export function matchPostFilename(files: readonly string[], slug: string): string | undefined {
+  return files.find((file) => file.endsWith('.md') && slugFromFilename(file) === slug);
+}
+
 /** Resolve a post slug to its on-disk filename (the slug drops the date prefix). */
 export async function filenameForSlug(slug: string): Promise<string | undefined> {
-  const files = await readdir(postsDir());
-  return files.find(
-    (file) =>
-      file.endsWith('.md') && file.replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/\.md$/, '') === slug,
-  );
+  return matchPostFilename(await readdir(postsDir()), slug);
 }

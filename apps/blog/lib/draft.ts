@@ -24,6 +24,19 @@ export function draftFilename(date: string, title: string): string {
   return `${day}-${slugify(title)}.md`;
 }
 
+// Exactly the shape draftFilename() produces — no path separators or `..`, so a
+// client-supplied filename can't traverse out of content/posts/.
+const DRAFT_FILENAME = /^\d{4}-\d{2}-\d{2}-[a-z0-9-]+\.md$/;
+
+export function isDraftFilename(name: string): boolean {
+  return DRAFT_FILENAME.test(name);
+}
+
+/** Inverse of the filename's date-prefix + extension: the URL slug. */
+export function slugFromFilename(filename: string): string {
+  return filename.replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/\.md$/, '');
+}
+
 // JSON double-quoted scalars are valid YAML, so this safely escapes colons,
 // quotes, etc. in free-text frontmatter values.
 function yaml(value: string): string {

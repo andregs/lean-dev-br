@@ -1,6 +1,6 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { draftFilename, renderDraft, type DraftInput } from '../../../lib/draft';
+import { draftFilename, isDraftFilename, renderDraft, type DraftInput } from '../../../lib/draft';
 import { filenameForSlug, postsDir } from '../../../lib/posts-fs';
 
 interface DraftRequest extends Partial<DraftInput> {
@@ -8,10 +8,6 @@ interface DraftRequest extends Partial<DraftInput> {
   // same file (and rename it) instead of spawning a new one when the title changes.
   previousFilename?: string;
 }
-
-// Exactly the shape draftFilename() produces — no path separators or `..`, so a
-// client-supplied previousFilename can't traverse out of content/posts/.
-const DRAFT_FILENAME = /^\d{4}-\d{2}-\d{2}-[a-z0-9-]+\.md$/;
 
 // These handlers mutate the working tree; they exist only for `next dev`. Non-GET
 // methods are dropped from `output: export`, and they 404 in production anyway —
@@ -46,7 +42,7 @@ export async function POST(request: Request): Promise<Response> {
 
   // Title/date changed since the last save → remove the now-stale file.
   if (input.previousFilename && input.previousFilename !== filename) {
-    if (!DRAFT_FILENAME.test(input.previousFilename)) {
+    if (!isDraftFilename(input.previousFilename)) {
       return Response.json({ error: 'invalid previousFilename' }, { status: 400 });
     }
     await rm(path.join(dir, input.previousFilename), { force: true });
@@ -64,7 +60,7 @@ export async function DELETE(request: Request): Promise<Response> {
   if (!slug) return Response.json({ error: 'slug required' }, { status: 400 });
 
   const filename = await filenameForSlug(slug);
-  if (!filename || !DRAFT_FILENAME.test(filename)) {
+  if (!filename || !isDraftFilename(filename)) {
     return Response.json({ error: 'not found' }, { status: 404 });
   }
   await rm(path.join(postsDir(), filename), { force: true });

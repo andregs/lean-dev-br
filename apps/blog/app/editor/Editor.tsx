@@ -5,11 +5,8 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { PageHeading } from '../PageHeading';
 import { proofread, suggestTags, summarize } from '../../lib/chrome-ai';
+import { slugFromFilename } from '../../lib/draft';
 import styles from './Editor.module.scss';
-
-function slugFromFilename(filename: string): string {
-  return filename.replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/\.md$/, '');
-}
 
 // MDEditor touches the DOM on import — load it client-only.
 const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false });
