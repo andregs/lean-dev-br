@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { PageHeading } from '../../PageHeading';
 import { formatDate } from '../../../lib/format';
 import { allTags, postsByTag } from '../../../lib/posts';
 
@@ -27,8 +28,7 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
 
   return (
     <>
-      <h1>#{tag}</h1>
-      <hr className="rule" />
+      <PageHeading>#{tag}</PageHeading>
       <ul className="post-list">
         {posts.map((post) => (
           <li key={post.slug}>

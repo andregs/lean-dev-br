@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </ul>
           </div>
         </nav>
-        <main className="content">{children}</main>
+        <main className="page-shell">{children}</main>
         <footer className="site-footer">
           <div className="footer-inner">
             <span>25.43°S 49.27°W</span>

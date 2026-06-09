@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { PageHeading } from './PageHeading';
 import { formatDate } from '../lib/format';
 import { allPosts } from '../lib/posts';
 import { BLOG_DESCRIPTION } from '../lib/site';
@@ -11,8 +12,7 @@ export const metadata: Metadata = {
 export default function BlogIndex() {
   return (
     <>
-      <h1>Blog</h1>
-      <hr className="rule" />
+      <PageHeading>Blog</PageHeading>
       <ul className="post-list">
         {allPosts.map((post) => (
           <li key={post.slug}>

@@ -23,7 +23,13 @@
       "dependsOn": ["content"]
     },
     "dev": {
-      "dependsOn": ["content"]
+      "executor": "nx:run-commands",
+      "dependsOn": ["content"],
+      "options": {
+        "cwd": "apps/blog",
+        "parallel": true,
+        "commands": ["velite dev", "next dev"]
+      }
     },
     "test": {
       "executor": "@nx/vitest:test",

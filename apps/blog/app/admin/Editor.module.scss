@@ -1,0 +1,150 @@
+// Class-based only — no bare-element selectors, so nothing leaks into the
+// third-party markdown editor's internal textarea.
+.admin {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.fieldHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.control {
+  width: 100%;
+  font: inherit;
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid var(--field-border);
+  border-radius: 7px;
+  padding: 0.55rem 0.7rem;
+  transition: border-color var(--duration-fast);
+}
+
+.control:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+// color-scheme: light dark lets the native datetime-local picker (and its
+// calendar icon) follow the system theme, matching the token-driven light/dark.
+.dateControl {
+  color-scheme: light dark;
+  max-width: 22rem;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.draft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.55rem;
+  cursor: pointer;
+}
+
+.draftBox {
+  width: auto;
+  accent-color: var(--accent);
+}
+
+.wand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 0.15rem 0.5rem;
+  cursor: pointer;
+  transition:
+    color var(--duration-fast),
+    border-color var(--duration-fast);
+}
+
+.wand:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.wand:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.bodyHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.save {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--accent);
+  border: none;
+  border-radius: 7px;
+  padding: 0.6rem 1.4rem;
+  cursor: pointer;
+  transition: opacity var(--duration-fast);
+}
+
+.save:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.save:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.status {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.statusOk {
+  color: var(--accent);
+}
+
+.statusError {
+  color: var(--danger);
+}
