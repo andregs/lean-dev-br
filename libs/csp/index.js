@@ -10,11 +10,14 @@ const TRUSTED_TYPES_POLICIES = ['app', 'dompurify', 'default', 'goog#html'];
 /**
  * CSP directives as data. Prod is the canonical baseline; dev layers on the
  * minimum relaxations Vite needs (HMR websocket + localhost asset requests).
+ * `app: 'blog'` allows inline scripts: the Next.js static export inlines its
+ * hydration scripts and there's no server to mint a nonce. Trusted Types still
+ * guards DOM script sinks; the apex app (no inline scripts) stays strict.
  *
- * @param {{ mode: 'prod' | 'dev' }} opts
+ * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' }} opts
  * @returns {Record<string, string[]>}
  */
-function cspDirectives({ mode }) {
+function cspDirectives({ mode, app = 'apex' }) {
   const connectSrc = [
     "'self'",
     'https://www.google.com',
@@ -24,9 +27,13 @@ function cspDirectives({ mode }) {
   if (mode === 'dev') {
     connectSrc.push('ws://localhost:*', 'http://localhost:*');
   }
+  const scriptSrc = ["'self'", 'https://www.google.com', 'https://www.gstatic.com'];
+  if (app === 'blog') {
+    scriptSrc.push("'unsafe-inline'");
+  }
   return {
     'default-src': ["'self'"],
-    'script-src': ["'self'", 'https://www.google.com', 'https://www.gstatic.com'],
+    'script-src': scriptSrc,
     'frame-src': ['https://www.google.com'],
     'connect-src': connectSrc,
     'img-src': ["'self'", 'data:'],
@@ -58,11 +65,11 @@ function serialize(directives) {
  * Trusted Types directive; dev omits it here — ship `trustedTypesDirective()` as
  * a separate report-only header instead so dev tooling isn't blocked.
  *
- * @param {{ mode: 'prod' | 'dev' }} opts
+ * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' }} opts
  * @returns {string}
  */
-function cspHeader({ mode }) {
-  const base = serialize(cspDirectives({ mode }));
+function cspHeader({ mode, app = 'apex' }) {
+  const base = serialize(cspDirectives({ mode, app }));
   return mode === 'prod' ? `${base}; ${trustedTypesDirective()}` : base;
 }
 

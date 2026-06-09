@@ -33,6 +33,19 @@ describe('cspDirectives', () => {
     // No localhost leaks into prod.
     expect(prod['connect-src'].some((s) => s.includes('localhost'))).toBe(false);
   });
+
+  it("blog adds 'unsafe-inline' to script-src (Next inline hydration); apex does not", () => {
+    const apex = cspDirectives({ mode: 'prod' });
+    const blog = cspDirectives({ mode: 'prod', app: 'blog' });
+    expect(apex['script-src']).not.toContain("'unsafe-inline'");
+    expect(blog['script-src']).toContain("'unsafe-inline'");
+    // Only script-src differs; the rest of the policy is identical to apex.
+    const apexRest = { ...apex };
+    const blogRest = { ...blog };
+    delete apexRest['script-src'];
+    delete blogRest['script-src'];
+    expect(blogRest).toEqual(apexRest);
+  });
 });
 
 describe('trustedTypesDirective', () => {
@@ -49,6 +62,12 @@ describe('cspHeader', () => {
     expect(header).toContain("default-src 'self'");
     expect(header).toContain("require-trusted-types-for 'script'");
     expect(header).toContain('trusted-types app dompurify default goog#html');
+  });
+
+  it('blog prod keeps Trusted Types enforced alongside inline scripts', () => {
+    const header = cspHeader({ mode: 'prod', app: 'blog' });
+    expect(header).toContain("script-src 'self' https://www.google.com https://www.gstatic.com 'unsafe-inline'");
+    expect(header).toContain("require-trusted-types-for 'script'");
   });
 
   it('dev omits Trusted Types (shipped separately as report-only) and adds HMR', () => {
