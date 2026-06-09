@@ -85,6 +85,13 @@ a:hover {
   margin-bottom: 2.5rem;
 }
 
+.post-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+}
+
 .post header time {
   margin-top: 0.6rem;
 }

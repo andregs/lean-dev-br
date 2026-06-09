@@ -1,16 +1,26 @@
 'use client';
 import '@uiw/react-md-editor/markdown-editor.css';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { PageHeading } from '../PageHeading';
 import { proofread, suggestTags, summarize } from '../../lib/chrome-ai';
 import styles from './Editor.module.scss';
 
+function slugFromFilename(filename: string): string {
+  return filename.replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/\.md$/, '');
+}
+
 // MDEditor touches the DOM on import — load it client-only.
 const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false });
 
 function nowLocalDatetime(): string {
-  const d = new Date();
+  return isoToLocalInput(new Date().toISOString());
+}
+
+// ISO instant → the `YYYY-MM-DDTHH:mm` shape a datetime-local input expects.
+function isoToLocalInput(iso: string): string {
+  const d = new Date(iso);
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
   return d.toISOString().slice(0, 16);
 }
@@ -33,6 +43,17 @@ function useColorScheme(): 'light' | 'dark' {
   return scheme;
 }
 
+interface LoadedPost {
+  filename?: string;
+  title?: string;
+  date?: string;
+  tags?: string[];
+  description?: string;
+  draft?: boolean;
+  body?: string;
+  error?: string;
+}
+
 export function Editor() {
   const [title, setTitle] = useState('');
   const [dateLocal, setDateLocal] = useState(nowLocalDatetime());
@@ -41,6 +62,7 @@ export function Editor() {
   const [draft, setDraft] = useState(true);
   const [body, setBody] = useState('');
   const [savedFilename, setSavedFilename] = useState<string | null>(null);
+  const [heading, setHeading] = useState('New post');
   const [status, setStatus] = useState('');
   const [tone, setTone] = useState<'info' | 'ok' | 'error'>('info');
   const [busy, setBusy] = useState(false);
@@ -50,6 +72,34 @@ export function Editor() {
     setStatus(message);
     setTone(statusTone);
   }
+
+  // Edit mode: ?slug=… loads the existing post's raw fields.
+  useEffect(() => {
+    const slug = new URLSearchParams(window.location.search).get('slug');
+    if (!slug) return;
+    setHeading('Edit post');
+    void (async () => {
+      try {
+        const res = await fetch('/blog/api/draft/load/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug }),
+        });
+        const data = (await res.json()) as LoadedPost;
+        if (!res.ok) throw new Error(data.error ?? 'load failed');
+        setTitle(data.title ?? '');
+        if (data.date) setDateLocal(isoToLocalInput(data.date));
+        setTags((data.tags ?? []).join(', '));
+        setDescription(data.description ?? '');
+        setDraft(data.draft ?? false);
+        setBody(data.body ?? '');
+        setSavedFilename(data.filename ?? null);
+        report(`Editing ${data.filename ?? slug}.`, 'info');
+      } catch (err) {
+        report(err instanceof Error ? err.message : String(err), 'error');
+      }
+    })();
+  }, []);
 
   async function runAi(label: string, fn: () => Promise<void>) {
     setBusy(true);
@@ -97,7 +147,7 @@ export function Editor() {
 
   return (
     <div className={styles.admin}>
-      <PageHeading>New post</PageHeading>
+      <PageHeading>{heading}</PageHeading>
 
       <div className={styles.field}>
         <label className={styles.label} htmlFor="title">
@@ -244,6 +294,11 @@ export function Editor() {
         >
           {status}
         </span>
+        {savedFilename && (
+          <Link className={styles.viewLink} href={`/${slugFromFilename(savedFilename)}/`}>
+            View post →
+          </Link>
+        )}
       </div>
     </div>
   );

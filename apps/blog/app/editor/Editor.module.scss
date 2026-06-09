@@ -148,3 +148,10 @@
 .statusError {
   color: var(--danger);
 }
+
+.viewLink {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}

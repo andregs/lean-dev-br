@@ -1,0 +1,111 @@
+// Floating dev controls: glass circular buttons fixed bottom-right, echoing the
+// nav's blurred surface. Class-based only; can't collide with content.
+// Top-right, aligned to the content column's right edge — within thumb/cursor
+// reach of the text on wide screens, clamped to the viewport on narrow ones.
+.fabStack {
+  position: fixed;
+  top: clamp(5.5rem, 14vh, 8rem);
+  // Sit in the right gutter, ~1rem beyond the content hairline (stack is ~3.5rem
+  // wide); clamp to the viewport edge on narrow screens.
+  right: max(1rem, calc(50% - var(--content-width) / 2 - 4.5rem));
+  z-index: var(--z-nav);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.fab {
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--fg);
+  background: var(--nav-bg);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--nav-border);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    transform var(--duration-fast),
+    border-color var(--duration-fast),
+    box-shadow var(--duration-fast);
+  animation: fab-in var(--duration-base) ease both;
+}
+
+.fab:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+// All FABs animate the same way on hover/focus: lift + accent border. Delete
+// overrides the border to danger (below) so the behaviour stays consistent.
+.fab:hover,
+.fab:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
+  text-decoration: none; // override the global a:hover underline
+}
+
+.fab:active {
+  transform: translateY(0);
+}
+
+// Dark mode: a near-black drop shadow is invisible on the dark bg, so elevation
+// comes from a soft *light* halo instead.
+@media (prefers-color-scheme: dark) {
+  .fab {
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 8px 28px rgba(220, 228, 240, 0.1);
+  }
+
+  .fab:hover,
+  .fab:focus-visible {
+    box-shadow: 0 14px 36px rgba(220, 228, 240, 0.32);
+  }
+}
+
+.fab:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+// Primary new-post action: accent-filled, slightly larger.
+.primary {
+  width: 3.5rem;
+  height: 3.5rem;
+  font-size: 1.7rem;
+  color: var(--bg);
+  background: var(--accent);
+  border-color: transparent;
+}
+
+.danger:hover,
+.danger:focus-visible {
+  border-color: var(--danger);
+}
+
+.error {
+  max-width: 14rem;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--danger);
+}
+
+@keyframes fab-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

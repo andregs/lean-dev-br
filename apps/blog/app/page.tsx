@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { PageHeading } from './PageHeading';
 import { formatDate } from '../lib/format';
@@ -9,10 +10,17 @@ export const metadata: Metadata = {
   description: BLOG_DESCRIPTION,
 };
 
+// Dev-only "+ New post"; the dead branch drops it from the production bundle.
+const NewPostLink =
+  process.env.NODE_ENV === 'production'
+    ? () => null
+    : dynamic(() => import('./dev/NewPostLink').then((m) => m.NewPostLink));
+
 export default function BlogIndex() {
   return (
     <>
       <PageHeading>Blog</PageHeading>
+      <NewPostLink />
       <ul className="post-list">
         {allPosts.map((post) => (
           <li key={post.slug}>

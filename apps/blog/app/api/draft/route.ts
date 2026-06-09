@@ -1,6 +1,7 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { draftFilename, renderDraft, type DraftInput } from '../../../lib/draft';
+import { filenameForSlug, postsDir } from '../../../lib/posts-fs';
 
 interface DraftRequest extends Partial<DraftInput> {
   // Filename from a previous save in this session; lets a re-save update the
@@ -12,13 +13,17 @@ interface DraftRequest extends Partial<DraftInput> {
 // client-supplied previousFilename can't traverse out of content/posts/.
 const DRAFT_FILENAME = /^\d{4}-\d{2}-\d{2}-[a-z0-9-]+\.md$/;
 
-// Dev-only: writes/updates a markdown file under content/posts/. POST route
-// handlers are omitted from `output: export`, so this never ships to production —
-// the NODE_ENV guard is belt-and-suspenders.
+// These handlers mutate the working tree; they exist only for `next dev`. Non-GET
+// methods are dropped from `output: export`, and they 404 in production anyway —
+// the editor that calls them is dev-only too.
+function blockInProduction(): Response | null {
+  return process.env.NODE_ENV === 'production' ? new Response('Not found', { status: 404 }) : null;
+}
+
+// Save (create or update) a post.
 export async function POST(request: Request): Promise<Response> {
-  if (process.env.NODE_ENV === 'production') {
-    return new Response('Not found', { status: 404 });
-  }
+  const blocked = blockInProduction();
+  if (blocked) return blocked;
 
   const input = (await request.json()) as DraftRequest;
   if (!input.title || !input.date || !input.body) {
@@ -34,7 +39,7 @@ export async function POST(request: Request): Promise<Response> {
     draft: input.draft ?? false,
   };
 
-  const dir = path.join(process.cwd(), 'content', 'posts');
+  const dir = postsDir();
   const filename = draftFilename(draft.date, draft.title);
   await mkdir(dir, { recursive: true });
   await writeFile(path.join(dir, filename), renderDraft(draft), 'utf8');
@@ -47,5 +52,21 @@ export async function POST(request: Request): Promise<Response> {
     await rm(path.join(dir, input.previousFilename), { force: true });
   }
 
+  return Response.json({ ok: true, filename });
+}
+
+// Delete a post by ?slug. No confirmation by design — `git` is the undo.
+export async function DELETE(request: Request): Promise<Response> {
+  const blocked = blockInProduction();
+  if (blocked) return blocked;
+
+  const slug = new URL(request.url).searchParams.get('slug');
+  if (!slug) return Response.json({ error: 'slug required' }, { status: 400 });
+
+  const filename = await filenameForSlug(slug);
+  if (!filename || !DRAFT_FILENAME.test(filename)) {
+    return Response.json({ error: 'not found' }, { status: 404 });
+  }
+  await rm(path.join(postsDir(), filename), { force: true });
   return Response.json({ ok: true, filename });
 }
