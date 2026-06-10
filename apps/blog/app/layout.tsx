@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { BLOG_DESCRIPTION, BLOG_TITLE, blogUrl, SITE_NAME, SITE_URL } from '../lib/site';
-import './global.scss';
+import { RumBoot } from './RumBoot';
 import { TrustedTypesBoot } from './TrustedTypesBoot';
+import { BLOG_DESCRIPTION, BLOG_TITLE, blogUrl, SITE_NAME } from '../lib/site';
+import './global.scss';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  // Include /blog so basePath-relative metadata assets (the file-based
+  // opengraph-image) resolve under /blog in the static export.
+  metadataBase: new URL(blogUrl('/')),
   title: { default: BLOG_TITLE, template: `%s — ${SITE_NAME}` },
   description: BLOG_DESCRIPTION,
   alternates: {
@@ -19,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <TrustedTypesBoot />
+        <RumBoot />
         <nav className="site-nav">
           <div className="nav-inner">
             {/* Logo → apex homepage at `/`; a raw anchor bypasses the basePath

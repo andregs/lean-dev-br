@@ -21,6 +21,17 @@
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
 
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/.next": true,
+    "**/.velite": true,
+    "apps/blog/out": true,
+    "**/*.tsbuildinfo": true,
+    "apps/**/dist": true
+  },
+
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
