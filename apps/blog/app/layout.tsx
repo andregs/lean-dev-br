@@ -46,7 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="site-footer">
           <div className="footer-inner">
             <span>25.43°S 49.27°W</span>
-            <a href="https://github.com/andregs/lean-dev-br" target="_blank" rel="noopener">
+            <a className="footer-link" href="https://github.com/andregs/lean-dev-br" target="_blank" rel="noopener">
               GitHub
             </a>
           </div>

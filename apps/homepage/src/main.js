@@ -39,6 +39,7 @@ function onClick(event) {
 
   const url = new URL(href, window.location.href);
   if (url.origin !== window.location.origin) return;
+  if (!(url.pathname in routes)) return;
 
   event.preventDefault();
   if (url.pathname !== window.location.pathname) {

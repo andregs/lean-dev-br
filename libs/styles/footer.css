@@ -19,3 +19,14 @@
   letter-spacing: var(--tracking-base);
   color: var(--muted);
 }
+
+.footer-link {
+  text-decoration: none;
+  color: var(--muted);
+  transition: color var(--duration-fast);
+}
+
+.footer-link:hover,
+.footer-link:focus-visible {
+  color: var(--fg);
+}
