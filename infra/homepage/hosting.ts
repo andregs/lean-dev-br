@@ -218,14 +218,16 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
         ],
       },
       {
-        // Blog HTML pages — cached; deploy must invalidate /blog/*.
+        // Blog HTML pages — not cached; always fetched fresh from S3. No invalidation needed
+        // on deploy. (_next assets use CACHING_OPTIMIZED via the /blog/_next/* behavior above;
+        // they're content-addressed so they never go stale.)
         // Edge fn strips /blog prefix + rewrites trailing-slash paths to index.html.
         pathPattern: '/blog/*',
         targetOriginId: 'blog-s3',
         viewerProtocolPolicy: 'redirect-to-https',
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
-        cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
+        cachePolicyId: CACHING_DISABLED_POLICY_ID,
         responseHeadersPolicyId: blogResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
