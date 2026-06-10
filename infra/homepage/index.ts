@@ -1,26 +1,29 @@
-import * as aws from "@pulumi/aws";
-import * as pulumi from "@pulumi/pulumi";
-import { createEmail } from "./email";
-import { createApi } from "./api";
-import { createHosting } from "./hosting";
-import { createObservability } from "./observability";
+import * as aws from '@pulumi/aws';
+import * as pulumi from '@pulumi/pulumi';
+import { createApi } from './api';
+import { createEmail } from './email';
+import { createHosting } from './hosting';
+import { createObservability } from './observability';
 
 const config = new pulumi.Config();
-const domain = config.require("domain");
-const notifyEmail = config.requireSecret("notifyEmail");
-const recaptchaSecret = config.requireSecret("recaptchaSecret");
+const domain = config.require('domain');
+const notifyEmail = config.requireSecret('notifyEmail');
+const recaptchaSecret = config.requireSecret('recaptchaSecret');
 
 // CSP-report endpoint guardrails (server-side). Single source of truth is the
 // stack config (see Pulumi.<stack>.yaml) — required, no in-code defaults.
-const cspReportRateLimit = config.requireNumber("cspReportRateLimit");
-const cspReportBurstLimit = config.requireNumber("cspReportBurstLimit");
-const cspReportMaxBytes = config.requireNumber("cspReportMaxBytes");
+const cspReportRateLimit = config.requireNumber('cspReportRateLimit');
+const cspReportBurstLimit = config.requireNumber('cspReportBurstLimit');
+const cspReportMaxBytes = config.requireNumber('cspReportMaxBytes');
 
 // reCAPTCHA verification tunables — tweaked occasionally, so externalized.
-const recaptchaMinScore = config.requireNumber("recaptchaMinScore");
-const recaptchaAction = config.require("recaptchaAction");
+const recaptchaMinScore = config.requireNumber('recaptchaMinScore');
+const recaptchaAction = config.require('recaptchaAction');
 
-const zone = new aws.route53.Zone("zone", { name: domain });
+// ACK disabled while SES is in sandbox. Flip to true after SES production access is granted.
+const sendAck = config.requireBoolean('sendAck');
+
+const zone = new aws.route53.Zone('zone', { name: domain });
 
 createEmail({ zone, domain });
 
@@ -33,6 +36,7 @@ const { apiEndpoint, executeApiDomain } = createApi({
   cspReportMaxBytes,
   recaptchaMinScore,
   recaptchaAction,
+  sendAck,
 });
 
 const { bucketName, distributionId, distributionDomain } = createHosting({
@@ -43,7 +47,13 @@ const { bucketName, distributionId, distributionDomain } = createHosting({
 
 const { identityPoolId, appMonitorId } = createObservability({ domain });
 
-export { bucketName, distributionId, distributionDomain, apiEndpoint };
-export { identityPoolId, appMonitorId };
+export {
+  apiEndpoint,
+  appMonitorId,
+  bucketName,
+  distributionDomain,
+  distributionId,
+  identityPoolId,
+};
 export const nameservers = zone.nameServers;
 export const sesDomainIdentity = domain;

@@ -10,6 +10,7 @@ interface ApiArgs {
   cspReportMaxBytes: number;
   recaptchaMinScore: number;
   recaptchaAction: string;
+  sendAck: boolean;
 }
 
 export function createApi({
@@ -21,6 +22,7 @@ export function createApi({
   cspReportMaxBytes,
   recaptchaMinScore,
   recaptchaAction,
+  sendAck,
 }: ApiArgs) {
   const lambdaRole = new aws.iam.Role('lambda-role', {
     assumeRolePolicy: JSON.stringify({
@@ -80,6 +82,7 @@ export function createApi({
         SUBJECT_PREFIX: '[Contact]',
         MIN_SCORE: String(recaptchaMinScore),
         CSP_REPORT_MAX_BYTES: String(cspReportMaxBytes),
+        SEND_ACK: sendAck ? 'true' : 'false',
       },
     },
   });

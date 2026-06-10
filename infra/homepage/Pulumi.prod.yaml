@@ -8,6 +8,8 @@ config:
   # reCAPTCHA v3 verification (lower minScore to reduce flaky low-score rejects)
   lean-dev-br-homepage:recaptchaMinScore: '0.3'
   lean-dev-br-homepage:recaptchaAction: contact
+  # Visitor ACK email — disabled while SES is in sandbox. Enable after production access is granted.
+  lean-dev-br-homepage:sendAck: 'false'
   # Set secrets via CLI — never commit plaintext values:
   #   pulumi config set --secret notifyEmail <your-email>
   #   pulumi config set --secret recaptchaSecret <secret-key>

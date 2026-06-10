@@ -105,7 +105,9 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
     return json(502, { error: 'Failed to send message' });
   }
 
-  if (visitorEmail) {
+  // ACK disabled while SES is in sandbox (requires production access to send to unverified addresses).
+  // Enable via Pulumi config: `pulumi config set sendAck true`
+  if (visitorEmail && process.env.SEND_ACK === 'true') {
     const ackBody = [
       'Thanks for reaching out!',
       '',
