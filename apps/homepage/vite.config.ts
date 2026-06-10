@@ -15,7 +15,13 @@ const previewHeaders = {
 export default defineConfig({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/homepage',
-  server: { headers: serveHeaders },
+  server: {
+    headers: serveHeaders,
+    // Proxy /blog/* to Next dev server so both apps share one origin during development.
+    proxy: {
+      '/blog': { target: 'http://localhost:3001', changeOrigin: true, ws: true },
+    },
+  },
   preview: { headers: previewHeaders },
   build: {
     outDir: 'dist',

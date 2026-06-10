@@ -5,6 +5,21 @@
   "sourceRoot": "apps/homepage/src",
   "tags": ["scope:homepage", "type:app"],
   "targets": {
+    "dev-proxy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": true,
+        "commands": ["pnpm nx run homepage:dev", "pnpm nx run blog:dev"]
+      }
+    },
+    "preview-all": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build", { "projects": ["blog"], "target": "postbuild" }],
+      "options": {
+        "cwd": "apps/homepage",
+        "command": "node tools/preview.mjs"
+      }
+    },
     "typecheck": {
       "command": "tsc -p tsconfig.json",
       "options": { "cwd": "apps/homepage" },
