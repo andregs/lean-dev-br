@@ -4,6 +4,7 @@ import './observer.js';
 import './styles/main.css';
 import { renderHome } from './views/home.js';
 import { renderContact } from './views/contact.js';
+import { renderNotFound } from './views/not-found.js';
 
 /**
  * Tiny History-API view swapper — no router library. Each route renders into
@@ -23,7 +24,7 @@ function render() {
   // The reCAPTCHA badge is injected onto document.body and survives view swaps;
   // CSS gates its visibility to the contact route via this class.
   document.body.classList.toggle('route-contact', path === '/contact');
-  const view = routes[path] ?? renderHome;
+  const view = routes[path] ?? renderNotFound;
   view(app);
 }
 
