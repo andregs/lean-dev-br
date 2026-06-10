@@ -1,7 +1,8 @@
-import './global.scss';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BLOG_DESCRIPTION, BLOG_TITLE, blogUrl, SITE_NAME, SITE_URL } from '../lib/site';
+import './global.scss';
+import { TrustedTypesBoot } from './TrustedTypesBoot';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
+        <TrustedTypesBoot />
         <nav className="site-nav">
           <div className="nav-inner">
             {/* Logo → apex homepage at `/`; a raw anchor bypasses the basePath

@@ -36,6 +36,14 @@
       "options": {
         "configFile": "apps/blog/vite.config.ts"
       }
+    },
+    "preview": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "cwd": "apps/blog",
+        "command": "node tools/preview.mjs"
+      }
     }
   }
 }

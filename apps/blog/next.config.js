@@ -1,6 +1,7 @@
 //@ts-check
 
 const { composePlugins, withNx } = require('@nx/next');
+const { cspHeader } = require('@lean-dev-br/csp');
 
 /**
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
@@ -14,6 +15,18 @@ const nextConfig = {
   basePath: '/blog',
   trailingSlash: true,
   images: { unoptimized: true },
+  // Dev-server CSP parity: serve the blog CSP so non-TT policy regressions surface
+  // locally. No Trusted Types in dev — Next's HMR/overlay script injectors aren't
+  // TT-clean (noise); the blog's TT is enforced in prod only (CloudFront), verified
+  // via the prod preview harness (`nx preview blog`). Ignored by `output: export`.
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [{ key: 'Content-Security-Policy', value: cspHeader({ mode: 'dev', app: 'blog' }) }],
+      },
+    ];
+  },
 };
 
 const plugins = [

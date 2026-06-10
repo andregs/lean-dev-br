@@ -5,7 +5,7 @@
 // Authored as plain CommonJS with no build step so it resolves identically under
 // Pulumi (ts-node) and Vite (esbuild) without tsconfig path or ESM/CJS gymnastics.
 
-const TRUSTED_TYPES_POLICIES = ['app', 'dompurify', 'default', 'goog#html'];
+const TRUSTED_TYPES_POLICIES = ['app', 'dompurify', 'default', 'goog#html', 'nextjs'];
 
 /**
  * CSP directives as data. Prod is the canonical baseline; dev layers on the

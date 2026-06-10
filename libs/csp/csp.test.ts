@@ -64,10 +64,12 @@ describe('cspHeader', () => {
     expect(header).toContain('trusted-types app dompurify default goog#html');
   });
 
-  it('blog prod keeps Trusted Types enforced alongside inline scripts', () => {
+  it('blog prod allows inline scripts and enforces TT with the nextjs policy allowlisted', () => {
     const header = cspHeader({ mode: 'prod', app: 'blog' });
     expect(header).toContain("script-src 'self' https://www.google.com https://www.gstatic.com 'unsafe-inline'");
     expect(header).toContain("require-trusted-types-for 'script'");
+    // Next's own pass-through policy must be allowed (it drives chunk loading).
+    expect(header).toContain('nextjs');
   });
 
   it('dev omits Trusted Types (shipped separately as report-only) and adds HMR', () => {

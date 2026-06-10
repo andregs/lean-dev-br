@@ -52,9 +52,18 @@ export function setHTML(el, html) {
  * Register the `app` + strict `default` Trusted Types policies. Returns the named
  * `app` policy, used explicitly by first-party code so legitimate usage never
  * trips the default policy's tech-debt warning.
- * @param {{ scriptUrlAllowlist?: readonly string[] }} [opts]
+ * `defaultPolicy`:
+ *   - `'strict'` (apex): the default policy sanitizes HTML (DOMPurify), allowlists
+ *     script URLs, and refuses string->script — a real safety net.
+ *   - `'framework'` (Next/React blog): the default policy's createHTML/createScript
+ *     pass through. React 19's RSC client materializes `<script>` nodes via
+ *     `div.innerHTML = "<script></script>"`, so a sanitizing default would strip it
+ *     and crash. HTML is therefore NOT sanitized by the default — only acceptable
+ *     when the page renders first-party content. Script URLs stay allowlisted.
+ *
+ * @param {{ scriptUrlAllowlist?: readonly string[], defaultPolicy?: 'strict' | 'framework' }} [opts]
  */
-export function installPolicies({ scriptUrlAllowlist = [] } = {}) {
+export function installPolicies({ scriptUrlAllowlist = [], defaultPolicy = 'strict' } = {}) {
   ensureTinyfill();
   const tt = /** @type {NonNullable<Window['trustedTypes']>} */ (window.trustedTypes);
   const assertAllowedScriptURL = makeScriptUrlAsserter(scriptUrlAllowlist);
@@ -63,22 +72,30 @@ export function installPolicies({ scriptUrlAllowlist = [] } = {}) {
     createScriptURL: assertAllowedScriptURL,
   });
 
-  // Safety net for third-party code that hands a string to a script sink. It
-  // still sanitizes HTML and allowlists script URLs — not a passthrough — and
-  // warns so first-party callers relying on the implicit default get migrated.
-  tt.createPolicy('default', {
-    createHTML: (/** @type {string} */ s) => {
-      console.warn('TT default createHTML used — migrate caller to an explicit policy. value:', s);
-      return /** @type {any} */ (DOMPurify.sanitize(s, { RETURN_TRUSTED_TYPE: true }));
-    },
-    createScriptURL: (/** @type {string} */ s) => {
-      console.debug('TT default createScriptURL (allowlisted third-party):', s);
-      return assertAllowedScriptURL(s);
-    },
-    createScript: () => {
-      throw new TypeError('TT default createScript blocked — no string-to-script coercion');
-    },
-  });
+  if (defaultPolicy === 'framework') {
+    tt.createPolicy('default', {
+      createHTML: (/** @type {string} */ s) => s,
+      createScript: (/** @type {string} */ s) => s,
+      createScriptURL: assertAllowedScriptURL,
+    });
+  } else {
+    // Safety net for third-party code that hands a string to a script sink. It
+    // still sanitizes HTML and allowlists script URLs — not a passthrough — and
+    // warns so first-party callers relying on the implicit default get migrated.
+    tt.createPolicy('default', {
+      createHTML: (/** @type {string} */ s) => {
+        console.warn('TT default createHTML used — migrate caller to an explicit policy. value:', s);
+        return /** @type {any} */ (DOMPurify.sanitize(s, { RETURN_TRUSTED_TYPE: true }));
+      },
+      createScriptURL: (/** @type {string} */ s) => {
+        console.debug('TT default createScriptURL (allowlisted third-party):', s);
+        return assertAllowedScriptURL(s);
+      },
+      createScript: () => {
+        throw new TypeError('TT default createScript blocked — no string-to-script coercion');
+      },
+    });
+  }
 
   return app;
 }

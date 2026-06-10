@@ -70,4 +70,17 @@ describe('@lean-dev-br/trusted-types', () => {
     expect(assert('https://cdn.example.com/a')).toBe('https://cdn.example.com/a');
     expect(() => assert('https://x.com/a')).toThrow(TypeError);
   });
+
+  describe("defaultPolicy: 'framework'", () => {
+    it('passes HTML and scripts through (React RSC compatibility) but still allowlists script URLs', () => {
+      installPolicies({ scriptUrlAllowlist: ALLOW, defaultPolicy: 'framework' });
+      const def = policies.get('default');
+      // createHTML must not strip — React materializes <script> via innerHTML.
+      expect(def?.createHTML?.('<script></script>')).toBe('<script></script>');
+      expect(def?.createScript?.('x=1')).toBe('x=1');
+      // script URLs stay gated.
+      expect(def?.createScriptURL?.('https://cdn.example.com/x.js')).toBe('https://cdn.example.com/x.js');
+      expect(() => def?.createScriptURL?.('https://evil.com/x.js')).toThrow(TypeError);
+    });
+  });
 });
