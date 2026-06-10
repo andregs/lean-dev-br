@@ -40,11 +40,21 @@ The SDK uses Cognito's enhanced (simplified) flow, so no guest role ARN is neede
 
 The frontend embeds these at build time. Add under **Settings → Secrets and variables → Actions → Variables**. They are public identifiers, so variables (not secrets) are correct.
 
-| Variable name | Source |
-|---|---|
-| `VITE_RUM_APP_MONITOR_ID` | `pulumi stack output appMonitorId` |
-| `VITE_RUM_IDENTITY_POOL_ID` | `pulumi stack output identityPoolId` |
-| `VITE_RUM_SESSION_SAMPLE_RATE` | Sampling fraction `0.0`–`1.0` (start at `0.1`) |
+| Variable name | Source | Used by |
+|---|---|---|
+| `VITE_RUM_APP_MONITOR_ID` | `pulumi stack output appMonitorId` | apex homepage |
+| `VITE_RUM_IDENTITY_POOL_ID` | `pulumi stack output identityPoolId` | apex homepage |
+| `VITE_RUM_SESSION_SAMPLE_RATE` | Sampling fraction `0.0`–`1.0` (start at `0.1`) | apex homepage |
+
+The blog (`apps/blog`) uses the same RUM monitor under `NEXT_PUBLIC_RUM_*` names (Next.js
+requires the `NEXT_PUBLIC_` prefix to inline env vars at build time). The deploy workflow maps
+the existing GitHub vars to the blog's expected names — no new variables are needed:
+
+```yaml
+NEXT_PUBLIC_RUM_APP_MONITOR_ID: ${{ vars.VITE_RUM_APP_MONITOR_ID }}
+NEXT_PUBLIC_RUM_IDENTITY_POOL_ID: ${{ vars.VITE_RUM_IDENTITY_POOL_ID }}
+NEXT_PUBLIC_RUM_SESSION_SAMPLE_RATE: ${{ vars.VITE_RUM_SESSION_SAMPLE_RATE }}
+```
 
 If any RUM variable is missing the SDK logs a warning and skips init — the site keeps working. The CSP-report endpoint is independent and needs no client config.
 

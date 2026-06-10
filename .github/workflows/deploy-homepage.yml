@@ -27,6 +27,12 @@ jobs:
           VITE_RUM_IDENTITY_POOL_ID: ${{ vars.VITE_RUM_IDENTITY_POOL_ID }}
           VITE_RUM_SESSION_SAMPLE_RATE: ${{ vars.VITE_RUM_SESSION_SAMPLE_RATE }}
 
+      - run: pnpm nx run blog:postbuild --skip-nx-cache
+        env:
+          NEXT_PUBLIC_RUM_APP_MONITOR_ID: ${{ vars.VITE_RUM_APP_MONITOR_ID }}
+          NEXT_PUBLIC_RUM_IDENTITY_POOL_ID: ${{ vars.VITE_RUM_IDENTITY_POOL_ID }}
+          NEXT_PUBLIC_RUM_SESSION_SAMPLE_RATE: ${{ vars.VITE_RUM_SESSION_SAMPLE_RATE }}
+
       - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -38,5 +44,12 @@ jobs:
           command: up
           stack-name: prod
           work-dir: infra/homepage
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+      - name: Invalidate blog CloudFront cache
+        run: |
+          DIST_ID=$(cd infra/homepage && pulumi stack output distributionId --stack prod)
+          aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/blog/*"
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
