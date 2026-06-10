@@ -35,7 +35,6 @@ function resolveFile(urlPath) {
   if (!urlPath.startsWith('/blog/')) return null;
   let file = path.join(OUT, urlPath.slice('/blog/'.length));
   if (urlPath.endsWith('/')) file = path.join(file, 'index.html');
-  else if (!path.extname(file)) file = `${file}.html`;
   return path.normalize(file);
 }
 
@@ -51,16 +50,29 @@ http
         res.end('not found');
         return;
       }
+      // Try the exact path first (covers extensionless Next assets like
+      // opengraph-image), then fall back to appending .html for HTML pages.
+      let resolved = file;
+      let data;
       try {
-        const data = await readFile(file);
-        const type = TYPES[path.extname(file)] ?? 'application/octet-stream';
-        res.writeHead(200, { ...base, 'Content-Type': type });
-        res.end(data);
+        data = await readFile(resolved);
       } catch {
-        const notFound = await readFile(path.join(OUT, '404.html')).catch(() => 'not found');
-        res.writeHead(404, { ...base, 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(notFound);
+        resolved = `${file}.html`;
+        try {
+          data = await readFile(resolved);
+        } catch {
+          const notFound = await readFile(path.join(OUT, '404.html')).catch(() => 'not found');
+          res.writeHead(404, { ...base, 'Content-Type': 'text/html; charset=utf-8' });
+          res.end(notFound);
+          return;
+        }
       }
+      // Extensionless Next image routes (e.g. opengraph-image) have no file ext;
+      // fall back to png since those are always ImageResponse outputs.
+      const ext = path.extname(resolved);
+      const type = TYPES[ext] ?? (ext === '' ? 'image/png' : 'application/octet-stream');
+      res.writeHead(200, { ...base, 'Content-Type': type });
+      res.end(data);
     })();
   })
   .listen(PORT, () => {
