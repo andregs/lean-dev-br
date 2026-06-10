@@ -78,8 +78,33 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
     rule: { objectOwnership: 'BucketOwnerPreferred' },
   });
 
+  const blogBucket = new aws.s3.BucketV2('blog-bucket', {
+    bucket: 'lean-dev-br-blog',
+    forceDestroy: true,
+  });
+
+  new aws.s3.BucketPublicAccessBlock('blog-bucket-public-access-block', {
+    bucket: blogBucket.id,
+    blockPublicAcls: true,
+    blockPublicPolicy: true,
+    ignorePublicAcls: true,
+    restrictPublicBuckets: true,
+  });
+
+  const blogBucketOwnership = new aws.s3.BucketOwnershipControls('blog-bucket-ownership', {
+    bucket: blogBucket.id,
+    rule: { objectOwnership: 'BucketOwnerPreferred' },
+  });
+
   const oac = new aws.cloudfront.OriginAccessControl('oac', {
     name: 'lean-dev-br-homepage-oac',
+    originAccessControlOriginType: 's3',
+    signingBehavior: 'always',
+    signingProtocol: 'sigv4',
+  });
+
+  const blogOac = new aws.cloudfront.OriginAccessControl('blog-oac', {
+    name: 'lean-dev-br-blog-oac',
     originAccessControlOriginType: 's3',
     signingBehavior: 'always',
     signingProtocol: 'sigv4',
@@ -119,6 +144,34 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
     },
   );
 
+  // Separate policy for /blog/* — same security headers but blog CSP:
+  // adds 'unsafe-inline' to script-src (Next inline hydration), keeps Trusted Types.
+  const blogResponseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(
+    'blog-response-headers-policy',
+    {
+      name: 'lean-dev-br-blog-security-headers',
+      securityHeadersConfig: {
+        contentTypeOptions: { override: true },
+        frameOptions: { frameOption: 'DENY', override: true },
+        xssProtection: { protection: true, modeBlock: true, override: true },
+        referrerPolicy: {
+          referrerPolicy: 'strict-origin-when-cross-origin',
+          override: true,
+        },
+        strictTransportSecurity: {
+          accessControlMaxAgeSec: 31536000,
+          includeSubdomains: true,
+          preload: true,
+          override: true,
+        },
+        contentSecurityPolicy: {
+          contentSecurityPolicy: cspHeader({ mode: 'prod', app: 'blog' }),
+          override: true,
+        },
+      },
+    },
+  );
+
   const distribution = new aws.cloudfront.Distribution('distribution', {
     enabled: true,
     defaultRootObject: 'index.html',
@@ -128,6 +181,11 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
         originId: 's3',
         domainName: bucket.bucketRegionalDomainName,
         originAccessControlId: oac.id,
+      },
+      {
+        originId: 'blog-s3',
+        domainName: blogBucket.bucketRegionalDomainName,
+        originAccessControlId: blogOac.id,
       },
       {
         originId: 'api',
@@ -141,6 +199,42 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
       },
     ],
     orderedCacheBehaviors: [
+      {
+        // _next assets are content-addressed — cache forever, no invalidation needed.
+        // Edge fn strips /blog prefix so the path resolves in the dedicated blog bucket.
+        pathPattern: '/blog/_next/*',
+        targetOriginId: 'blog-s3',
+        viewerProtocolPolicy: 'redirect-to-https',
+        allowedMethods: ['GET', 'HEAD'],
+        cachedMethods: ['GET', 'HEAD'],
+        cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
+        responseHeadersPolicyId: blogResponseHeadersPolicy.id,
+        compress: true,
+        functionAssociations: [
+          {
+            eventType: 'viewer-request',
+            functionArn: edgeFn.arn,
+          },
+        ],
+      },
+      {
+        // Blog HTML pages — cached; deploy must invalidate /blog/*.
+        // Edge fn strips /blog prefix + rewrites trailing-slash paths to index.html.
+        pathPattern: '/blog/*',
+        targetOriginId: 'blog-s3',
+        viewerProtocolPolicy: 'redirect-to-https',
+        allowedMethods: ['GET', 'HEAD'],
+        cachedMethods: ['GET', 'HEAD'],
+        cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
+        responseHeadersPolicyId: blogResponseHeadersPolicy.id,
+        compress: true,
+        functionAssociations: [
+          {
+            eventType: 'viewer-request',
+            functionArn: edgeFn.arn,
+          },
+        ],
+      },
       {
         pathPattern: '/api/*',
         targetOriginId: 'api',
@@ -209,6 +303,27 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
     ),
   });
 
+  new aws.s3.BucketPolicy('blog-bucket-policy', {
+    bucket: blogBucket.id,
+    policy: pulumi.all([blogBucket.arn, distribution.arn]).apply(([bucketArn, distributionArn]) =>
+      JSON.stringify({
+        Version: '2012-10-17',
+        Statement: [
+          {
+            Sid: 'AllowCloudFrontServicePrincipal',
+            Effect: 'Allow',
+            Principal: { Service: 'cloudfront.amazonaws.com' },
+            Action: 's3:GetObject',
+            Resource: `${bucketArn}/*`,
+            Condition: {
+              StringEquals: { 'AWS:SourceArn': distributionArn },
+            },
+          },
+        ],
+      }),
+    ),
+  });
+
   for (const name of [domain, wwwDomain]) {
     new aws.route53.Record(`dns-${name.replace(/\./g, '-')}`, {
       name,
@@ -232,6 +347,16 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
       acl: 'private',
     },
     { dependsOn: [bucketOwnership] },
+  );
+
+  new S3BucketFolder(
+    'blog-synced-folder',
+    {
+      path: '../../apps/blog/out',
+      bucketName: blogBucket.bucket,
+      acl: 'private',
+    },
+    { dependsOn: [blogBucketOwnership] },
   );
 
   return {

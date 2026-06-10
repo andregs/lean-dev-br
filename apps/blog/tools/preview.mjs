@@ -50,8 +50,7 @@ http
         res.end('not found');
         return;
       }
-      // Try the exact path first (covers extensionless Next assets like
-      // opengraph-image), then fall back to appending .html for HTML pages.
+      // Try exact path first, fall back to appending .html (for extensionless route links).
       let resolved = file;
       let data;
       try {
@@ -67,10 +66,8 @@ http
           return;
         }
       }
-      // Extensionless Next image routes (e.g. opengraph-image) have no file ext;
-      // fall back to png since those are always ImageResponse outputs.
       const ext = path.extname(resolved);
-      const type = TYPES[ext] ?? (ext === '' ? 'image/png' : 'application/octet-stream');
+      const type = TYPES[ext] ?? 'application/octet-stream';
       res.writeHead(200, { ...base, 'Content-Type': type });
       res.end(data);
     })();

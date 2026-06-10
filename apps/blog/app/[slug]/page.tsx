@@ -41,7 +41,7 @@ export async function generateMetadata({
       tags: post.tags,
       // Explicitly carry the root opengraph-image; without this the per-page
       // openGraph object clobbers the file-based image inherited from layout.
-      images: [{ url: blogUrl('/opengraph-image') }],
+      images: [{ url: blogUrl('/opengraph-image.png') }],
     },
   };
 }

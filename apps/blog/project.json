@@ -37,9 +37,18 @@
         "configFile": "apps/blog/vite.config.ts"
       }
     },
-    "preview": {
+    "postbuild": {
       "executor": "nx:run-commands",
       "dependsOn": ["build"],
+      "options": {
+        "cwd": "apps/blog",
+        "command": "node tools/postbuild.mjs"
+      },
+      "cache": false
+    },
+    "preview": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["postbuild"],
       "options": {
         "cwd": "apps/blog",
         "command": "node tools/preview.mjs"
