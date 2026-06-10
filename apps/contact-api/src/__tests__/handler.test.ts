@@ -75,6 +75,18 @@ describe('handler', () => {
     process.env.MIN_SCORE = '0.5';
   });
 
+  it('returns 400 when body is not valid JSON', async () => {
+    const res = await handler(makeEvent('not-json'));
+    expect(res).toMatchObject({ statusCode: 400 });
+    expect(mockVerify).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 when body is not an object', async () => {
+    const res = await handler(makeEvent(null));
+    expect(res).toMatchObject({ statusCode: 400 });
+    expect(mockVerify).not.toHaveBeenCalled();
+  });
+
   it('returns 400 when message is missing', async () => {
     const res = await handler(makeEvent({ token: 'tok' }));
     expect(res).toMatchObject({ statusCode: 400 });

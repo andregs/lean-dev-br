@@ -90,3 +90,46 @@ describe('contact form', () => {
     expect(status.textContent).toMatch(/something went wrong/i);
   });
 });
+
+describe('contact form — reCAPTCHA loader failures', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+    document.body.innerHTML = '';
+  });
+
+  it('shows error when VITE_RECAPTCHA_SITE_KEY is absent', async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_RECAPTCHA_SITE_KEY', '');
+    const { initContactForm } = await import('../contact-form.js');
+    const { form, status } = makeForm();
+    initContactForm(form);
+    await new Promise<void>((r) => { queueMicrotask(r); });
+
+    form.querySelector<HTMLTextAreaElement>('[name="message"]')!.value = 'Hello!';
+    form.dispatchEvent(new SubmitEvent('submit', { bubbles: true, cancelable: true }));
+    await vi.waitFor(() => { expect(status.dataset.state).toBe('error'); });
+  });
+
+  it('shows error when the reCAPTCHA script fails to load', async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_RECAPTCHA_SITE_KEY', 'test-key');
+    vi.spyOn(document.head, 'appendChild').mockImplementation((child) => {
+      if (child instanceof HTMLScriptElement) {
+        queueMicrotask(() => child.dispatchEvent(new Event('error')));
+      }
+      return child;
+    });
+    const { initContactForm } = await import('../contact-form.js');
+    const { form, status } = makeForm();
+    initContactForm(form);
+    // Let the script error event fire and the rejection propagate.
+    await new Promise<void>((r) => { queueMicrotask(r); });
+    await Promise.resolve();
+
+    form.querySelector<HTMLTextAreaElement>('[name="message"]')!.value = 'Hello!';
+    form.dispatchEvent(new SubmitEvent('submit', { bubbles: true, cancelable: true }));
+    await vi.waitFor(() => { expect(status.dataset.state).toBe('error'); });
+  });
+});
