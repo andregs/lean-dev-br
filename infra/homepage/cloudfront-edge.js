@@ -12,10 +12,21 @@ function handler(event) {
     };
   }
 
-  // Blog routing: strip /blog prefix so requests resolve in the dedicated blog bucket.
-  // trailingSlash:true emits foo/index.html — rewrite trailing-slash paths accordingly.
-  // Extensionless paths (e.g. opengraph-image) pass through after prefix strip.
-  if (req.uri === '/blog' || req.uri === '/blog/') {
+  // /blog (no trailing slash) only reaches the default behavior — /blog/* doesn't match it.
+  // Redirect to /blog/ so the next request matches the /blog/* behavior (blog-s3 origin).
+  if (req.uri === '/blog') {
+    return {
+      statusCode: 301,
+      statusDescription: 'Moved Permanently',
+      headers: { location: { value: '/blog/' } },
+    };
+  }
+
+  // Blog routing (runs under /blog/* and /blog/_next/* behaviors, never the default):
+  // strip /blog prefix so paths resolve in the dedicated blog bucket root.
+  // trailingSlash:true emits foo/index.html; rewrite trailing-slash paths accordingly.
+  // Extensionless paths (e.g. opengraph-image.png) pass through after prefix strip.
+  if (req.uri === '/blog/') {
     req.uri = '/index.html';
     return req;
   }
