@@ -46,13 +46,3 @@ jobs:
           work-dir: infra/homepage
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-
-      - name: Invalidate stale CloudFront cache
-        run: |
-          DIST_ID=$(cd infra/homepage && pulumi stack output distributionId --stack prod)
-          # Blog HTML is now CACHING_DISABLED — no invalidation needed for future deploys.
-          # This step clears any stale entries left over from the previous CACHING_OPTIMIZED policy.
-          # Safe to remove once the old TTL has expired on all edge nodes.
-          aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*"
-        env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
