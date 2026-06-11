@@ -10,6 +10,7 @@ export function renderLabs(root) {
     root,
     `<div class="labs-inner">
       <h1>Labs</h1>
+      <hr class="rule" />
       <p class="description">Demos and experiments.</p>
       <ul class="labs-grid">
         <li class="lab-card">

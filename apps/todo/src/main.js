@@ -1,8 +1,15 @@
 // @ts-check
 import './styles.css';
+import { setHTML } from './trusted-types.js';
 
-/** @type {HTMLElement} */
 const app = /** @type {HTMLElement} */ (document.getElementById('app'));
-const h1 = document.createElement('h1');
-h1.textContent = 'Todo';
-app.appendChild(h1);
+app.className = 'todo';
+
+setHTML(
+  app,
+  `<div class="todo-inner">
+    <h1>Todo</h1>
+    <hr class="rule" />
+    <p class="description">Coming soon.</p>
+  </div>`,
+);

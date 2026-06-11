@@ -4,7 +4,23 @@
 @import '@lean-dev-br/styles/footer.css';
 
 /* ---------- todo app shell ---------- */
-#app {
+.todo {
   flex: 1;
-  padding: clamp(4rem, 12vh, 8rem) 0 3rem;
+  padding: clamp(5.5rem, 14vh, 8rem) 0 3rem;
+}
+
+.todo h1 {
+  font-size: var(--text-heading);
+}
+
+.todo-inner {
+  max-width: var(--content-width);
+  width: 100%;
+  margin: 0 auto;
+  padding-left: var(--pad-x);
+  padding-right: var(--pad-x);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.4rem;
 }
