@@ -1,3 +1,7 @@
+export interface KeyProvider {
+  resolve(): Promise<{ roomId: string; aesKey: CryptoKey }>;
+}
+
 /**
  * A single operation in the op log. Each op is encrypted individually
  * before it touches IndexedDB or the wire.
