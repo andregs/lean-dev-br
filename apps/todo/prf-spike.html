@@ -1,0 +1,236 @@
+<!doctype html>
+<!-- PRF SPIKE — throwaway, not deployed.
+     Purpose: verify WebAuthn PRF extension works via Proton Pass on your real devices.
+     Steps:
+       1. Serve this file from https (required for WebAuthn). Run:
+              npx --yes serve -s . --ssl-cert <cert> --ssl-key <key>
+          OR open via the Vite dev server after apps/todo exists:
+              pnpm nx run todo:dev   (then navigate to /todo/prf-spike.html)
+       2. Open on DEVICE A. Click "1. Register passkey". Complete the Proton Pass prompt.
+       3. Click "2. Authenticate + get PRF key". Copy the PRF bytes shown.
+       4. Open on DEVICE B (same Proton Pass account). Click step 2 only. Compare bytes.
+       PASS: same bytes on both devices → PRF works, design can proceed.
+       FAIL: null/undefined, or different bytes across devices → see fallback note below.
+
+  Fallback if PRF fails:
+     Generate a random AES-256 key at first use, wrap it with WebAuthn largeBlob extension.
+     Re-spec crypto/key-provider before building production code.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PRF Spike — lean.dev.br</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 640px;
+        margin: 2rem auto;
+        padding: 1rem;
+        background: #0c0e11;
+        color: #e8eaec;
+        line-height: 1.6;
+      }
+      h1 { font-size: 1.3rem; margin-bottom: 0.25rem; }
+      p.sub { color: #8a9099; font-size: 0.85rem; margin-top: 0; }
+      button {
+        padding: 0.6rem 1.2rem;
+        background: #3ddc84;
+        color: #000;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin: 0.5rem 0;
+        display: block;
+      }
+      button:disabled { opacity: 0.4; cursor: not-allowed; }
+      pre {
+        background: #14171c;
+        border: 1px solid #1e2229;
+        border-radius: 6px;
+        padding: 1rem;
+        font-size: 0.8rem;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-break: break-all;
+        min-height: 3rem;
+      }
+      .ok  { color: #3ddc84; }
+      .err { color: #d6453d; }
+      .dim { color: #8a9099; }
+      section { margin-bottom: 2rem; }
+    </style>
+  </head>
+  <body>
+    <h1>WebAuthn PRF Spike</h1>
+    <p class="sub">Verify PRF extension works via Proton Pass before building production code.</p>
+
+    <section>
+      <button id="btn-register">1. Register passkey (new)</button>
+      <p class="dim" style="font-size:0.8rem">Creates a new passkey for this origin with PRF requested. Do this once on Device A.</p>
+      <pre id="out-register"><span class="dim">—</span></pre>
+    </section>
+
+    <section>
+      <button id="btn-auth">2. Authenticate + get PRF key</button>
+      <p class="dim" style="font-size:0.8rem">Authenticates and requests PRF derivation with a fixed salt. Run on each device and compare the hex output — must be identical.</p>
+      <pre id="out-auth"><span class="dim">—</span></pre>
+    </section>
+
+    <section>
+      <button id="btn-clear">Clear stored credential ID</button>
+      <pre id="out-clear"><span class="dim">—</span></pre>
+    </section>
+
+    <script type="module">
+      // Fixed salt — same across all runs so PRF output is deterministic per-device.
+      // In production this is application-specific (e.g. SHA-256 of "lean.dev.br:oplog:v1").
+      const SALT_HEX = 'c0ffee00deadbeef c0ffee00deadbeef c0ffee00deadbeef c0ffee00deadbeef'.replace(/\s/g, '');
+      const SALT = hexToBytes(SALT_HEX);
+      const LS_KEY = 'prf-spike-credId';
+
+      function hexToBytes(hex) {
+        const bytes = new Uint8Array(hex.length / 2);
+        for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+        return bytes;
+      }
+
+      function bytesToHex(buf) {
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+
+      function show(id, html) {
+        document.getElementById(id).innerHTML = html;
+      }
+
+      // ── Register ─────────────────────────────────────────────────────────────
+      document.getElementById('btn-register').addEventListener('click', async () => {
+        show('out-register', '<span class="dim">Waiting for Proton Pass prompt…</span>');
+        try {
+          const challenge = crypto.getRandomValues(new Uint8Array(32));
+          const userId = crypto.getRandomValues(new Uint8Array(16));
+
+          const cred = await navigator.credentials.create({
+            publicKey: {
+              rp: { name: 'PRF Spike', id: location.hostname },
+              user: { id: userId, name: 'spike-user', displayName: 'Spike User' },
+              challenge,
+              pubKeyCredParams: [
+                { type: 'public-key', alg: -7  }, // ES256
+                { type: 'public-key', alg: -257 }, // RS256
+              ],
+              authenticatorSelection: {
+                residentKey: 'required',
+                userVerification: 'preferred',
+              },
+              extensions: {
+                prf: {},   // request PRF support; Proton Pass stores hmac_secret
+              },
+            },
+          });
+
+          const ext = cred.getClientExtensionResults();
+          const prfEnabled = ext?.prf?.enabled;
+          const credIdHex = bytesToHex(cred.rawId);
+
+          // Persist credential ID so "Authenticate" step can find it.
+          localStorage.setItem(LS_KEY, credIdHex);
+
+          const status = prfEnabled
+            ? '<span class="ok">✓ PRF enabled on creation</span>'
+            : '<span class="err">⚠ PRF not enabled on creation — extension may not support it</span>';
+
+          show('out-register', [
+            status,
+            `Credential ID (first 16 bytes): <span class="ok">${credIdHex.slice(0, 32)}…</span>`,
+            `prf.enabled: <b>${prfEnabled ?? 'undefined'}</b>`,
+            '',
+            '<span class="dim">Credential ID saved to localStorage for step 2.</span>',
+          ].join('\n'));
+        } catch (e) {
+          show('out-register', `<span class="err">Error: ${e.message}</span>`);
+        }
+      });
+
+      // ── Authenticate + PRF ───────────────────────────────────────────────────
+      document.getElementById('btn-auth').addEventListener('click', async () => {
+        show('out-auth', '<span class="dim">Waiting for Proton Pass prompt…</span>');
+        try {
+          const credIdHex = localStorage.getItem(LS_KEY);
+          const allowCredentials = credIdHex
+            ? [{ type: 'public-key', id: hexToBytes(credIdHex) }]
+            : []; // empty = discoverable credential (passkey selector)
+
+          const challenge = crypto.getRandomValues(new Uint8Array(32));
+
+          const assertion = await navigator.credentials.get({
+            publicKey: {
+              rpId: location.hostname,
+              challenge,
+              allowCredentials,
+              userVerification: 'preferred',
+              extensions: {
+                prf: {
+                  eval: { first: SALT }, // deterministic: same salt → same PRF bytes
+                },
+              },
+            },
+          });
+
+          const ext = assertion.getClientExtensionResults();
+          const prfResults = ext?.prf?.results;
+          const firstBytes = prfResults?.first;
+
+          if (!firstBytes) {
+            show('out-auth', [
+              '<span class="err">✗ PRF results.first is null/undefined.</span>',
+              '',
+              'ext.prf = ' + JSON.stringify(ext?.prf),
+              '',
+              '<span class="err">FAIL — check fallback strategy in comment at top of file.</span>',
+            ].join('\n'));
+            return;
+          }
+
+          const hex = bytesToHex(firstBytes);
+
+          // Derive a 256-bit AES-GCM key from the PRF output to confirm it's usable.
+          const rawKey = await crypto.subtle.importKey('raw', firstBytes, 'HKDF', false, ['deriveKey']);
+          const aesKey = await crypto.subtle.deriveKey(
+            { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(32), info: new TextEncoder().encode('lean.dev.br:oplog:v1') },
+            rawKey,
+            { name: 'AES-GCM', length: 256 },
+            true, // extractable for test only — production: false
+            ['encrypt', 'decrypt'],
+          );
+          const exported = await crypto.subtle.exportKey('raw', aesKey);
+          const keyHex = bytesToHex(exported);
+
+          show('out-auth', [
+            '<span class="ok">✓ PRF result received!</span>',
+            '',
+            `<b>PRF first (32 bytes hex):</b>`,
+            `<span class="ok">${hex}</span>`,
+            '',
+            `<b>Derived AES-256-GCM key (should match on all devices):</b>`,
+            `<span class="ok">${keyHex}</span>`,
+            '',
+            '<span class="dim">Compare these values across Device A and Device B.</span>',
+            '<span class="dim">If identical → PASS. Different → passkey not synced or PRF broken.</span>',
+          ].join('\n'));
+        } catch (e) {
+          show('out-auth', `<span class="err">Error: ${e.message}\n\n${e.stack ?? ''}</span>`);
+        }
+      });
+
+      // ── Clear ───────────────────────────────────────────────────────────────
+      document.getElementById('btn-clear').addEventListener('click', () => {
+        localStorage.removeItem(LS_KEY);
+        show('out-clear', '<span class="ok">Cleared.</span>');
+      });
+    </script>
+  </body>
+</html>
