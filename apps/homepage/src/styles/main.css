@@ -245,6 +245,66 @@ h1 .name {
   color: var(--muted);
 }
 
+/* ---------- labs ---------- */
+.labs {
+  flex: 1;
+  padding: clamp(5.5rem, 17vh, 10rem) 0 3rem;
+}
+
+.labs-inner {
+  max-width: var(--content-width);
+  width: 100%;
+  margin: 0 auto;
+  padding-left: var(--pad-x);
+  padding-right: var(--pad-x);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+}
+
+.labs-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.lab-card {
+  border: 1px solid var(--field-border);
+  border-radius: 8px;
+  transition: border-color var(--duration-fast);
+}
+
+.lab-card:hover {
+  border-color: var(--accent);
+}
+
+.lab-card-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.2rem 1.4rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.lab-card-title {
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  color: var(--accent);
+}
+
+.lab-card-desc {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  line-height: var(--leading-relaxed);
+  text-wrap: pretty;
+}
+
 /* ---------- reCAPTCHA badge ---------- */
 /* Loaded lazily on /contact and appended to document.body, so it persists
    across SPA navigations. Show it only on the contact route. !important is

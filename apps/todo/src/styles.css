@@ -1,0 +1,10 @@
+@import '@lean-dev-br/styles/tokens.css';
+@import '@lean-dev-br/styles/base.css';
+@import '@lean-dev-br/styles/nav.css';
+@import '@lean-dev-br/styles/footer.css';
+
+/* ---------- todo app shell ---------- */
+#app {
+  flex: 1;
+  padding: clamp(4rem, 12vh, 8rem) 0 3rem;
+}

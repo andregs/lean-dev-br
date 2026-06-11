@@ -4,6 +4,7 @@ import './observer.js';
 import './styles/main.css';
 import { renderHome } from './views/home.js';
 import { renderContact } from './views/contact.js';
+import { renderLabs } from './views/labs.js';
 import { renderNotFound } from './views/not-found.js';
 
 /**
@@ -15,6 +16,7 @@ import { renderNotFound } from './views/not-found.js';
 const routes = {
   '/': renderHome,
   '/contact': renderContact,
+  '/labs': renderLabs,
 };
 
 function render() {

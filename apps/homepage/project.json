@@ -9,7 +9,7 @@
       "executor": "nx:run-commands",
       "options": {
         "parallel": true,
-        "commands": ["pnpm nx run homepage:dev", "pnpm nx run blog:dev"]
+        "commands": ["pnpm nx run homepage:dev", "pnpm nx run blog:dev", "pnpm nx run todo:dev"]
       }
     },
     "preview-all": {

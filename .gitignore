@@ -22,3 +22,5 @@ out
 
 # Next.js static export
 /apps/blog/out/
+
+vitest.config.*.timestamp*

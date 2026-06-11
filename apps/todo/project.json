@@ -1,0 +1,15 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "todo",
+  "projectType": "application",
+  "sourceRoot": "apps/todo/src",
+  "tags": ["scope:todo", "type:app"],
+  "targets": {
+    "typecheck": {
+      "command": "tsc -p tsconfig.json",
+      "options": { "cwd": "apps/todo" },
+      "cache": true,
+      "inputs": ["default", "^default"]
+    }
+  }
+}
