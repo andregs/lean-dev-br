@@ -6,6 +6,12 @@ import { renderNotebook, renderSetup, renderUnlocking, renderUnlockError } from 
 const app = /** @type {HTMLElement} */ (document.getElementById('app'));
 
 async function boot() {
+  const cached = await SyncedPasskeyKeyProvider.restoreSession();
+  if (cached) {
+    await renderNotebook(app, cached);
+    return;
+  }
+
   const provider = SyncedPasskeyKeyProvider.load();
 
   if (!provider) {

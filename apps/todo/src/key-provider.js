@@ -2,6 +2,7 @@
 /** @import { KeyProvider } from './types' */
 
 const LS_KEY = 'todo-passkey-credId';
+const SS_KEY = 'todo-session-v1';
 
 // Fixed 32-byte PRF input — same across all devices so PRF output is deterministic.
 // Changing this would invalidate all previously encrypted op logs.
@@ -39,7 +40,7 @@ async function deriveAesKey(prfFirst) {
     { name: 'HKDF', hash: 'SHA-256', salt: HKDF_SALT, info: HKDF_INFO },
     hkdfKey,
     { name: 'AES-GCM', length: 256 },
-    false,
+    true,
     ['encrypt', 'decrypt'],
   );
 }
@@ -65,6 +66,31 @@ export class SyncedPasskeyKeyProvider {
   static load() {
     const hex = localStorage.getItem(LS_KEY);
     return hex ? new SyncedPasskeyKeyProvider(hex) : null;
+  }
+
+  /**
+   * Restore a cached session from sessionStorage — skips WebAuthn if still in the same tab session.
+   * Returns null if no cache or cache is corrupt/missing the credId in localStorage.
+   * @returns {Promise<{ roomId: string, aesKey: CryptoKey } | null>}
+   */
+  static async restoreSession() {
+    try {
+      const raw = sessionStorage.getItem(SS_KEY);
+      if (!raw) return null;
+      const { c, k } = JSON.parse(raw);
+      if (!c || !k || localStorage.getItem(LS_KEY) !== c) return null;
+      const aesKey = await crypto.subtle.importKey(
+        'raw',
+        fromHex(k),
+        { name: 'AES-GCM', length: 256 },
+        true,
+        ['encrypt', 'decrypt'],
+      );
+      return { roomId: c, aesKey };
+    } catch {
+      sessionStorage.removeItem(SS_KEY);
+      return null;
+    }
   }
 
   /**
@@ -121,6 +147,8 @@ export class SyncedPasskeyKeyProvider {
     if (!prfFirst) throw new Error('PRF extension unavailable — authenticator may not support it');
 
     const aesKey = await deriveAesKey(prfFirst);
+    const rawKey = await crypto.subtle.exportKey('raw', aesKey);
+    sessionStorage.setItem(SS_KEY, JSON.stringify({ c: this.#credIdHex, k: toHex(rawKey) }));
     return { roomId: this.#credIdHex, aesKey };
   }
 }
