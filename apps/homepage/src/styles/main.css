@@ -309,6 +309,41 @@ h1 .name {
   text-wrap: pretty;
 }
 
+.lab-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.lab-card-badge {
+  font-size: 0.65rem;
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  border: 1px solid var(--field-border);
+  border-radius: 999px;
+  padding: 0.15em 0.55em;
+  white-space: nowrap;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  40% { opacity: 0.3; }
+}
+
+.lab-card-badge--pulse {
+  animation: badge-pulse 0.5s ease;
+}
+
+.lab-card--coming-soon:hover {
+  border-color: var(--field-border);
+}
+
+.lab-card--coming-soon .lab-card-link {
+  cursor: default;
+}
+
 /* ---------- reCAPTCHA badge ---------- */
 /* Loaded lazily on /contact and appended to document.body, so it persists
    across SPA navigations. Show it only on the contact route. !important is
