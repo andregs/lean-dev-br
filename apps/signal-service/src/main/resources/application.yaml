@@ -1,3 +1,10 @@
 spring:
   application:
     name: signal-service
+  threads:
+    virtual:
+      enabled: true
+
+signal:
+  cors:
+    allowed-origins: '*'

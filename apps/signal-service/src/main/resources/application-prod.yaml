@@ -1,0 +1,13 @@
+spring:
+  config:
+    activate:
+      on-profile:
+        - prod
+logging:
+  structured:
+    format:
+      console: ecs # elastic common schema
+
+signal:
+  cors:
+    allowed-origins: 'https://lean.dev.br'

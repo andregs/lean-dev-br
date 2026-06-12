@@ -49,5 +49,10 @@
   },
   "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "[java]": {
+    "editor.defaultFormatter": "redhat.java"
   }
 }
