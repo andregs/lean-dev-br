@@ -2,7 +2,9 @@
 /** @import { KeyProvider } from './types' */
 
 const LS_KEY = 'todo-passkey-credId';
-const SS_KEY = 'todo-session-v1';
+const IDB_NAME = 'todo-session';
+const IDB_STORE = 'sessions';
+const IDB_KEY = 'current';
 
 // Fixed 32-byte PRF input — same across all devices so PRF output is deterministic.
 // Changing this would invalidate all previously encrypted op logs.
@@ -23,6 +25,38 @@ function toHex(buf) {
     .join('');
 }
 
+/** @returns {Promise<IDBDatabase>} */
+function openSessionDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(IDB_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+/** @param {{ roomId: string, aesKey: CryptoKey }} session */
+async function saveSession(session) {
+  const db = await openSessionDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).put(session, IDB_KEY);
+    tx.oncomplete = () => resolve(undefined);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/** @returns {Promise<{ roomId: string, aesKey: CryptoKey } | null>} */
+async function loadSession() {
+  const db = await openSessionDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, 'readonly');
+    const req = tx.objectStore(IDB_STORE).get(IDB_KEY);
+    req.onsuccess = () => resolve(req.result ?? null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
 /** @param {string} hex */
 function fromHex(hex) {
   const bytes = new Uint8Array(hex.length / 2);
@@ -40,7 +74,7 @@ async function deriveAesKey(prfFirst) {
     { name: 'HKDF', hash: 'SHA-256', salt: HKDF_SALT, info: HKDF_INFO },
     hkdfKey,
     { name: 'AES-GCM', length: 256 },
-    true,
+    false,
     ['encrypt', 'decrypt'],
   );
 }
@@ -69,26 +103,18 @@ export class SyncedPasskeyKeyProvider {
   }
 
   /**
-   * Restore a cached session from sessionStorage — skips WebAuthn if still in the same tab session.
-   * Returns null if no cache or cache is corrupt/missing the credId in localStorage.
+   * Restore a cached session from IndexedDB — skips WebAuthn on reload.
+   * The CryptoKey is stored non-extractable: raw bytes never leave the browser engine.
+   * Returns null if no cache or the stored credential no longer matches localStorage.
    * @returns {Promise<{ roomId: string, aesKey: CryptoKey } | null>}
    */
   static async restoreSession() {
     try {
-      const raw = sessionStorage.getItem(SS_KEY);
-      if (!raw) return null;
-      const { c, k } = JSON.parse(raw);
-      if (!c || !k || localStorage.getItem(LS_KEY) !== c) return null;
-      const aesKey = await crypto.subtle.importKey(
-        'raw',
-        fromHex(k),
-        { name: 'AES-GCM', length: 256 },
-        true,
-        ['encrypt', 'decrypt'],
-      );
-      return { roomId: c, aesKey };
+      const session = await loadSession();
+      if (!session) return null;
+      if (localStorage.getItem(LS_KEY) !== session.roomId) return null;
+      return session;
     } catch {
-      sessionStorage.removeItem(SS_KEY);
       return null;
     }
   }
@@ -147,8 +173,7 @@ export class SyncedPasskeyKeyProvider {
     if (!prfFirst) throw new Error('PRF extension unavailable — authenticator may not support it');
 
     const aesKey = await deriveAesKey(prfFirst);
-    const rawKey = await crypto.subtle.exportKey('raw', aesKey);
-    sessionStorage.setItem(SS_KEY, JSON.stringify({ c: this.#credIdHex, k: toHex(rawKey) }));
+    await saveSession({ roomId: this.#credIdHex, aesKey });
     return { roomId: this.#credIdHex, aesKey };
   }
 }

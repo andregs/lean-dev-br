@@ -1,4 +1,5 @@
 // @ts-check
+import 'fake-indexeddb/auto';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SyncedPasskeyKeyProvider } from './key-provider.js';
 
@@ -39,20 +40,32 @@ const localStorageMock = {
   removeItem: vi.fn((k) => lsStore.delete(k)),
 };
 
-const ssStore = new Map();
-const sessionStorageMock = {
-  getItem: vi.fn((k) => ssStore.get(k) ?? null),
-  setItem: vi.fn((k, v) => ssStore.set(k, v)),
-  removeItem: vi.fn((k) => ssStore.delete(k)),
-};
+/** Clear the session store between tests to prevent cross-test leakage. */
+function clearSessionDb() {
+  return new Promise((res) => {
+    const req = indexedDB.open('todo-session', 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('sessions');
+    req.onsuccess = () => {
+      const db = req.result;
+      try {
+        const tx = db.transaction('sessions', 'readwrite');
+        tx.objectStore('sessions').clear();
+        tx.oncomplete = () => res(undefined);
+        tx.onerror = () => res(undefined);
+      } catch {
+        res(undefined);
+      }
+    };
+    req.onerror = () => res(undefined);
+  });
+}
 
-beforeEach(() => {
+beforeEach(async () => {
   lsStore.clear();
-  ssStore.clear();
   vi.clearAllMocks();
   vi.stubGlobal('localStorage', localStorageMock);
-  vi.stubGlobal('sessionStorage', sessionStorageMock);
   vi.stubGlobal('location', { hostname: 'localhost' });
+  await clearSessionDb();
 });
 
 afterEach(() => {
@@ -99,21 +112,23 @@ describe('SyncedPasskeyKeyProvider.register', () => {
 // ── restoreSession ─────────────────────────────────────────────────────────
 
 describe('SyncedPasskeyKeyProvider.restoreSession', () => {
-  it('returns null when sessionStorage is empty', async () => {
+  it('returns null when IDB is empty', async () => {
     expect(await SyncedPasskeyKeyProvider.restoreSession()).toBeNull();
   });
 
-  it('returns null when credId in session does not match localStorage', async () => {
-    const hex = toHex(makeCredId());
-    lsStore.set('todo-passkey-credId', toHex(makeCredId())); // different cred
-    ssStore.set('todo-session-v1', JSON.stringify({ c: hex, k: 'ab'.repeat(32) }));
-    expect(await SyncedPasskeyKeyProvider.restoreSession()).toBeNull();
-  });
+  it('returns null when stored roomId does not match localStorage', async () => {
+    const rawId = makeCredId();
+    const hex = toHex(rawId);
+    lsStore.set('todo-passkey-credId', hex);
 
-  it('returns null and clears cache on corrupt JSON', async () => {
-    ssStore.set('todo-session-v1', 'not-json');
+    const getMock = vi.fn().mockResolvedValue(
+      fakeCredential(rawId, { prf: { results: { first: FAKE_PRF_BYTES.buffer } } }),
+    );
+    vi.stubGlobal('navigator', { credentials: { get: getMock } });
+
+    await /** @type {SyncedPasskeyKeyProvider} */ (SyncedPasskeyKeyProvider.load()).resolve();
+    lsStore.set('todo-passkey-credId', toHex(makeCredId())); // swap to different cred
     expect(await SyncedPasskeyKeyProvider.restoreSession()).toBeNull();
-    expect(sessionStorageMock.removeItem).toHaveBeenCalledWith('todo-session-v1');
   });
 
   it('restores a valid session written by resolve()', async () => {
@@ -126,16 +141,13 @@ describe('SyncedPasskeyKeyProvider.restoreSession', () => {
     );
     vi.stubGlobal('navigator', { credentials: { get: getMock } });
 
-    // resolve() writes session to sessionStorage
     const provider = /** @type {SyncedPasskeyKeyProvider} */ (SyncedPasskeyKeyProvider.load());
     const { aesKey: k1 } = await provider.resolve();
 
-    // restoreSession() reads it back — no WebAuthn call
     const restored = await SyncedPasskeyKeyProvider.restoreSession();
     expect(restored).not.toBeNull();
     expect(restored?.roomId).toBe(hex);
 
-    // confirm keys are functionally identical
     const enc = new TextEncoder();
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k1, enc.encode('hello'));
