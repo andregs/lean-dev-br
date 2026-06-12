@@ -9,6 +9,12 @@
 
 ---
 
+## CSS Conventions
+
+- **Never target bare HTML elements** in CSS selectors (e.g. `.list-field label`, `.setup-screen p`). The markup is ours, so always add a class to the element and select that class instead. This keeps specificity predictable and styles resilient to markup changes.
+
+---
+
 ## Git Conventions
 
 - Use **Conventional Commits**: `type(scope): description` — e.g. `feat(homepage): add contact form`

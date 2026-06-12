@@ -106,6 +106,27 @@ describe('applyOps', () => {
     expect(state.get(todoId)?.title).toBe('B');
   });
 
+  it('UNCOMPLETE resets completed=false', () => {
+    const todoId = id();
+    const state = applyOps([
+      { id: id(), type: 'ADD', todoId, fields: { title: 'Task' }, hlc: hlc() },
+      { id: id(), type: 'COMPLETE', todoId, hlc: hlc() },
+      { id: id(), type: 'UNCOMPLETE', todoId, hlc: hlc() },
+    ]);
+    expect(state.get(todoId)?.completed).toBe(false);
+  });
+
+  it('COMPLETE wins over concurrent UNCOMPLETE at lower HLC', () => {
+    const todoId = id();
+    const t0 = hlc(); const t1 = hlc(); const t2 = hlc();
+    const state = applyOps([
+      { id: id(), type: 'ADD', todoId, fields: { title: 'Task' }, hlc: t0 },
+      { id: id(), type: 'UNCOMPLETE', todoId, hlc: t1 },
+      { id: id(), type: 'COMPLETE', todoId, hlc: t2 },
+    ]);
+    expect(state.get(todoId)?.completed).toBe(true);
+  });
+
   it('unknown todoId returns undefined', () => {
     const state = applyOps([]);
     expect(state.get('nonexistent')).toBeUndefined();

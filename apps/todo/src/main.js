@@ -1,15 +1,26 @@
 // @ts-check
 import './styles.css';
-import { setHTML } from './trusted-types.js';
+import { SyncedPasskeyKeyProvider } from './key-provider.js';
+import { renderNotebook, renderSetup, renderUnlocking, renderUnlockError } from './ui.js';
 
 const app = /** @type {HTMLElement} */ (document.getElementById('app'));
-app.className = 'todo';
 
-setHTML(
-  app,
-  `<div class="todo-inner">
-    <h1>Todo</h1>
-    <hr class="rule" />
-    <p class="description">Coming soon.</p>
-  </div>`,
-);
+async function boot() {
+  const provider = SyncedPasskeyKeyProvider.load();
+
+  if (!provider) {
+    const session = await renderSetup(app);
+    await renderNotebook(app, session);
+    return;
+  }
+
+  renderUnlocking(app);
+  try {
+    const session = await provider.resolve();
+    await renderNotebook(app, session);
+  } catch {
+    renderUnlockError(app, provider);
+  }
+}
+
+boot().catch(console.error);

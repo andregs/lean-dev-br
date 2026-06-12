@@ -1,7 +1,6 @@
 // @ts-check
 import './rum.js';
 import './observer.js';
-import './styles/main.css';
 import { renderHome } from './views/home.js';
 import { renderContact } from './views/contact.js';
 import { renderLabs } from './views/labs.js';

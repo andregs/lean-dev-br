@@ -25,7 +25,8 @@ export function applyOps(ops) {
    *   title?: { value: string, hlc: string },
    *   listId?: { value: string, hlc: string },
    *   completed?: { value: boolean, hlc: string },
-   *   deletedHlc?: string
+   *   deletedHlc?: string,
+   *   createdAt?: string
    * }>} */
   const raw = new Map();
   const seen = new Set();
@@ -39,6 +40,7 @@ export function applyOps(ops) {
     if (op.type === 'ADD') {
       raw.set(op.todoId, {
         ...cur,
+        createdAt: cur.createdAt ?? op.hlc,
         title: lww(cur.title, op.fields?.title ?? '', op.hlc),
         listId: lww(cur.listId, op.fields?.list ?? '', op.hlc),
         completed: lww(cur.completed, false, op.hlc),
@@ -50,6 +52,8 @@ export function applyOps(ops) {
       raw.set(op.todoId, next);
     } else if (op.type === 'COMPLETE') {
       raw.set(op.todoId, { ...cur, completed: lww(cur.completed, true, op.hlc) });
+    } else if (op.type === 'UNCOMPLETE') {
+      raw.set(op.todoId, { ...cur, completed: lww(cur.completed, false, op.hlc) });
     } else if (op.type === 'DELETE') {
       raw.set(op.todoId, {
         ...cur,
@@ -74,6 +78,7 @@ export function applyOps(ops) {
       listId: s.listId?.value ?? '',
       completed: s.completed?.value ?? false,
       hlc,
+      createdHlc: s.createdAt ?? hlc,
     });
   }
   return result;
