@@ -14,7 +14,11 @@
     },
     "preview-all": {
       "executor": "nx:run-commands",
-      "dependsOn": ["build", { "projects": ["blog"], "target": "postbuild" }],
+      "dependsOn": [
+        "build",
+        { "projects": ["blog"], "target": "postbuild" },
+        { "projects": ["todo"], "target": "build" }
+      ],
       "options": {
         "cwd": "apps/homepage",
         "command": "node tools/preview.mjs"

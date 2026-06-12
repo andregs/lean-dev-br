@@ -1,7 +1,8 @@
 // @ts-check
-// Unified prod preview: serves apex (dist/) + blog (apps/blog/out/) from one
-// origin with production CSP headers, emulating the CloudFront edge routing.
-// Validates CSP/TT enforcement across both apps before deploying.
+// Unified prod preview: serves apex (dist/), blog (apps/blog/out/), and
+// todo (apps/todo/dist/) from one origin with production CSP headers,
+// emulating the CloudFront edge routing.
+// Validates CSP/TT enforcement across all apps before deploying.
 // Run: `pnpm nx run homepage:preview-all`
 import { readFile } from 'node:fs/promises';
 import http from 'node:http';
@@ -12,8 +13,10 @@ import { cspHeader } from '@lean-dev-br/csp';
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const APEX = path.resolve(dir, '..', 'dist');
 const BLOG = path.resolve(dir, '..', '..', 'blog', 'out');
+const TODO = path.resolve(dir, '..', '..', 'todo', 'dist');
 const CSP_APEX = cspHeader({ mode: 'prod' });
 const CSP_BLOG = cspHeader({ mode: 'prod', app: 'blog' });
+const CSP_TODO = cspHeader({ mode: 'prod' });
 const PORT = 4173;
 
 /** @type {Record<string, string>} */
@@ -38,12 +41,19 @@ const TYPES = {
  */
 function route(uri) {
   if (uri === '/blog') return { redirect: '/blog/' };
+  if (uri === '/todo') return { redirect: '/todo/' };
 
   if (uri.startsWith('/blog/')) {
     let stripped = uri.slice('/blog'.length);
     if (stripped.endsWith('/')) stripped += 'index.html';
     const filePath = path.join(BLOG, stripped);
     return { root: BLOG, filePath: path.normalize(filePath), csp: CSP_BLOG };
+  }
+
+  if (uri.startsWith('/todo/')) {
+    const stripped = uri.slice('/todo'.length); // '/todo/assets/x.js' → '/assets/x.js'
+    const localPath = stripped.match(/\.[^/]+$/) ? stripped : '/index.html';
+    return { root: TODO, filePath: path.join(TODO, localPath), csp: CSP_TODO };
   }
 
   // Apex SPA fallback: extensionless paths → index.html.
@@ -85,4 +95,5 @@ http
   .listen(PORT, () => {
     console.log(`prod preview → http://localhost:${PORT}/`);
     console.log(`             → http://localhost:${PORT}/blog/`);
+    console.log(`             → http://localhost:${PORT}/todo/`);
   });
