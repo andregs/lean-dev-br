@@ -1,5 +1,5 @@
 nodejs 25.9.0
 pnpm 11.4.0
-java openjdk-25
+java graalvm-community-25.0.2
 pulumi 3.245.0
 awscli 2.34.61
