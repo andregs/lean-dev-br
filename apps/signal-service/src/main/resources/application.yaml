@@ -5,6 +5,12 @@ spring:
     virtual:
       enabled: true
 
-signal:
+relay:
   cors:
     allowed-origins: '*'
+  room-ttl: 5m
+  max-updates-per-room: 1000
+
+logging:
+  level:
+    "[br.dev.lean.signal]": DEBUG

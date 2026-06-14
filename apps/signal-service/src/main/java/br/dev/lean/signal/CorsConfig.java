@@ -7,15 +7,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 class CorsConfig implements WebMvcConfigurer {
 
-    private final SignalProperties props;
+    private final RelayProperties props;
 
-    CorsConfig(SignalProperties props) {
+    CorsConfig(RelayProperties props) {
         this.props = props;
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/signal/**")
+        registry.addMapping("/rooms/**")
                 .allowedOrigins(props.cors().allowedOrigins())
                 .allowedMethods("GET", "POST")
                 .maxAge(3600);

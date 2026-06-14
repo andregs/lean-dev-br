@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @org.springframework.scheduling.annotation.EnableScheduling
-@org.springframework.boot.context.properties.EnableConfigurationProperties(SignalProperties.class)
+@org.springframework.boot.context.properties.EnableConfigurationProperties(RelayProperties.class)
 public class SignalServiceApplication {
 
 	public static void main(String[] args) {
