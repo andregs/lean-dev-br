@@ -1,0 +1,6 @@
+name: lean-dev-br-relay-service
+runtime:
+  name: nodejs
+  options:
+    packagemanager: pnpm
+description: Cloud Run deployment for relay-service (GraalVM native) on GCP

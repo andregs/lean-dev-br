@@ -14,7 +14,7 @@ const TRUSTED_TYPES_POLICIES = ['app', 'dompurify', 'default', 'goog#html', 'nex
  * hydration scripts and there's no server to mint a nonce. Trusted Types still
  * guards DOM script sinks; the apex app (no inline scripts) stays strict.
  * `app: 'todo'` drops reCAPTCHA/RUM/Cognito domains; adds `signalUrl` to
- * connect-src for the encrypted Yjs blob relay (Cloud Run signal-service).
+ * connect-src for the encrypted Yjs blob relay (Cloud Run relay-service).
  *
  * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' | 'todo', signalUrl?: string }} opts
  * @returns {Record<string, string[]>}

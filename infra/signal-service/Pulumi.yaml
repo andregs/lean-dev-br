@@ -1,6 +1,0 @@
-name: lean-dev-br-signal-service
-runtime:
-  name: nodejs
-  options:
-    packagemanager: pnpm
-description: Cloud Run deployment for signal-service (GraalVM native) on GCP

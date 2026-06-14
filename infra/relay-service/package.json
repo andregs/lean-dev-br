@@ -1,5 +1,5 @@
 {
-  "name": "@lean-dev-br/infra-signal-service",
+  "name": "@lean-dev-br/infra-relay-service",
   "version": "0.0.1",
   "private": true,
   "dependencies": {

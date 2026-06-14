@@ -1,50 +1,50 @@
 {
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "name": "signal-service",
+  "name": "relay-service",
   "projectType": "application",
-  "sourceRoot": "apps/signal-service/src",
-  "tags": ["scope:signal", "type:app", "lang:java"],
+  "sourceRoot": "apps/relay-service/src",
+  "tags": ["scope:relay", "type:app", "lang:java"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "apps/signal-service",
+        "cwd": "apps/relay-service",
         "command": "./mvnw clean package -DskipTests"
       }
     },
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "apps/signal-service",
+        "cwd": "apps/relay-service",
         "command": "./mvnw spring-boot:run"
       }
     },
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "apps/signal-service",
+        "cwd": "apps/relay-service",
         "command": "./mvnw test"
       }
     },
     "native-build": {
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "apps/signal-service",
+        "cwd": "apps/relay-service",
         "command": "./mvnw -Pnative native:compile"
       }
     },
     "docker-build": {
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "apps/signal-service",
-        "command": "./mvnw -Pnative spring-boot:build-image -DskipTests --no-transfer-progress -Dspring-boot.build-image.imageName=${SIGNAL_IMAGE:-signal-service:local}"
+        "cwd": "apps/relay-service",
+        "command": "./mvnw -Pnative spring-boot:build-image -DskipTests --no-transfer-progress -Dspring-boot.build-image.imageName=${RELAY_IMAGE:-relay-service:local}"
       }
     },
     "docker-push": {
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "apps/signal-service",
-        "command": "docker push ${SIGNAL_IMAGE:?set SIGNAL_IMAGE to the Artifact Registry image URL}"
+        "cwd": "apps/relay-service",
+        "command": "docker push ${RELAY_IMAGE:?set RELAY_IMAGE to the Artifact Registry image URL}"
       }
     }
   }

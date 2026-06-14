@@ -1,4 +1,4 @@
-package br.dev.lean.signal;
+package br.dev.lean.relay;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

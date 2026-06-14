@@ -1,6 +1,6 @@
 # GCP Setup
 
-This guide covers one-time GCP setup for deploying `signal-service` (GraalVM native image) to Cloud Run via the `infra/signal-service` Pulumi stack.
+This guide covers one-time GCP setup for deploying `relay-service` (GraalVM native image) to Cloud Run via the `infra/relay-service` Pulumi stack.
 
 ## Prerequisites
 
@@ -70,7 +70,7 @@ Store `GOOGLE_CREDENTIALS` as a GitHub Actions secret (`GCP_CREDENTIALS`). Never
 ## 5. Configure and deploy the Pulumi stack
 
 ```sh
-cd infra/signal-service
+cd infra/relay-service
 pnpm install
 pnpm exec pulumi stack init prod
 pnpm exec pulumi config set gcp:project lean-dev-br --stack prod
@@ -79,8 +79,8 @@ pnpm exec pulumi up --stack prod
 ```
 
 This creates:
-- Artifact Registry repository `signal-service` in `us-central1`
-- Cloud Run service `signal-service` with placeholder image (returns 200 Hello World until real image is deployed)
+- Artifact Registry repository `relay-service` in `us-central1`
+- Cloud Run service `relay-service` with placeholder image (returns 200 Hello World until real image is deployed)
 
 Note the `repoUrl` output — you'll use it to tag and push images.
 
@@ -91,30 +91,30 @@ Note the `repoUrl` output — you'll use it to tag and push images.
 gcloud auth configure-docker us-central1-docker.pkg.dev
 
 # Build and push (from repo root)
-SIGNAL_IMAGE=us-central1-docker.pkg.dev/lean-dev-br/signal-service/signal-service:v1 \
-  pnpm nx run signal-service:docker-build
+RELAY_IMAGE=us-central1-docker.pkg.dev/lean-dev-br/relay-service/relay-service:v1 \
+  pnpm nx run relay-service:docker-build
 
-SIGNAL_IMAGE=us-central1-docker.pkg.dev/lean-dev-br/signal-service/signal-service:v1 \
-  pnpm nx run signal-service:docker-push
+RELAY_IMAGE=us-central1-docker.pkg.dev/lean-dev-br/relay-service/relay-service:v1 \
+  pnpm nx run relay-service:docker-push
 ```
 
-The `docker-build` target builds a GraalVM native image inside Docker (slow on first run, ~5–10 minutes). Subsequent builds reuse the Maven dependency cache layer.
+The `docker-build` target uses Spring Boot Cloud Native Buildpacks to compile a GraalVM native image. First run is slow (~10–20 minutes); subsequent builds reuse the Paketo builder layer cache.
 
 ## 7. Deploy with the real image
 
 ```sh
-cd infra/signal-service
+cd infra/relay-service
 pnpm exec pulumi config set imageTag v1 --stack prod
 pnpm exec pulumi up --stack prod
 ```
 
-## 8. Wire the signal-service URL to the homepage stack
+## 8. Wire the relay-service URL to the homepage stack
 
 Copy `serviceUrl` from the Pulumi output, then:
 
 ```sh
 cd infra/homepage
-pnpm exec pulumi config set signalServiceUrl <serviceUrl> --stack prod
+pnpm exec pulumi config set relayServiceUrl <serviceUrl> --stack prod
 pnpm exec pulumi up --stack prod
 ```
 

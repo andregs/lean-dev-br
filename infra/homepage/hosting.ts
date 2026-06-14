@@ -14,10 +14,10 @@ interface HostingArgs {
   zone: aws.route53.Zone;
   domain: string;
   executeApiDomain: pulumi.Output<string>;
-  signalServiceUrl: string;
+  relayServiceUrl: string;
 }
 
-export function createHosting({ zone, domain, executeApiDomain, signalServiceUrl }: HostingArgs) {
+export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl }: HostingArgs) {
   const wwwDomain = `www.${domain}`;
 
   const usEast1 = new aws.Provider('us-east-1', { region: 'us-east-1' });
@@ -198,7 +198,7 @@ export function createHosting({ zone, domain, executeApiDomain, signalServiceUrl
     },
   );
 
-  // Separate policy for /todo/* — todo CSP: no reCAPTCHA/RUM domains; signal-service URL in connect-src.
+  // Separate policy for /todo/* — todo CSP: no reCAPTCHA/RUM domains; relay-service URL in connect-src.
   const todoResponseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(
     'todo-response-headers-policy',
     {
@@ -218,7 +218,7 @@ export function createHosting({ zone, domain, executeApiDomain, signalServiceUrl
           override: true,
         },
         contentSecurityPolicy: {
-          contentSecurityPolicy: cspHeader({ mode: 'prod', app: 'todo', signalUrl: signalServiceUrl }),
+          contentSecurityPolicy: cspHeader({ mode: 'prod', app: 'todo', signalUrl: relayServiceUrl }),
           override: true,
         },
       },

@@ -23,9 +23,9 @@ const recaptchaAction = config.require('recaptchaAction');
 // ACK disabled while SES is in sandbox. Flip to true after SES production access is granted.
 const sendAck = config.requireBoolean('sendAck');
 
-// Cloud Run URL for the signal-service. Set after the GCP stack is deployed.
+// Cloud Run URL for the relay-service. Set after the GCP stack is deployed.
 // Empty string → todo CSP omits the signal URL (sync fails gracefully; local writes still work).
-const signalServiceUrl = config.get('signalServiceUrl') ?? '';
+const relayServiceUrl = config.get('relayServiceUrl') ?? '';
 
 const zone = new aws.route53.Zone('zone', { name: domain });
 
@@ -47,7 +47,7 @@ const { bucketName, distributionId, distributionDomain } = createHosting({
   zone,
   domain,
   executeApiDomain,
-  signalServiceUrl,
+  relayServiceUrl,
 });
 
 const { identityPoolId, appMonitorId } = createObservability({ domain });

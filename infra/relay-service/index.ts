@@ -9,10 +9,10 @@ const config = new pulumi.Config();
 const imageTag = config.get('imageTag');
 
 // Artifact Registry repository — created on first deploy; used by docker-push target.
-const repo = new gcp.artifactregistry.Repository('signal-service-repo', {
+const repo = new gcp.artifactregistry.Repository('relay-service-repo', {
   project: gcpProject,
   location: gcpRegion,
-  repositoryId: 'signal-service',
+  repositoryId: 'relay-service',
   format: 'DOCKER',
 });
 
@@ -20,15 +20,15 @@ const repo = new gcp.artifactregistry.Repository('signal-service-repo', {
 // created on first deploy. Replace with the real image after the first docker-push.
 const PLACEHOLDER = 'us-docker.pkg.dev/cloudrun/container/hello:latest';
 const image = imageTag
-  ? pulumi.interpolate`${gcpRegion}-docker.pkg.dev/${gcpProject}/signal-service/signal-service:${imageTag}`
+  ? pulumi.interpolate`${gcpRegion}-docker.pkg.dev/${gcpProject}/relay-service/relay-service:${imageTag}`
   : PLACEHOLDER;
 
 const service = new gcp.cloudrunv2.Service(
-  'signal-service',
+  'relay-service',
   {
     project: gcpProject,
     location: gcpRegion,
-    name: 'signal-service',
+    name: 'relay-service',
     template: {
       scaling: {
         minInstanceCount: 0,
@@ -50,7 +50,7 @@ const service = new gcp.cloudrunv2.Service(
 );
 
 // Allow unauthenticated invocations — the todo client calls the relay directly.
-new gcp.cloudrunv2.ServiceIamMember('signal-service-invoker', {
+new gcp.cloudrunv2.ServiceIamMember('relay-service-invoker', {
   project: gcpProject,
   location: gcpRegion,
   name: service.name,
@@ -59,4 +59,4 @@ new gcp.cloudrunv2.ServiceIamMember('signal-service-invoker', {
 });
 
 export const serviceUrl = service.uri;
-export const repoUrl = pulumi.interpolate`${gcpRegion}-docker.pkg.dev/${gcpProject}/signal-service`;
+export const repoUrl = pulumi.interpolate`${gcpRegion}-docker.pkg.dev/${gcpProject}/relay-service`;

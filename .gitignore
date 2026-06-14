@@ -25,4 +25,4 @@ out
 
 vitest.config.*.timestamp*
 
-apps/signal-service/target/
+apps/relay-service/target/

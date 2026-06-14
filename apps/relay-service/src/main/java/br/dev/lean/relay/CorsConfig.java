@@ -1,4 +1,4 @@
-package br.dev.lean.signal;
+package br.dev.lean.relay;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

@@ -1,4 +1,4 @@
-package br.dev.lean.signal;
+package br.dev.lean.relay;
 
 import java.util.ArrayList;
 import java.util.List;

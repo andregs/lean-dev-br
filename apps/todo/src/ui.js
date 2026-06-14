@@ -18,7 +18,7 @@ import { showListDialog } from './ui-dialog.js';
 import { renderTabs } from './ui-tabs.js';
 import { animateExit, buildTodoItem, renderTodos } from './ui-todos.js';
 
-const SIGNAL_URL = import.meta.env.VITE_SIGNAL_URL ?? 'http://localhost:8080';
+const RELAY_URL = import.meta.env.VITE_RELAY_URL ?? 'http://localhost:8080';
 const TAB_COLORS = 6;
 const DEFAULT_LIST = '📋 tasks';
 
@@ -259,7 +259,7 @@ export async function renderNotebook(root, session) {
     }
   }
 
-  const sync = createSync(SIGNAL_URL, session.roomId, session.aesKey, doc, onSyncStatus);
+  const sync = createSync(RELAY_URL, session.roomId, session.aesKey, doc, onSyncStatus);
 
   // Re-render on remote Yjs changes; local writes trigger their own surgical DOM updates
   const unsubTodos = onTodosChange(refreshAll);

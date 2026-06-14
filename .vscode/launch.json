@@ -2,11 +2,11 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Spring Boot-SignalServiceApplication<signal-service>",
+      "name": "Spring Boot-RelayServiceApplication<relay-service>",
       "request": "launch",
       "cwd": "${workspaceFolder}",
-      "mainClass": "br.dev.lean.signal.SignalServiceApplication",
-      "projectName": "signal-service",
+      "mainClass": "br.dev.lean.relay.RelayServiceApplication",
+      "projectName": "relay-service",
       "args": "",
       "envFile": "${workspaceFolder}/.env"
     }
