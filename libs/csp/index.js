@@ -13,33 +13,55 @@ const TRUSTED_TYPES_POLICIES = ['app', 'dompurify', 'default', 'goog#html', 'nex
  * `app: 'blog'` allows inline scripts: the Next.js static export inlines its
  * hydration scripts and there's no server to mint a nonce. Trusted Types still
  * guards DOM script sinks; the apex app (no inline scripts) stays strict.
+ * `app: 'todo'` drops reCAPTCHA/RUM/Cognito domains; adds `signalUrl` to
+ * connect-src for the encrypted Yjs blob relay (Cloud Run signal-service).
  *
- * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' }} opts
+ * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' | 'todo', signalUrl?: string }} opts
  * @returns {Record<string, string[]>}
  */
-function cspDirectives({ mode, app = 'apex' }) {
-  const connectSrc = [
-    "'self'",
-    'https://www.google.com',
+function cspDirectives({ mode, app = 'apex', signalUrl = '' }) {
+  const isTodo = app === 'todo';
+
+  const connectSrc = ["'self'"];
+  if (!isTodo) {
+    // reCAPTCHA uses google.com
+    connectSrc.push('https://www.google.com');
+  }
+  // RUM and Cognito are shared across all apps
+  connectSrc.push(
     'https://dataplane.rum.us-east-1.amazonaws.com',
     'https://cognito-identity.us-east-1.amazonaws.com',
-  ];
+  );
+  if (isTodo && signalUrl) {
+    connectSrc.push(signalUrl);
+  }
   if (mode === 'dev') {
     connectSrc.push('ws://localhost:*', 'http://localhost:*');
   }
-  const scriptSrc = ["'self'", 'https://www.google.com', 'https://www.gstatic.com'];
+
+  const scriptSrc = ["'self'"];
+  if (!isTodo) {
+    // reCAPTCHA scripts — todo has no reCAPTCHA
+    scriptSrc.push('https://www.google.com', 'https://www.gstatic.com');
+  }
   if (app === 'blog') {
     scriptSrc.push("'unsafe-inline'");
   }
-  return {
+
+  /** @type {Record<string, string[]>} */
+  const directives = {
     'default-src': ["'self'"],
     'script-src': scriptSrc,
-    'frame-src': ['https://www.google.com'],
     'connect-src': connectSrc,
     'img-src': ["'self'", 'data:'],
     'style-src': ["'self'", "'unsafe-inline'"],
     'font-src': ["'self'"],
   };
+  if (!isTodo) {
+    // reCAPTCHA uses a Google iframe — todo has no reCAPTCHA iframe
+    directives['frame-src'] = ['https://www.google.com'];
+  }
+  return directives;
 }
 
 /**
@@ -65,11 +87,11 @@ function serialize(directives) {
  * Trusted Types directive; dev omits it here — ship `trustedTypesDirective()` as
  * a separate report-only header instead so dev tooling isn't blocked.
  *
- * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' }} opts
+ * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' | 'todo', signalUrl?: string }} opts
  * @returns {string}
  */
-function cspHeader({ mode, app = 'apex' }) {
-  const base = serialize(cspDirectives({ mode, app }));
+function cspHeader({ mode, app = 'apex', signalUrl = '' }) {
+  const base = serialize(cspDirectives({ mode, app, signalUrl }));
   return mode === 'prod' ? `${base}; ${trustedTypesDirective()}` : base;
 }
 

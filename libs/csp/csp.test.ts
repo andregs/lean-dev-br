@@ -48,6 +48,44 @@ describe('cspDirectives', () => {
   });
 });
 
+describe('todo CSP', () => {
+  it('no reCAPTCHA domains in script-src or connect-src; RUM + Cognito still present', () => {
+    const prod = cspDirectives({ mode: 'prod', app: 'todo', signalUrl: 'https://signal.example.com' });
+    expect(prod['script-src']).toEqual(["'self'"]);
+    expect(prod['connect-src']).not.toContain('https://www.google.com');
+    expect(prod['connect-src']).toContain('https://dataplane.rum.us-east-1.amazonaws.com');
+    expect(prod['connect-src']).toContain('https://cognito-identity.us-east-1.amazonaws.com');
+    expect(prod['connect-src']).toContain('https://signal.example.com');
+    expect(prod['frame-src']).toBeUndefined();
+  });
+
+  it('signalUrl omitted → connect-src has RUM + Cognito but no signal URL', () => {
+    const prod = cspDirectives({ mode: 'prod', app: 'todo' });
+    expect(prod['connect-src']).toEqual([
+      "'self'",
+      'https://dataplane.rum.us-east-1.amazonaws.com',
+      'https://cognito-identity.us-east-1.amazonaws.com',
+    ]);
+  });
+
+  it('dev mode appends localhost entries after signalUrl', () => {
+    const dev = cspDirectives({ mode: 'dev', app: 'todo', signalUrl: 'https://signal.example.com' });
+    expect(dev['connect-src']).toContain('ws://localhost:*');
+    expect(dev['connect-src']).toContain('http://localhost:*');
+    expect(dev['connect-src'].indexOf('https://signal.example.com')).toBeLessThan(
+      dev['connect-src'].indexOf('ws://localhost:*'),
+    );
+  });
+
+  it('prod header enforces Trusted Types and includes signal URL', () => {
+    const header = cspHeader({ mode: 'prod', app: 'todo', signalUrl: 'https://signal.example.com' });
+    expect(header).toContain("require-trusted-types-for 'script'");
+    expect(header).toContain('https://signal.example.com');
+    expect(header).not.toContain('gstatic');
+    expect(header).not.toContain('frame-src');
+  });
+});
+
 describe('trustedTypesDirective', () => {
   it('requires TT for script and allowlists exactly the known policies', () => {
     const tt = trustedTypesDirective();
