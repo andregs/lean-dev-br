@@ -16,7 +16,7 @@ const BLOG = path.resolve(dir, '..', '..', 'blog', 'out');
 const TODO = path.resolve(dir, '..', '..', 'todo', 'dist');
 const CSP_APEX = cspHeader({ mode: 'prod' });
 const CSP_BLOG = cspHeader({ mode: 'prod', app: 'blog' });
-const CSP_TODO = cspHeader({ mode: 'prod' });
+const CSP_TODO = cspHeader({ mode: 'prod', app: 'todo', signalUrl: 'http://localhost:8080' });
 const PORT = 4173;
 
 /** @type {Record<string, string>} */

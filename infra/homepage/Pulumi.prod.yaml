@@ -10,6 +10,9 @@ config:
   lean-dev-br-homepage:recaptchaAction: contact
   # Visitor ACK email — disabled while SES is in sandbox. Enable after production access is granted.
   lean-dev-br-homepage:sendAck: 'false'
+  # Signal-service Cloud Run URL — set after infra/signal-service stack is deployed:
+  #   pulumi config set signalServiceUrl https://signal-service-XXXX-uc.a.run.app
+  lean-dev-br-homepage:signalServiceUrl: ''
   # Set secrets via CLI — never commit plaintext values:
   #   pulumi config set --secret notifyEmail <your-email>
   #   pulumi config set --secret recaptchaSecret <secret-key>

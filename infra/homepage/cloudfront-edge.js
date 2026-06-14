@@ -29,6 +29,23 @@ function handler(event) {
     return req;
   }
 
+  // /todo (no trailing slash) only reaches the default behavior — redirect to /todo/
+  if (req.uri === '/todo') {
+    return {
+      statusCode: 301,
+      statusDescription: 'Moved Permanently',
+      headers: { location: { value: '/todo/' } },
+    };
+  }
+
+  // Todo routing: strip /todo prefix so paths resolve in the dedicated todo bucket root.
+  // Vite SPA: extensionless paths (and trailing-slash paths) fall back to index.html.
+  if (req.uri.startsWith('/todo/')) {
+    req.uri = req.uri.slice('/todo'.length);
+    if (!req.uri.match(/\.[^/]+$/)) req.uri = '/index.html';
+    return req;
+  }
+
   // Apex SPA fallback: rewrite extensionless paths to /index.html so History API routes work.
   if (!req.uri.match(/\.[^/]+$/)) req.uri = '/index.html';
   return req;

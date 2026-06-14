@@ -14,9 +14,10 @@ interface HostingArgs {
   zone: aws.route53.Zone;
   domain: string;
   executeApiDomain: pulumi.Output<string>;
+  signalServiceUrl: string;
 }
 
-export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
+export function createHosting({ zone, domain, executeApiDomain, signalServiceUrl }: HostingArgs) {
   const wwwDomain = `www.${domain}`;
 
   const usEast1 = new aws.Provider('us-east-1', { region: 'us-east-1' });
@@ -96,6 +97,24 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
     rule: { objectOwnership: 'BucketOwnerPreferred' },
   });
 
+  const todoBucket = new aws.s3.BucketV2('todo-bucket', {
+    bucket: 'lean-dev-br-todo',
+    forceDestroy: true,
+  });
+
+  new aws.s3.BucketPublicAccessBlock('todo-bucket-public-access-block', {
+    bucket: todoBucket.id,
+    blockPublicAcls: true,
+    blockPublicPolicy: true,
+    ignorePublicAcls: true,
+    restrictPublicBuckets: true,
+  });
+
+  const todoBucketOwnership = new aws.s3.BucketOwnershipControls('todo-bucket-ownership', {
+    bucket: todoBucket.id,
+    rule: { objectOwnership: 'BucketOwnerPreferred' },
+  });
+
   const oac = new aws.cloudfront.OriginAccessControl('oac', {
     name: 'lean-dev-br-homepage-oac',
     originAccessControlOriginType: 's3',
@@ -105,6 +124,13 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
 
   const blogOac = new aws.cloudfront.OriginAccessControl('blog-oac', {
     name: 'lean-dev-br-blog-oac',
+    originAccessControlOriginType: 's3',
+    signingBehavior: 'always',
+    signingProtocol: 'sigv4',
+  });
+
+  const todoOac = new aws.cloudfront.OriginAccessControl('todo-oac', {
+    name: 'lean-dev-br-todo-oac',
     originAccessControlOriginType: 's3',
     signingBehavior: 'always',
     signingProtocol: 'sigv4',
@@ -172,6 +198,33 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
     },
   );
 
+  // Separate policy for /todo/* — todo CSP: no reCAPTCHA/RUM domains; signal-service URL in connect-src.
+  const todoResponseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(
+    'todo-response-headers-policy',
+    {
+      name: 'lean-dev-br-todo-security-headers',
+      securityHeadersConfig: {
+        contentTypeOptions: { override: true },
+        frameOptions: { frameOption: 'DENY', override: true },
+        xssProtection: { protection: true, modeBlock: true, override: true },
+        referrerPolicy: {
+          referrerPolicy: 'strict-origin-when-cross-origin',
+          override: true,
+        },
+        strictTransportSecurity: {
+          accessControlMaxAgeSec: 31536000,
+          includeSubdomains: true,
+          preload: true,
+          override: true,
+        },
+        contentSecurityPolicy: {
+          contentSecurityPolicy: cspHeader({ mode: 'prod', app: 'todo', signalUrl: signalServiceUrl }),
+          override: true,
+        },
+      },
+    },
+  );
+
   const distribution = new aws.cloudfront.Distribution('distribution', {
     enabled: true,
     defaultRootObject: 'index.html',
@@ -186,6 +239,11 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
         originId: 'blog-s3',
         domainName: blogBucket.bucketRegionalDomainName,
         originAccessControlId: blogOac.id,
+      },
+      {
+        originId: 'todo-s3',
+        domainName: todoBucket.bucketRegionalDomainName,
+        originAccessControlId: todoOac.id,
       },
       {
         originId: 'api',
@@ -229,6 +287,42 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_DISABLED_POLICY_ID,
         responseHeadersPolicyId: blogResponseHeadersPolicy.id,
+        compress: true,
+        functionAssociations: [
+          {
+            eventType: 'viewer-request',
+            functionArn: edgeFn.arn,
+          },
+        ],
+      },
+      {
+        // Vite assets are content-addressed — cache forever, no invalidation needed.
+        // Edge fn strips /todo prefix so the path resolves in the dedicated todo bucket root.
+        pathPattern: '/todo/assets/*',
+        targetOriginId: 'todo-s3',
+        viewerProtocolPolicy: 'redirect-to-https',
+        allowedMethods: ['GET', 'HEAD'],
+        cachedMethods: ['GET', 'HEAD'],
+        cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
+        responseHeadersPolicyId: todoResponseHeadersPolicy.id,
+        compress: true,
+        functionAssociations: [
+          {
+            eventType: 'viewer-request',
+            functionArn: edgeFn.arn,
+          },
+        ],
+      },
+      {
+        // Todo HTML — not cached; always fetched fresh from S3.
+        // Edge fn strips /todo prefix + rewrites extensionless paths to index.html (Vite SPA).
+        pathPattern: '/todo/*',
+        targetOriginId: 'todo-s3',
+        viewerProtocolPolicy: 'redirect-to-https',
+        allowedMethods: ['GET', 'HEAD'],
+        cachedMethods: ['GET', 'HEAD'],
+        cachePolicyId: CACHING_DISABLED_POLICY_ID,
+        responseHeadersPolicyId: todoResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -326,6 +420,27 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
     ),
   });
 
+  new aws.s3.BucketPolicy('todo-bucket-policy', {
+    bucket: todoBucket.id,
+    policy: pulumi.all([todoBucket.arn, distribution.arn]).apply(([bucketArn, distributionArn]) =>
+      JSON.stringify({
+        Version: '2012-10-17',
+        Statement: [
+          {
+            Sid: 'AllowCloudFrontServicePrincipal',
+            Effect: 'Allow',
+            Principal: { Service: 'cloudfront.amazonaws.com' },
+            Action: 's3:GetObject',
+            Resource: `${bucketArn}/*`,
+            Condition: {
+              StringEquals: { 'AWS:SourceArn': distributionArn },
+            },
+          },
+        ],
+      }),
+    ),
+  });
+
   for (const name of [domain, wwwDomain]) {
     new aws.route53.Record(`dns-${name.replace(/\./g, '-')}`, {
       name,
@@ -359,6 +474,16 @@ export function createHosting({ zone, domain, executeApiDomain }: HostingArgs) {
       acl: 'private',
     },
     { dependsOn: [blogBucketOwnership] },
+  );
+
+  new S3BucketFolder(
+    'todo-synced-folder',
+    {
+      path: '../../apps/todo/dist',
+      bucketName: todoBucket.bucket,
+      acl: 'private',
+    },
+    { dependsOn: [todoBucketOwnership] },
   );
 
   return {
