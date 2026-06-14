@@ -32,6 +32,20 @@
         "cwd": "apps/signal-service",
         "command": "./mvnw -Pnative native:compile"
       }
+    },
+    "docker-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/signal-service",
+        "command": "./mvnw -Pnative spring-boot:build-image -DskipTests --no-transfer-progress -Dspring-boot.build-image.imageName=${SIGNAL_IMAGE:-signal-service:local}"
+      }
+    },
+    "docker-push": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/signal-service",
+        "command": "docker push ${SIGNAL_IMAGE:?set SIGNAL_IMAGE to the Artifact Registry image URL}"
+      }
     }
   }
 }
