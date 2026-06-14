@@ -20,12 +20,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm nx run-many -t build -p homepage,contact-api --skip-nx-cache
+      - run: pnpm nx run-many -t build -p homepage,contact-api,todo --skip-nx-cache
         env:
           VITE_RECAPTCHA_SITE_KEY: ${{ vars.VITE_RECAPTCHA_SITE_KEY }}
           VITE_RUM_APP_MONITOR_ID: ${{ vars.VITE_RUM_APP_MONITOR_ID }}
           VITE_RUM_IDENTITY_POOL_ID: ${{ vars.VITE_RUM_IDENTITY_POOL_ID }}
           VITE_RUM_SESSION_SAMPLE_RATE: ${{ vars.VITE_RUM_SESSION_SAMPLE_RATE }}
+          VITE_RELAY_URL: ${{ vars.VITE_RELAY_URL }}
 
       - run: pnpm nx run blog:postbuild --skip-nx-cache
         env:
