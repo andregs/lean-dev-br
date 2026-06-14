@@ -1,31 +1,45 @@
 // @ts-check
-/** @import { TodoList } from './types' */
 import { setHTML } from './trusted-types.js';
 
 /**
+ * Split a list name of the form "${emoji} ${title}" into its parts.
+ * @param {string} name
+ * @returns {{ emoji: string, title: string }}
+ */
+function parseListName(name) {
+  const m = name.match(/^(\S+)\s+(.*)/s);
+  return m ? { emoji: m[1], title: m[2] } : { emoji: '📋', title: name };
+}
+
+/**
  * @param {HTMLElement} rail
- * @param {TodoList[]} lists
+ * @param {string[]} lists       - sorted list names; must include activeListId
  * @param {string} activeListId
- * @param {{ onSwitch: (id: string) => void, onAdd: () => void }} callbacks
+ * @param {{ onSwitch: (name: string) => void, onAdd: () => void }} callbacks
  */
 export function renderTabs(rail, lists, activeListId, { onSwitch, onAdd }) {
-  const tabsHtml = lists.map((list) => {
-    const isActive = list.id === activeListId;
-    return `<button class="tab${isActive ? ' tab--active' : ''}"
-      role="tab" aria-selected="${isActive}"
-      data-color="${list.colorIndex % 6}"
-      data-id="${list.id}"></button>`;
-  }).join('');
+  const tabsHtml = lists
+    .map((name, i) => {
+      const isActive = name === activeListId;
+      return `<button class="tab${isActive ? ' tab--active' : ''}"
+        role="tab" aria-selected="${isActive}"
+        data-color="${i % 6}" data-idx="${i}"></button>`;
+    })
+    .join('');
 
-  setHTML(rail, tabsHtml + `<button class="tab tab--add" aria-label="New list" title="New list">+</button>`);
+  setHTML(
+    rail,
+    tabsHtml + `<button class="tab tab--add" aria-label="New list" title="New list">+</button>`,
+  );
 
-  for (const list of lists) {
-    const btn = /** @type {HTMLButtonElement} */ (rail.querySelector(`[data-id="${list.id}"]`));
+  for (const [i, name] of lists.entries()) {
+    const btn = /** @type {HTMLButtonElement|null} */ (rail.querySelector(`[data-idx="${i}"]`));
     if (!btn) continue;
-    btn.textContent = list.emoji;
-    btn.title = list.title;
-    btn.setAttribute('aria-label', `${list.emoji} ${list.title}`);
-    btn.addEventListener('click', () => onSwitch(list.id));
+    const { emoji, title } = parseListName(name);
+    btn.textContent = emoji;
+    btn.title = title;
+    btn.setAttribute('aria-label', name);
+    btn.addEventListener('click', () => onSwitch(name));
   }
 
   rail.querySelector('.tab--add')?.addEventListener('click', onAdd);

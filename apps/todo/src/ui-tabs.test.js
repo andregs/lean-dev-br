@@ -3,11 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { renderTabs } from './ui-tabs.js';
 
-/** @returns {import('./types').TodoList[]} */
-const makeLists = () => [
-  { id: 'a', emoji: '📋', title: 'Tasks', colorIndex: 0 },
-  { id: 'b', emoji: '🎯', title: 'Goals', colorIndex: 1 },
-];
+const LISTS = ['📋 Tasks', '🎯 Goals'];
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -17,7 +13,7 @@ describe('renderTabs', () => {
   it('renders one tab per list', () => {
     const rail = document.createElement('div');
     document.body.append(rail);
-    renderTabs(rail, makeLists(), 'a', { onSwitch: vi.fn(), onAdd: vi.fn() });
+    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd: vi.fn() });
 
     expect(rail.querySelectorAll('[role="tab"]')).toHaveLength(2);
   });
@@ -25,7 +21,7 @@ describe('renderTabs', () => {
   it('renders a + button to add a new list', () => {
     const rail = document.createElement('div');
     document.body.append(rail);
-    renderTabs(rail, makeLists(), 'a', { onSwitch: vi.fn(), onAdd: vi.fn() });
+    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd: vi.fn() });
 
     expect(rail.querySelector('[aria-label="New list"]')).toBeTruthy();
   });
@@ -33,30 +29,35 @@ describe('renderTabs', () => {
   it('active tab has aria-selected=true, inactive tabs false', () => {
     const rail = document.createElement('div');
     document.body.append(rail);
-    renderTabs(rail, makeLists(), 'b', { onSwitch: vi.fn(), onAdd: vi.fn() });
+    renderTabs(rail, LISTS, '🎯 Goals', { onSwitch: vi.fn(), onAdd: vi.fn() });
 
-    expect(rail.querySelector('[data-id="b"]')?.getAttribute('aria-selected')).toBe('true');
-    expect(rail.querySelector('[data-id="a"]')?.getAttribute('aria-selected')).toBe('false');
+    // data-idx is an ASCII attribute set in the template — safe for jsdom CSS selectors
+    expect(rail.querySelector('[data-idx="1"]')?.getAttribute('aria-selected')).toBe('true');
+    expect(rail.querySelector('[data-idx="0"]')?.getAttribute('aria-selected')).toBe('false');
   });
 
-  it('tab label shows the list emoji', () => {
+  it('tab label shows the list emoji and aria-label is the full name', () => {
     const rail = document.createElement('div');
     document.body.append(rail);
-    renderTabs(rail, makeLists(), 'a', { onSwitch: vi.fn(), onAdd: vi.fn() });
+    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd: vi.fn() });
 
-    expect(rail.querySelector('[data-id="a"]')?.textContent).toBe('📋');
-    expect(rail.querySelector('[data-id="b"]')?.textContent).toBe('🎯');
+    const tab0 = rail.querySelector('[data-idx="0"]');
+    const tab1 = rail.querySelector('[data-idx="1"]');
+    expect(tab0?.textContent).toBe('📋');
+    expect(tab0?.getAttribute('aria-label')).toBe('📋 Tasks');
+    expect(tab1?.textContent).toBe('🎯');
+    expect(tab1?.getAttribute('aria-label')).toBe('🎯 Goals');
   });
 
-  it('clicking a tab calls onSwitch with the list id', async () => {
+  it('clicking a tab calls onSwitch with the list name', async () => {
     const rail = document.createElement('div');
     document.body.append(rail);
     const onSwitch = vi.fn();
-    renderTabs(rail, makeLists(), 'a', { onSwitch, onAdd: vi.fn() });
+    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch, onAdd: vi.fn() });
 
-    await userEvent.setup().click(/** @type {Element} */ (rail.querySelector('[data-id="b"]')));
+    await userEvent.setup().click(/** @type {Element} */ (rail.querySelector('[data-idx="1"]')));
 
-    expect(onSwitch).toHaveBeenCalledWith('b');
+    expect(onSwitch).toHaveBeenCalledWith('🎯 Goals');
     expect(onSwitch).toHaveBeenCalledTimes(1);
   });
 
@@ -64,10 +65,19 @@ describe('renderTabs', () => {
     const rail = document.createElement('div');
     document.body.append(rail);
     const onAdd = vi.fn();
-    renderTabs(rail, makeLists(), 'a', { onSwitch: vi.fn(), onAdd });
+    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd });
 
     await userEvent.setup().click(/** @type {Element} */ (rail.querySelector('[aria-label="New list"]')));
 
     expect(onAdd).toHaveBeenCalledTimes(1);
+  });
+
+  it('tab color cycles by position', () => {
+    const rail = document.createElement('div');
+    document.body.append(rail);
+    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd: vi.fn() });
+
+    expect(rail.querySelector('[data-idx="0"]')?.getAttribute('data-color')).toBe('0');
+    expect(rail.querySelector('[data-idx="1"]')?.getAttribute('data-color')).toBe('1');
   });
 });

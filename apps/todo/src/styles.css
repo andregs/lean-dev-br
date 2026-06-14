@@ -13,6 +13,7 @@
   --tc-4: hsl(274, 38%, 50%);
   --tc-5: hsl(20, 62%, 44%);
   --active-tab-color: var(--tc-0);
+  --sync-yellow: hsl(48, 85%, 40%);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,6 +24,7 @@
     --tc-3: hsl(36, 80%, 60%);
     --tc-4: hsl(274, 52%, 68%);
     --tc-5: hsl(20, 68%, 60%);
+    --sync-yellow: hsl(48, 88%, 62%);
   }
 }
 
@@ -92,6 +94,13 @@
 .setup-btn:hover { opacity: 0.88; }
 .setup-btn:active { transform: scale(0.97); }
 .setup-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.setup-btn--secondary {
+  background: none;
+  color: var(--muted);
+  border: 1px solid var(--hairline);
+  font-weight: var(--weight-normal);
+}
 
 .setup-status {
   font-family: var(--font-mono);
@@ -307,12 +316,42 @@
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--tracking-base);
-  color: var(--muted);
   white-space: nowrap;
-  padding: 0.15rem 0.5rem;
+  padding: 0.15rem 0.55rem;
   border-radius: 99px;
-  border: 1px solid var(--hairline);
+  border: 1px solid transparent;
+  opacity: 0;
+  transition:
+    color 400ms ease,
+    border-color 400ms ease,
+    opacity 600ms ease;
 }
+
+.sync-pill--syncing {
+  opacity: 1;
+  color: var(--sync-yellow);
+  border-color: color-mix(in srgb, var(--sync-yellow) 40%, transparent);
+  /* box-shadow pulse avoids conflicting with the opacity transition */
+  animation: sync-pulse 1.4s ease-in-out infinite;
+}
+
+.sync-pill--synced {
+  opacity: 1;
+  color: var(--tc-0);
+  border-color: color-mix(in srgb, var(--tc-0) 35%, transparent);
+}
+
+.sync-pill--error {
+  opacity: 1;
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+}
+
+@keyframes sync-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--sync-yellow) 0%, transparent); }
+  50%       { box-shadow: 0 0 0 3px color-mix(in srgb, var(--sync-yellow) 30%, transparent); }
+}
+
 
 /* ── todo list — ruled lines live here so they align with items ──────────── */
 

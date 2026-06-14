@@ -21,9 +21,10 @@ async function closeDialog(dialog) {
 /**
  * Show the new-list dialog and resolve with { emoji, title } on submit, or null on cancel.
  * @param {HTMLDialogElement} dialog
+ * @param {string[]} [existingNames] - already-taken list names; blocks duplicate submit
  * @returns {Promise<{ emoji: string, title: string } | null>}
  */
-export function showListDialog(dialog) {
+export function showListDialog(dialog, existingNames = []) {
   return new Promise((resolve) => {
     const form = /** @type {HTMLFormElement} */ (dialog.querySelector('.list-form'));
     const emojiInput = /** @type {HTMLInputElement} */ (dialog.querySelector('#lf-emoji'));
@@ -32,6 +33,7 @@ export function showListDialog(dialog) {
     // Reset
     form.reset();
     emojiInput.classList.remove('invalid');
+    nameInput.setCustomValidity('');
 
     dialog.showModal();
     nameInput.focus();
@@ -57,8 +59,15 @@ export function showListDialog(dialog) {
         emojiInput.focus();
         return;
       }
+      if (existingNames.includes(`${emoji} ${title}`)) {
+        nameInput.setCustomValidity('A list with this name already exists.');
+        nameInput.reportValidity();
+        return;
+      }
       settle({ emoji, title });
     }
+
+    nameInput.addEventListener('input', () => nameInput.setCustomValidity(''));
 
     /** @param {Event} e */
     function onCancel(e) {

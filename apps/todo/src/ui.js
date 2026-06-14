@@ -1,36 +1,28 @@
 // @ts-check
-/** @import { TodoList, TodoItem } from './types' */
-import { hlcNow } from './hlc.js';
 import { SyncedPasskeyKeyProvider } from './key-provider.js';
-import { openOpLog } from './oplog.js';
-import { applyOps } from './state.js';
+import { createSync } from './sync.js';
+import {
+  addTodo,
+  clearDone,
+  deriveLists,
+  doc,
+  editTitle,
+  onTodosChange,
+  openPersistence,
+  readTodos,
+  removeTodo,
+  setCompleted,
+} from './todo-doc.js';
 import { setHTML, svgIcon } from './trusted-types.js';
 import { showListDialog } from './ui-dialog.js';
 import { renderTabs } from './ui-tabs.js';
 import { animateExit, buildTodoItem, renderTodos } from './ui-todos.js';
 
+const SIGNAL_URL = import.meta.env.VITE_SIGNAL_URL ?? 'http://localhost:8080';
 const TAB_COLORS = 6;
-const LISTS_KEY = 'todo-lists-v1';
+const DEFAULT_LIST = '📋 tasks';
 
-// ── list storage (localStorage; migrates to oplog in sync step) ───────────
-
-/** @returns {TodoList[]} */
-function loadLists() {
-  try {
-    const raw = localStorage.getItem(LISTS_KEY);
-    if (raw) return /** @type {TodoList[]} */ (JSON.parse(raw));
-  } catch {
-    // corrupted storage — fall back to default
-  }
-  return [{ id: crypto.randomUUID(), emoji: '📋', title: 'tasks', colorIndex: 0 }];
-}
-
-/** @param {TodoList[]} lists */
-function saveLists(lists) {
-  localStorage.setItem(LISTS_KEY, JSON.stringify(lists));
-}
-
-// ── setup / unlock screens (exported for main.js) ─────────────────────────
+// ── setup / unlock screens (exported for main.js) ─────────────────────────────
 
 /**
  * @param {HTMLElement} root
@@ -46,28 +38,43 @@ export function renderSetup(root) {
           <h1 class="setup-heading">Your encrypted notebook</h1>
           <hr class="rule" />
           <p class="setup-desc">Tasks are encrypted on-device. A passkey derives the key — nothing is sent to a server.</p>
-          <button class="setup-btn" id="setup-btn" type="button">Set up passkey</button>
+          <button class="setup-btn" id="unlock-btn" type="button">Unlock with passkey</button>
+          <button class="setup-btn setup-btn--secondary" id="setup-btn" type="button">Create new notebook</button>
           <span class="setup-status" id="setup-status"></span>
         </div>
       </div>`,
     );
 
-    const btn = /** @type {HTMLButtonElement} */ (document.getElementById('setup-btn'));
+    const unlockBtn = /** @type {HTMLButtonElement} */ (document.getElementById('unlock-btn'));
+    const setupBtn = /** @type {HTMLButtonElement} */ (document.getElementById('setup-btn'));
     const status = /** @type {HTMLElement} */ (document.getElementById('setup-status'));
-    btn.prepend(svgIcon('icon-key'));
+    unlockBtn.prepend(svgIcon('icon-key'));
 
-    btn.addEventListener('click', async () => {
-      btn.disabled = true;
-      status.textContent = 'Creating passkey…';
+    /** @param {string} msg @param {() => Promise<{ roomId: string, aesKey: CryptoKey }>} run */
+    async function attempt(msg, run) {
+      unlockBtn.disabled = true;
+      setupBtn.disabled = true;
+      status.textContent = msg;
       try {
-        const provider = await SyncedPasskeyKeyProvider.register();
-        status.textContent = 'Authenticating…';
-        resolve(await provider.resolve());
+        resolve(await run());
       } catch (e) {
-        btn.disabled = false;
+        unlockBtn.disabled = false;
+        setupBtn.disabled = false;
         status.textContent = e instanceof Error ? e.message : 'Something went wrong — try again.';
       }
-    });
+    }
+
+    unlockBtn.addEventListener('click', () =>
+      attempt('Authenticating…', () => SyncedPasskeyKeyProvider.discover()),
+    );
+
+    setupBtn.addEventListener('click', () =>
+      attempt('Creating passkey…', async () => {
+        const provider = await SyncedPasskeyKeyProvider.register();
+        status.textContent = 'Authenticating…';
+        return provider.resolve();
+      }),
+    );
   });
 }
 
@@ -112,17 +119,15 @@ export function renderUnlockError(root, provider) {
   });
 }
 
-// ── notebook ──────────────────────────────────────────────────────────────
+// ── notebook ──────────────────────────────────────────────────────────────────
 
 /**
  * @param {HTMLElement} root
  * @param {{ aesKey: CryptoKey, roomId: string }} session
  */
 export async function renderNotebook(root, session) {
-  const oplog = await openOpLog();
-  const lists = loadLists();
-  let activeListId = lists[0].id;
-  let lastHlc = '';
+  await openPersistence(session.roomId);
+  let activeListId = deriveLists(DEFAULT_LIST)[0];
 
   root.className = 'todo';
   setHTML(
@@ -133,11 +138,11 @@ export async function renderNotebook(root, session) {
         <header class="page-header">
           <h1 class="page-title" id="page-title"></h1>
           <div class="page-actions">
-            <button class="clear-done-btn" id="clear-done-btn" type="button"
-                    aria-label="Clear completed tasks" hidden>
-              <span class="clear-done-label">Clear done</span>
-            </button>
-            <span class="sync-pill" title="Sync status">● local</span>
+          <span class="sync-pill" id="sync-pill"></span>
+          <button class="clear-done-btn" id="clear-done-btn" type="button"
+                  aria-label="Clear completed tasks" hidden>
+            <span class="clear-done-label">Clear done</span>
+          </button>
           </div>
         </header>
         <ul class="todo-list" id="todo-list" role="list"></ul>
@@ -178,10 +183,11 @@ export async function renderNotebook(root, session) {
   const todoInput = /** @type {HTMLInputElement} */ (document.getElementById('todo-input'));
   const clearBtn = /** @type {HTMLButtonElement} */ (document.getElementById('clear-done-btn'));
   const listDialog = /** @type {HTMLDialogElement} */ (document.getElementById('list-dialog'));
+  const syncPill = /** @type {HTMLElement} */ (document.getElementById('sync-pill'));
 
   clearBtn.prepend(svgIcon('icon-broom'));
 
-  // ── helpers ─────────────────────────────────────────────────────────────
+  // ── helpers ──────────────────────────────────────────────────────────────────
 
   /** @param {number} colorIndex */
   function setActiveTabColor(colorIndex) {
@@ -191,69 +197,88 @@ export async function renderNotebook(root, session) {
     );
   }
 
-  async function getFilteredItems() {
-    const ops = await oplog.readAll(session.aesKey);
-    const all = applyOps(ops);
-    return /** @type {TodoItem[]} */ (
-      [...all.values()].filter(
-        (item) => item !== null && /** @type {TodoItem} */ (item).listId === activeListId,
-      )
-    ).sort((a, b) => (a.createdHlc < b.createdHlc ? -1 : 1));
-  }
+  function refreshAll() {
+    const todos = readTodos();
+    const lists = deriveLists(activeListId);
+    const activeIdx = lists.indexOf(activeListId);
 
-  async function refresh() {
-    const activeList = lists.find((l) => l.id === activeListId);
-    if (activeList) {
-      pageTitle.textContent = `${activeList.emoji} ${activeList.title}`;
-      setActiveTabColor(activeList.colorIndex);
-    }
+    pageTitle.textContent = activeListId;
+    setActiveTabColor(activeIdx);
+    renderTabs(tabRail, lists, activeListId, { onSwitch, onAdd });
 
-    const items = await getFilteredItems();
+    const items = todos.filter((item) => item.listId === activeListId);
     renderTodos(todoList, items, { onToggle, onEdit, onDelete });
-
     clearBtn.hidden = !items.some((i) => i.completed);
   }
 
-  function refreshTabs() {
-    renderTabs(tabRail, lists, activeListId, { onSwitch, onAdd });
-  }
+  // ── actions ───────────────────────────────────────────────────────────────────
 
-  // ── actions ──────────────────────────────────────────────────────────────
-
-  /** @param {string} listId */
-  function onSwitch(listId) {
-    activeListId = listId;
-    refreshTabs();
-    refresh();
+  /** @param {string} name */
+  function onSwitch(name) {
+    activeListId = name;
+    refreshAll();
   }
 
   async function onAdd() {
-    const result = await showListDialog(listDialog);
+    const currentLists = deriveLists(activeListId);
+    const result = await showListDialog(listDialog, currentLists);
     if (!result) return;
-    const newList = {
-      id: crypto.randomUUID(),
-      emoji: result.emoji,
-      title: result.title,
-      colorIndex: lists.length % TAB_COLORS,
-    };
-    lists.push(newList);
-    saveLists(lists);
-    activeListId = newList.id;
-    refreshTabs();
-    refresh();
+    activeListId = `${result.emoji} ${result.title}`;
+    refreshAll();
     todoInput.focus();
   }
 
+  // ── sync ──────────────────────────────────────────────────────────────────────
+
+  let _syncingTimer = 0;
+  let _syncedTimer = 0;
+
+  /** @param {import('./types').SyncStatus | 'idle'} s */
+  function applyPillStatus(s) {
+    const labels = /** @type {Record<string, string>} */ ({
+      syncing: '↻ syncing',
+      synced: '✓ synced',
+      error: '⚠ error',
+    });
+    syncPill.textContent = labels[s] ?? '';
+    syncPill.className = s === 'idle' ? 'sync-pill' : `sync-pill sync-pill--${s}`;
+  }
+
+  /** @param {import('./types').SyncStatus} status */
+  function onSyncStatus(status) {
+    window.clearTimeout(_syncingTimer);
+    window.clearTimeout(_syncedTimer);
+    if (status === 'syncing') {
+      // Defer showing 'syncing' — fast connections skip it entirely
+      _syncingTimer = window.setTimeout(() => applyPillStatus('syncing'), 250);
+    } else if (status === 'synced') {
+      applyPillStatus('synced');
+      _syncedTimer = window.setTimeout(() => applyPillStatus('idle'), 2000);
+    } else {
+      applyPillStatus(status);
+    }
+  }
+
+  const sync = createSync(SIGNAL_URL, session.roomId, session.aesKey, doc, onSyncStatus);
+
+  // Re-render on remote Yjs changes; local writes trigger their own surgical DOM updates
+  const unsubTodos = onTodosChange(refreshAll);
+
+  // Sync on load + when the page becomes visible again
+  sync.syncNow();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') sync.syncNow();
+  });
+  window.addEventListener('focus', () => sync.syncNow());
+  // pageshow covers bfcache restore where visibilitychange is not guaranteed
+  window.addEventListener('pageshow', (e) => { if (e.persisted) sync.syncNow(); });
+
+  // ── mutations ──────────────────────────────────────────────────────────────────
+
   /** @param {string} todoId @param {boolean} completed */
   async function onToggle(todoId, completed) {
-    lastHlc = hlcNow(lastHlc);
-    await oplog.append(session.aesKey, {
-      id: crypto.randomUUID(),
-      type: completed ? 'UNCOMPLETE' : 'COMPLETE',
-      todoId,
-      hlc: lastHlc,
-    });
-    // Update the single item in place — no full re-render, no animation on siblings
+    setCompleted(todoId, !completed);
+    // Update only the affected item in-place
     const li = /** @type {HTMLElement|null} */ (todoList.querySelector(`[data-id="${todoId}"]`));
     if (li) {
       const nowDone = !completed;
@@ -269,30 +294,15 @@ export async function renderNotebook(root, session) {
 
   /** @param {string} todoId @param {string} title */
   async function onEdit(todoId, title) {
-    lastHlc = hlcNow(lastHlc);
-    await oplog.append(session.aesKey, {
-      id: crypto.randomUUID(),
-      type: 'EDIT',
-      todoId,
-      fields: { title },
-      hlc: lastHlc,
-    });
-    // No refresh — title already updated in DOM via liveTitle in buildTodoItem
+    editTitle(todoId, title);
+    // Title already updated in DOM by buildTodoItem's liveTitle binding
   }
 
   /** @param {string} todoId @param {HTMLElement} li */
   async function onDelete(todoId, li) {
     await animateExit(li);
-    lastHlc = hlcNow(lastHlc);
-    await oplog.append(session.aesKey, {
-      id: crypto.randomUUID(),
-      type: 'DELETE',
-      todoId,
-      hlc: lastHlc,
-    });
-    // Update clear-completed button visibility without full re-render
-    const remaining = todoList.querySelectorAll('.todo-item--done');
-    clearBtn.hidden = remaining.length === 0;
+    removeTodo(todoId);
+    clearBtn.hidden = todoList.querySelectorAll('.todo-item--done').length === 0;
   }
 
   todoForm.addEventListener('submit', async (e) => {
@@ -300,20 +310,13 @@ export async function renderNotebook(root, session) {
     const title = todoInput.value.trim();
     if (!title) return;
     todoInput.value = '';
-    lastHlc = hlcNow(lastHlc);
-    const todoId = crypto.randomUUID();
-    await oplog.append(session.aesKey, {
-      id: crypto.randomUUID(),
-      type: 'ADD',
-      todoId,
-      fields: { title, list: activeListId },
-      hlc: lastHlc,
-    });
-    // Append only the new item — no full re-render, no animation on existing items
-    todoList.append(buildTodoItem(
-      { id: todoId, title, completed: false, listId: activeListId, hlc: lastHlc, createdHlc: lastHlc },
-      { onToggle, onEdit, onDelete },
-    ));
+    const id = addTodo({ title, listId: activeListId });
+    todoList.append(
+      buildTodoItem(
+        { id, title, completed: false, listId: activeListId, createdAt: Date.now() },
+        { onToggle, onEdit, onDelete },
+      ),
+    );
     clearBtn.hidden = todoList.querySelectorAll('.todo-item--done').length === 0;
   });
 
@@ -323,21 +326,17 @@ export async function renderNotebook(root, session) {
     ]);
     const doneIds = doneLis.map((li) => li.dataset.id ?? '');
     await Promise.all(doneLis.map(animateExit));
-    for (const todoId of doneIds) {
-      lastHlc = hlcNow(lastHlc);
-      await oplog.append(session.aesKey, {
-        id: crypto.randomUUID(),
-        type: 'DELETE',
-        todoId,
-        hlc: lastHlc,
-      });
-    }
+    clearDone(doneIds);
     clearBtn.hidden = true;
   });
 
-  // ── initial render ────────────────────────────────────────────────────────
+  // ── initial render ─────────────────────────────────────────────────────────────
 
-  refreshTabs();
-  await refresh();
+  refreshAll();
   todoInput.focus();
+
+  return () => {
+    sync.stop();
+    unsubTodos();
+  };
 }

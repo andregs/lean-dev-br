@@ -150,6 +150,35 @@ export class SyncedPasskeyKeyProvider {
   }
 
   /**
+   * Authenticate via discoverable credential (no stored credId required).
+   * Browser shows passkey picker. Stores the credId on success so future
+   * visits use the targeted resolve() path.
+   * @returns {Promise<{ roomId: string, aesKey: CryptoKey }>}
+   */
+  static async discover() {
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const assertion = /** @type {PublicKeyCredential} */ (
+      await navigator.credentials.get({
+        publicKey: {
+          rpId: location.hostname,
+          challenge,
+          allowCredentials: [],
+          userVerification: 'preferred',
+          extensions: { prf: { eval: { first: PRF_SALT } } },
+        },
+      })
+    );
+    const ext = assertion.getClientExtensionResults();
+    const prfFirst = /** @type {any} */ (ext)?.prf?.results?.first;
+    if (!prfFirst) throw new Error('PRF extension unavailable — authenticator may not support it');
+    const hex = toHex(assertion.rawId);
+    localStorage.setItem(LS_KEY, hex);
+    const aesKey = await deriveAesKey(prfFirst);
+    await saveSession({ roomId: hex, aesKey });
+    return { roomId: hex, aesKey };
+  }
+
+  /**
    * Authenticate with the stored passkey, derive AES key from PRF output.
    * @returns {Promise<{ roomId: string, aesKey: CryptoKey }>}
    */
