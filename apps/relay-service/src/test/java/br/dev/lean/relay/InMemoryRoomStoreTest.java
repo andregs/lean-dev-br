@@ -11,16 +11,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
 
-class UpdateStoreTest {
+class InMemoryRoomStoreTest {
 
-  private UpdateStore store;
+  private InMemoryRoomStore store;
 
   @BeforeEach
   void setUp() {
     var props = mock(RelayProperties.class);
     when(props.roomTtl()).thenReturn(Duration.ofMillis(300_000));
     when(props.maxUpdatesPerRoom()).thenReturn(5);
-    store = new UpdateStore(props);
+    store = new InMemoryRoomStore(props);
   }
 
   @Test
@@ -100,7 +100,7 @@ class UpdateStoreTest {
     var props = mock(RelayProperties.class);
     when(props.roomTtl()).thenReturn(Duration.ofMillis(50));
     when(props.maxUpdatesPerRoom()).thenReturn(10);
-    var shortTtlStore = new UpdateStore(props);
+    var shortTtlStore = new InMemoryRoomStore(props);
 
     shortTtlStore.append("r8", "blob");
     Thread.sleep(30);

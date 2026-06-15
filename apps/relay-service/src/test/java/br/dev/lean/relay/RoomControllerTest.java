@@ -13,19 +13,19 @@ import org.springframework.web.server.ResponseStatusException;
 
 class RoomControllerTest {
 
-    private UpdateStore store;
+    private RoomStore store;
     private RoomController controller;
 
     @BeforeEach
     void setUp() {
-        store = mock(UpdateStore.class);
+        store = mock(RoomStore.class);
         controller = new RoomController(store);
     }
 
     @Test
     void post_delegatesToStoreAndReturns200() {
         when(store.append("room-a", "blob"))
-                .thenReturn(new UpdateStore.AppendResult("epoch-1", 1L));
+                .thenReturn(new RoomStore.AppendResult("epoch-1", 1L));
 
         var response = controller.post("room-a", new RoomController.PostRequest("blob"));
 
@@ -37,7 +37,7 @@ class RoomControllerTest {
     @Test
     void get_delegatesToStoreAndReturns200() {
         when(store.fetch("room-b", 0L, "epoch-1"))
-                .thenReturn(new UpdateStore.FetchResult("epoch-1", 2L, List.of("blob-a", "blob-b")));
+                .thenReturn(new RoomStore.FetchResult("epoch-1", 2L, List.of("blob-a", "blob-b")));
 
         var response = controller.get("room-b", 0L, "epoch-1");
 

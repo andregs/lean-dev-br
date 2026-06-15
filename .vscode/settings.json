@@ -1,5 +1,8 @@
 {
-  "github-actions.workflows.pinned.workflows": [".github/workflows/deploy-homepage.yml"],
+  "github-actions.workflows.pinned.workflows": [
+    ".github/workflows/deploy-homepage.yml",
+    ".github/workflows/deploy-relay-service.yml"
+  ],
 
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",

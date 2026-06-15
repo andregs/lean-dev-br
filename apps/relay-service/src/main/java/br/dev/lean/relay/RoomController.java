@@ -17,16 +17,16 @@ class RoomController {
 
   private static final Logger log = LoggerFactory.getLogger(RoomController.class);
 
-  private final UpdateStore store;
+  private final RoomStore store;
 
-  RoomController(UpdateStore store) {
+  RoomController(RoomStore store) {
     this.store = store;
   }
 
   record PostRequest(String update) {}
 
   @PostMapping("/{room}/updates")
-  ResponseEntity<UpdateStore.AppendResult> post(
+  ResponseEntity<RoomStore.AppendResult> post(
       @PathVariable String room,
       @RequestBody PostRequest body) {
     var result = store.append(room, body.update());
@@ -35,7 +35,7 @@ class RoomController {
   }
 
   @GetMapping("/{room}/updates")
-  ResponseEntity<UpdateStore.FetchResult> get(
+  ResponseEntity<RoomStore.FetchResult> get(
       @PathVariable String room,
       @RequestParam(defaultValue = "0") long since,
       @RequestParam(required = false) String epoch) {
