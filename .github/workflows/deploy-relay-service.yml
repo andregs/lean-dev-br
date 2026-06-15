@@ -23,7 +23,7 @@ jobs:
 
       - uses: actions/setup-java@v5
         with:
-          distribution: graalvm-community
+          distribution: temurin
           java-version: '25'
 
       - run: pnpm install --frozen-lockfile
