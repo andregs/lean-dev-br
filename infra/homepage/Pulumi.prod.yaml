@@ -12,7 +12,7 @@ config:
   lean-dev-br-homepage:sendAck: 'false'
   # Relay-service Cloud Run URL — set after infra/relay-service stack is deployed:
   #   pulumi config set relayServiceUrl https://relay-service-XXXX-uc.a.run.app
-  lean-dev-br-homepage:relayServiceUrl: ''
+  lean-dev-br-homepage:relayServiceUrl: 'https://relay-service-c7j34ozpya-uc.a.run.app'
   # Set secrets via CLI — never commit plaintext values:
   #   pulumi config set --secret notifyEmail <your-email>
   #   pulumi config set --secret recaptchaSecret <secret-key>

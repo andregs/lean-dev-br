@@ -1,5 +1,5 @@
 config:
-  gcp:project: lean-dev-br        # replace with actual GCP project ID
+  gcp:project: lean-dev-br # replace with actual GCP project ID
   gcp:region: us-central1
   # Docker image tag to deploy. Set via CLI after each docker-push:
   #   pulumi config set imageTag <tag>
