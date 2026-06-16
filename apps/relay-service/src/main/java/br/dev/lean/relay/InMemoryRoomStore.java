@@ -72,6 +72,25 @@ class InMemoryRoomStore implements RoomStore {
     }
   }
 
+  @Override
+  public CompactResult compact(String roomId, String blob, String baseEpoch) {
+    var room = rooms.get(roomId);
+    if (room == null) throw new ResponseStatusException(HttpStatus.CONFLICT, "Epoch mismatch");
+    room.lock.lock();
+    try {
+      if (!room.epoch.equals(baseEpoch)) {
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "Epoch mismatch");
+      }
+      room.updates.clear();
+      room.updates.add(blob);
+      room.epoch = UUID.randomUUID().toString();
+      room.lastUsed = System.currentTimeMillis();
+      return new CompactResult(room.epoch, 1L);
+    } finally {
+      room.lock.unlock();
+    }
+  }
+
   @Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS)
   void cleanup() {
     long cutoff = System.currentTimeMillis() - roomTtlMs;
@@ -79,7 +98,7 @@ class InMemoryRoomStore implements RoomStore {
   }
 
   private static class RoomState {
-    final String epoch = UUID.randomUUID().toString();
+    String epoch = UUID.randomUUID().toString();
     final List<String> updates = new ArrayList<>();
     final ReentrantLock lock = new ReentrantLock();
     long lastUsed = System.currentTimeMillis();

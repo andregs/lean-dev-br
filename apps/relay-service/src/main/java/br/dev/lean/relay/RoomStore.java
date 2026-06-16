@@ -30,7 +30,17 @@ interface RoomStore {
 
   record FetchResult(String epoch, long cursor, List<String> updates) {}
 
+  record CompactResult(String epoch, long seq) {}
+
   AppendResult append(String roomId, String update);
 
   FetchResult fetch(String roomId, long since, String clientEpoch);
+
+  /**
+   * Replaces the room's update log with a single compacted blob and rolls the epoch.
+   *
+   * @param baseEpoch the epoch the client believes is current — if it doesn't match,
+   *                  returns 409 (another device already compacted; client re-syncs on next fetch)
+   */
+  CompactResult compact(String roomId, String blob, String baseEpoch);
 }

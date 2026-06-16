@@ -47,6 +47,30 @@ class RoomControllerTest {
     }
 
     @Test
+    void post_compact_delegatesToStoreAndReturns200() {
+        when(store.compact("room-d", "full-state", "epoch-1"))
+                .thenReturn(new RoomStore.CompactResult("new-epoch", 1L));
+
+        var response = controller.compact("room-d", new RoomController.CompactRequest("full-state", "epoch-1"));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().epoch()).isEqualTo("new-epoch");
+        assertThat(response.getBody().seq()).isEqualTo(1L);
+    }
+
+    @Test
+    void post_compact_epochMismatch_propagates409() {
+        when(store.compact("room-e", "blob", "wrong-epoch"))
+                .thenThrow(new ResponseStatusException(HttpStatus.CONFLICT));
+
+        var ex = org.junit.jupiter.api.Assertions.assertThrows(
+                ResponseStatusException.class,
+                () -> controller.compact("room-e", new RoomController.CompactRequest("blob", "wrong-epoch")));
+
+        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
     void post_overCap_propagates413() {
         when(store.append("room-c", "blob"))
                 .thenThrow(new ResponseStatusException(HttpStatus.CONTENT_TOO_LARGE));

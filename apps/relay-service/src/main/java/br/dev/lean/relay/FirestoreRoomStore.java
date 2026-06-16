@@ -130,6 +130,58 @@ class FirestoreRoomStore implements RoomStore {
     return new FetchResult(epoch, seq, blobs);
   }
 
+  @Override
+  public CompactResult compact(String roomId, String blob, String baseEpoch) {
+    var room = getDoc("rooms/" + roomId);
+    if (room == null) throw new ResponseStatusException(HttpStatus.CONFLICT, "Epoch mismatch");
+
+    String currentEpoch = getString(room, "epoch");
+    if (!currentEpoch.equals(baseEpoch)) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Epoch mismatch");
+    }
+
+    long currentSeq = getLong(room, "seq");
+    String newEpoch = UUID.randomUUID().toString();
+    String now = Instant.now().toString();
+
+    var writes = new ArrayList<Map<String, Object>>();
+
+    // Delete all existing update docs (seq 1..currentSeq; IDs are numeric strings)
+    for (long i = 1; i <= currentSeq; i++) {
+      var del = new LinkedHashMap<String, Object>();
+      del.put("delete", docRoot + "/rooms/" + roomId + "/updates/" + i);
+      writes.add(del);
+    }
+
+    // Single compacted update at seq=1
+    writes.add(Map.of("update", Map.of(
+        "name", docRoot + "/rooms/" + roomId + "/updates/1",
+        "fields", Map.of(
+            "blob", strVal(blob),
+            "seq", intVal(1),
+            "createdAt", tsVal(now)))));
+
+    // Room doc: roll epoch + reset seq
+    var roomFields = new LinkedHashMap<String, Object>();
+    roomFields.put("epoch", strVal(newEpoch));
+    roomFields.put("seq", intVal(1));
+    roomFields.put("lastUsed", tsVal(now));
+    var roomWrite = new LinkedHashMap<String, Object>();
+    roomWrite.put("update", Map.of(
+        "name", docRoot + "/rooms/" + roomId,
+        "fields", roomFields));
+    roomWrite.put("currentDocument", Map.of("updateTime", room.get("updateTime")));
+    roomWrite.put("updateMask", Map.of("fieldPaths", List.of("epoch", "seq", "lastUsed")));
+    writes.add(roomWrite);
+
+    try {
+      commit(writes);
+    } catch (ConflictException e) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Concurrent compaction");
+    }
+    return new CompactResult(newEpoch, 1L);
+  }
+
   // ── Append ────────────────────────────────────────────────────────────────
 
   /**

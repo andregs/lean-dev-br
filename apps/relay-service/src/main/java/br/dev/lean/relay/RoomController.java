@@ -25,6 +25,8 @@ class RoomController {
 
   record PostRequest(String update) {}
 
+  record CompactRequest(String update, String baseEpoch) {}
+
   @PostMapping("/{room}/updates")
   ResponseEntity<RoomStore.AppendResult> post(
       @PathVariable String room,
@@ -42,6 +44,15 @@ class RoomController {
     var result = store.fetch(room, since, epoch);
     log.debug("GET  room={} since={} epoch={} → {} update(s)", abbrev(room), since,
         epoch == null ? "none" : abbrev(epoch), result.updates().size());
+    return ResponseEntity.ok(result);
+  }
+
+  @PostMapping("/{room}/compact")
+  ResponseEntity<RoomStore.CompactResult> compact(
+      @PathVariable String room,
+      @RequestBody CompactRequest body) {
+    var result = store.compact(room, body.update(), body.baseEpoch());
+    log.debug("COMPACT room={} newEpoch={}", abbrev(room), abbrev(result.epoch()));
     return ResponseEntity.ok(result);
   }
 

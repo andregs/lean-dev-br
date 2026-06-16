@@ -96,6 +96,30 @@ class InMemoryRoomStoreTest {
   }
 
   @Test
+  void compact_matchingEpoch_replacesLogAndRollsEpoch() {
+    store.append("r9", "blob-a");
+    store.append("r9", "blob-b");
+    var before = store.fetch("r9", 0, null);
+
+    var result = store.compact("r9", "full-state", before.epoch());
+
+    assertThat(result.epoch()).isNotEqualTo(before.epoch());
+    assertThat(result.seq()).isEqualTo(1L);
+    var after = store.fetch("r9", 0, result.epoch());
+    assertThat(after.updates()).containsExactly("full-state");
+    assertThat(after.cursor()).isEqualTo(1L);
+  }
+
+  @Test
+  void compact_epochMismatch_throws409() {
+    store.append("r10", "blob-a");
+
+    assertThatThrownBy(() -> store.compact("r10", "full-state", "wrong-epoch"))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("409");
+  }
+
+  @Test
   void fetch_bumpsLastUsed_roomSurvivesCleanup() throws InterruptedException {
     var props = mock(RelayProperties.class);
     when(props.roomTtl()).thenReturn(Duration.ofMillis(50));
