@@ -8,6 +8,10 @@ const TAG = '[sync]';
 const IDB_NAME = 'todo-sync-meta';
 const IDB_STORE = 'cursors';
 
+// Below Firestore's 500-write batch-commit limit and well under the server's
+// 1000-update room cap — bounds cold-start download size for long-lived rooms.
+const COMPACT_THRESHOLD = 200;
+
 // ── IDB helpers ───────────────────────────────────────────────────────────────
 
 /** @returns {Promise<IDBDatabase>} */
@@ -68,6 +72,11 @@ const fromB64 = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
  *      - Skip undecryptable blobs silently (wrong key / corrupt).
  *   2. Push: encode Yjs delta (since lastPushedSV), base64-encode inner binary,
  *      encrypt the base64 string, base64-encode outer ciphertext, POST.
+ *   3. Compact: once cursor reaches COMPACT_THRESHOLD, encode the full Yjs state
+ *      (no state vector) and POST it to /compact under a CAS on the current epoch.
+ *      200 → server replaced the log with this single blob under a new epoch.
+ *      409 → another device already compacted; the epoch mismatch resolves itself
+ *      on the next pull().
  *
  * Encoding layers (pull side, mirrored on push):
  *   server b64  →  ciphertext (iv + AES-GCM payload)
@@ -166,6 +175,29 @@ export function createSync(signalUrl, roomId, aesKey, yjsDoc, onStatus) {
       body: JSON.stringify({ update: outerB64 }),
     });
     if (!res.ok) throw new Error(`POST updates → ${res.status}`);
+    /** @type {{ epoch: string, seq: number }} */
+    const body = await res.json();
+    cursor = body.seq; // pull() only reflects the count as of before this push
+    lastPushedSV = Y.encodeStateVector(yjsDoc);
+  }
+
+  async function compact() {
+    const full = Y.encodeStateAsUpdate(yjsDoc); // full GC'd state, not Y.snapshot (history)
+    const innerB64 = toB64(full);
+    const ciphertext = await encrypt(aesKey, innerB64);
+    const outerB64 = toB64(ciphertext);
+
+    const res = await fetch(`${roomUrl}/compact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ update: outerB64, baseEpoch: epoch }),
+    });
+    if (res.status === 409) return; // another device compacted first — next pull() resolves it
+    if (!res.ok) throw new Error(`POST compact → ${res.status}`);
+    /** @type {{ epoch: string, seq: number }} */
+    const body = await res.json();
+    epoch = body.epoch;
+    cursor = body.seq;
     lastPushedSV = Y.encodeStateVector(yjsDoc);
   }
 
@@ -183,6 +215,7 @@ export function createSync(signalUrl, roomId, aesKey, yjsDoc, onStatus) {
     try {
       const epochChanged = await pull();
       await push(epochChanged);
+      if (cursor >= COMPACT_THRESHOLD) await compact();
       await saveMeta();
       onStatus('synced');
     } catch (err) {
