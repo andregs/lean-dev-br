@@ -146,4 +146,17 @@ class FirestoreRoomStoreIT {
         .satisfies(e -> assertThat(((ResponseStatusException) e).getStatusCode())
             .isEqualTo(HttpStatus.CONFLICT));
   }
+
+  @Test
+  void pruneOlderThan_removesStaleRoomAndKeepsFresh() throws InterruptedException {
+    store.append("r11", "blob");
+    Thread.sleep(60);
+    store.append("r12", "blob");
+
+    int count = store.pruneOlderThan(Duration.ofMillis(50));
+
+    assertThat(count).isGreaterThanOrEqualTo(1);
+    assertThat(store.fetch("r11", 0, null).epoch()).isEmpty(); // pruned
+    assertThat(store.fetch("r12", 0, null).updates()).containsExactly("blob"); // survives
+  }
 }

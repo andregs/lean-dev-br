@@ -130,10 +130,29 @@ class InMemoryRoomStoreTest {
     Thread.sleep(30);
     shortTtlStore.fetch("r8", 0, null); // bumps lastUsed
     Thread.sleep(30);
-    shortTtlStore.cleanup();
+    shortTtlStore.pruneOlderThan(Duration.ofMillis(50));
 
     // lastUsed was refreshed by the fetch, so the room should still exist
     var result = shortTtlStore.fetch("r8", 0, null);
     assertThat(result.updates()).containsExactly("blob");
+  }
+
+  @Test
+  void pruneOlderThan_removesStaleRooms_keepsRecent() throws InterruptedException {
+    var props = mock(RelayProperties.class);
+    when(props.roomTtl()).thenReturn(Duration.ofMillis(50));
+    when(props.maxUpdatesPerRoom()).thenReturn(10);
+    var shortTtlStore = new InMemoryRoomStore(props);
+
+    shortTtlStore.append("stale", "blob");
+    Thread.sleep(60);
+    shortTtlStore.append("fresh", "blob");
+
+    int count = shortTtlStore.pruneOlderThan(Duration.ofMillis(50));
+
+    assertThat(count).isEqualTo(1);
+    // stale room evicted — fetch recreates it empty
+    assertThat(shortTtlStore.fetch("stale", 0, null).updates()).isEmpty();
+    assertThat(shortTtlStore.fetch("fresh", 0, null).updates()).containsExactly("blob");
   }
 }

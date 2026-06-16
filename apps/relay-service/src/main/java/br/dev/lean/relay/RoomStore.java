@@ -1,5 +1,6 @@
 package br.dev.lean.relay;
 
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -43,4 +44,7 @@ interface RoomStore {
    *                  returns 409 (another device already compacted; client re-syncs on next fetch)
    */
   CompactResult compact(String roomId, String blob, String baseEpoch);
+
+  /** Deletes all rooms whose {@code lastUsed} timestamp is older than {@code age}. Returns the count removed. */
+  int pruneOlderThan(Duration age);
 }

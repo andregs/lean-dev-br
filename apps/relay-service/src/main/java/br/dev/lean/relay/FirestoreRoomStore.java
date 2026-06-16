@@ -1,5 +1,6 @@
 package br.dev.lean.relay;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -180,6 +181,49 @@ class FirestoreRoomStore implements RoomStore {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Concurrent compaction");
     }
     return new CompactResult(newEpoch, 1L);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public int pruneOlderThan(Duration age) {
+    String cutoff = Instant.now().minus(age).toString();
+    var query = Map.of("structuredQuery", Map.of(
+        "from", List.of(Map.of("collectionId", "rooms")),
+        "where", Map.of("fieldFilter", Map.of(
+            "field", Map.of("fieldPath", "lastUsed"),
+            "op", "LESS_THAN",
+            "value", tsVal(cutoff)))));
+
+    var rows = postForList(api + "/" + docRoot + ":runQuery", query);
+    int count = 0;
+    for (var row : rows) {
+      var doc = (Map<String, Object>) row.get("document");
+      if (doc == null) continue;
+      String roomName = (String) doc.get("name");
+      pruneRoom(roomName);
+      count++;
+    }
+    return count;
+  }
+
+  @SuppressWarnings("unchecked")
+  private void pruneRoom(String roomName) {
+    var query = Map.of("structuredQuery", Map.of(
+        "from", List.of(Map.of("collectionId", "updates"))));
+    var updateRows = postForList(api + "/" + roomName + ":runQuery", query);
+
+    var writes = new ArrayList<Map<String, Object>>();
+    for (var row : updateRows) {
+      var doc = (Map<String, Object>) row.get("document");
+      if (doc == null) continue;
+      writes.add(Map.of("delete", doc.get("name")));
+      if (writes.size() == 499) {
+        commit(writes);
+        writes.clear();
+      }
+    }
+    writes.add(Map.of("delete", roomName));
+    commit(writes);
   }
 
   // ── Append ────────────────────────────────────────────────────────────────

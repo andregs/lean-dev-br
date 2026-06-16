@@ -19,12 +19,17 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  *                          before POST returns HTTP 413. Keeps heap bounded
  *                          under abuse.
  *                          Default: {@code 1000}.
+ * @param pruneToken        Shared secret required in the {@code X-Prune-Token}
+ *                          header on {@code POST /internal/prune}. Bind from
+ *                          the {@code PRUNE_TOKEN} environment variable in prod.
+ *                          Blank (default) → endpoint always returns 403.
  */
 @ConfigurationProperties(prefix = "relay")
 record RelayProperties(
     Cors cors,
     @DefaultValue("5m") Duration roomTtl,
-    @DefaultValue("1000") int maxUpdatesPerRoom) {
+    @DefaultValue("1000") int maxUpdatesPerRoom,
+    @DefaultValue("") String pruneToken) {
 
   /**
    * @param allowedOrigins Comma-separated CORS allowed origins for
