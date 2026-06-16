@@ -58,6 +58,8 @@
   "packageManager": "pnpm@11.4.0",
   "dependencies": {
     "@lean-dev-br/csp": "workspace:*",
+    "@lean-dev-br/flags": "workspace:*",
+    "@lean-dev-br/i18n": "workspace:*",
     "@lean-dev-br/rum": "workspace:*",
     "@lean-dev-br/styles": "workspace:*",
     "@lean-dev-br/trusted-types": "workspace:*",
@@ -65,6 +67,7 @@
     "aws-rum-web": "^3.1.0",
     "dompurify": "^3.4.8",
     "gray-matter": "^4.0.3",
+    "i18next": "^26.3.1",
     "next": "~16.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
