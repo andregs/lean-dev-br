@@ -153,13 +153,16 @@ This bakes the Cloud Run URL into the todo app's Content-Security-Policy (`conne
 
 ## Cost notes
 
-- Cloud Run: `min-instances=0` → scales to zero between syncs. Free tier covers 2M requests/month and 360k vCPU-seconds. This app stays within free tier under normal personal use.
-- Artifact Registry: first 0.5 GB/month free; a native image is ~50–80 MB.
+- Cloud Run: `min-instances=0` → scales to zero between syncs; `cpuIdle: true` means request-based billing. Free tier (monthly, resets monthly): 2M requests, 180k vCPU-seconds, 360k GiB-seconds — this app stays well within it under normal personal use.
+  - Current pricing/free tier: https://cloud.google.com/run/pricing
+- Artifact Registry: first 0.5 GB/month free, $0.10/GB-month after; a native image is ~50–80 MB.
+  - Current pricing/free tier: https://cloud.google.com/artifact-registry/pricing
 - Firestore: free tier resets daily (50k reads, 20k writes, 20k deletes, 1 GiB storage) — the Pulumi-managed alert policies email at 80% usage.
   - Current free-tier limits: https://cloud.google.com/firestore/pricing
   - Live usage dashboard: https://console.cloud.google.com/firestore/databases/-default-/usage?project=lean-dev-br
   - If limits change or usage patterns shift, adjust `thresholdValue` in the `AlertPolicy` resources in `infra/relay-service/index.ts`.
-- Cloud Scheduler: first 3 jobs/month free; this stack uses 1.
+- Cloud Scheduler: first 3 jobs/month free per billing account, $0.10/job-month after; this stack uses 1.
+  - Current pricing/free tier: https://cloud.google.com/scheduler/pricing
 - Total expected cost: **$0/month**.
 
 ### Manual: Billing budget alert

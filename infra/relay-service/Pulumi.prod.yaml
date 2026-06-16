@@ -4,3 +4,8 @@ config:
   # Docker image tag to deploy. Set via CLI after each docker-push:
   #   pulumi config set imageTag <tag>
   # Omit to deploy with a placeholder image (creates the Cloud Run service; no traffic served).
+
+  lean-dev-br-relay-service:pruneToken:
+    secure: AAABAK33kokUvSPce+J4G0OkKjoTkBN2H7rB3+i6qOvXPWzeygVgMxvnnSsl3IfWBgBt3o9Jc/yM6yViQkzldSenL0pInmjZD30uI0cCJWaaAhvmXDoWTJG/vIMzCdAb
+  lean-dev-br-relay-service:alertEmail:
+    secure: AAABAGuUMUxT1TPG3teKIzO38YtusrKhXZvDsL4GeQc29LNmg1ISzi1bEQIZsuQAyw==
