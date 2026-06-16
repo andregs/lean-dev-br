@@ -63,12 +63,19 @@ gcloud projects add-iam-policy-binding lean-dev-br \
 gcloud projects add-iam-policy-binding lean-dev-br \
   --member="serviceAccount:pulumi-deployer@lean-dev-br.iam.gserviceaccount.com" \
   --role="roles/monitoring.editor"
+
+gcloud projects add-iam-policy-binding lean-dev-br \
+  --member="serviceAccount:pulumi-deployer@lean-dev-br.iam.gserviceaccount.com" \
+  --role="roles/resourcemanager.projectIamAdmin"
 ```
 
 - `roles/datastore.owner` — create the Firestore database.
 - `roles/cloudscheduler.admin` — create the daily prune job.
 - `roles/iam.serviceAccountAdmin` — create the `relay-runtime` Cloud Run service account.
 - `roles/monitoring.editor` — create the quota alert policy + notification channel.
+- `roles/resourcemanager.projectIamAdmin` — grant `relay-runtime` its `roles/datastore.user`
+  project-level binding. Broad (manages all IAM bindings on the project), but there's no
+  narrower built-in role for "grant this one role to one SA."
 
 ## 4. Authenticate Pulumi with GCP
 
