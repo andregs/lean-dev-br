@@ -40,6 +40,13 @@
         "command": "./mvnw -Pnative spring-boot:build-image -DskipTests --no-transfer-progress -Dspring-boot.build-image.imageName=${RELAY_IMAGE:-relay-service:local} -Dspring-boot.build-image.env.BP_NATIVE_IMAGE_BUILD_ARGUMENTS=-J-Xmx5g"
       }
     },
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/relay-service",
+        "command": "./mvnw failsafe:integration-test failsafe:verify"
+      }
+    },
     "docker-push": {
       "executor": "nx:run-commands",
       "options": {
