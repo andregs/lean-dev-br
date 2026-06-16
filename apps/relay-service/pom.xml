@@ -78,6 +78,14 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<!-- AOT runs at native-image build time; @Profile-conditional beans (e.g.
+				     FirestoreRoomStore) are baked in then, not re-evaluated from the
+				     SPRING_PROFILES_ACTIVE env var at container runtime. -->
+				<configuration>
+					<profiles>
+						<profile>prod</profile>
+					</profiles>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
