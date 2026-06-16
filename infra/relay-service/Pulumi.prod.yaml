@@ -8,4 +8,4 @@ config:
   lean-dev-br-relay-service:pruneToken:
     secure: AAABAK33kokUvSPce+J4G0OkKjoTkBN2H7rB3+i6qOvXPWzeygVgMxvnnSsl3IfWBgBt3o9Jc/yM6yViQkzldSenL0pInmjZD30uI0cCJWaaAhvmXDoWTJG/vIMzCdAb
   lean-dev-br-relay-service:alertEmail:
-    secure: AAABAGuUMUxT1TPG3teKIzO38YtusrKhXZvDsL4GeQc29LNmg1ISzi1bEQIZsuQAyw==
+    secure: AAABAGRmmdFg7kCtkYYP4NrekTdDStvWJFLVNj4HL2K+tWiT9Mp5ePGNhY79dHFl3g==
