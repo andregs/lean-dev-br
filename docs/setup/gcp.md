@@ -25,7 +25,9 @@ Find your billing account ID: `gcloud billing accounts list`
 gcloud services enable \
   run.googleapis.com \
   artifactregistry.googleapis.com \
-  iam.googleapis.com
+  iam.googleapis.com \
+  firestore.googleapis.com \
+  cloudscheduler.googleapis.com
 ```
 
 ## 3. Create a service account for Pulumi
@@ -45,7 +47,28 @@ gcloud projects add-iam-policy-binding lean-dev-br \
 gcloud projects add-iam-policy-binding lean-dev-br \
   --member="serviceAccount:pulumi-deployer@lean-dev-br.iam.gserviceaccount.com" \
   --role="roles/iam.serviceAccountUser"
+
+gcloud projects add-iam-policy-binding lean-dev-br \
+  --member="serviceAccount:pulumi-deployer@lean-dev-br.iam.gserviceaccount.com" \
+  --role="roles/datastore.owner"
+
+gcloud projects add-iam-policy-binding lean-dev-br \
+  --member="serviceAccount:pulumi-deployer@lean-dev-br.iam.gserviceaccount.com" \
+  --role="roles/cloudscheduler.admin"
+
+gcloud projects add-iam-policy-binding lean-dev-br \
+  --member="serviceAccount:pulumi-deployer@lean-dev-br.iam.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountAdmin"
+
+gcloud projects add-iam-policy-binding lean-dev-br \
+  --member="serviceAccount:pulumi-deployer@lean-dev-br.iam.gserviceaccount.com" \
+  --role="roles/monitoring.editor"
 ```
+
+- `roles/datastore.owner` — create the Firestore database.
+- `roles/cloudscheduler.admin` — create the daily prune job.
+- `roles/iam.serviceAccountAdmin` — create the `relay-runtime` Cloud Run service account.
+- `roles/monitoring.editor` — create the quota alert policy + notification channel.
 
 ## 4. Authenticate Pulumi with GCP
 
@@ -75,12 +98,20 @@ pnpm install
 pnpm exec pulumi stack init prod
 pnpm exec pulumi config set gcp:project lean-dev-br --stack prod
 pnpm exec pulumi config set gcp:region us-central1 --stack prod
+pnpm exec pulumi config set --secret pruneToken "$(openssl rand -hex 32)" --stack prod
+pnpm exec pulumi config set --secret alertEmail you@example.com --stack prod
 pnpm exec pulumi up --stack prod
 ```
 
 This creates:
 - Artifact Registry repository `relay-service` in `us-central1`
-- Cloud Run service `relay-service` with placeholder image (returns 200 Hello World until real image is deployed)
+- Firestore database `(default)` (Native mode, `us-central1`) — **location is permanent**; pick the same region as Cloud Run and never change it
+- Runtime service account `relay-runtime` with `roles/datastore.user`, attached to the Cloud Run service
+- Cloud Run service `relay-service` with placeholder image (returns 200 Hello World until real image is deployed), `SPRING_PROFILES_ACTIVE=prod` and `PRUNE_TOKEN` envs
+- Cloud Scheduler job calling `/internal/prune` daily with the `X-Prune-Token` header
+- A monitoring notification channel (email) + alert policies on Firestore daily read/write quota (80% of the free tier)
+
+`pruneToken` and `alertEmail` are set with `--secret` because `Pulumi.<stack>.yaml` is committed to this (public) repo — plaintext config there would leak the email to scrapers and hand out the prune endpoint's bearer token.
 
 Note the `repoUrl` output — you'll use it to tag and push images.
 
@@ -124,4 +155,19 @@ This bakes the Cloud Run URL into the todo app's Content-Security-Policy (`conne
 
 - Cloud Run: `min-instances=0` → scales to zero between syncs. Free tier covers 2M requests/month and 360k vCPU-seconds. This app stays within free tier under normal personal use.
 - Artifact Registry: first 0.5 GB/month free; a native image is ~50–80 MB.
+- Firestore: free tier resets daily (50k reads, 20k writes, 20k deletes, 1 GiB storage) — the Pulumi-managed alert policies email at 80% usage.
+  - Current free-tier limits: https://cloud.google.com/firestore/pricing
+  - Live usage dashboard: https://console.cloud.google.com/firestore/databases/-default-/usage?project=lean-dev-br
+  - If limits change or usage patterns shift, adjust `thresholdValue` in the `AlertPolicy` resources in `infra/relay-service/index.ts`.
+- Cloud Scheduler: first 3 jobs/month free; this stack uses 1.
 - Total expected cost: **$0/month**.
+
+### Manual: Billing budget alert
+
+GCP has no native hard spend cap, so set a budget alert as a safety net:
+
+1. Console → Billing → Budgets & alerts → Create budget
+2. Scope: this project, amount ~$1–$5/month
+3. Alert thresholds: 50%, 90%, 100% of budget, email to project owners
+
+This is manual (not in Pulumi) to avoid granting `roles/billing.admin` to the deployer service account.
