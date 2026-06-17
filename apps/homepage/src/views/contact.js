@@ -36,5 +36,5 @@ export function renderContact(root, { i18n }) {
   );
 
   const form = root.querySelector('.contact-form');
-  if (form instanceof HTMLFormElement) initContactForm(form);
+  if (form instanceof HTMLFormElement) initContactForm(form, { i18n });
 }

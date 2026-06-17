@@ -1,4 +1,5 @@
 // @ts-check
+/** @import { I18nInstance } from '@lean-dev-br/i18n' */
 import { policy } from './trusted-types.js';
 
 const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
@@ -64,8 +65,9 @@ function setBusy(button, busy) {
 /**
  * Wire submit handling onto the contact form.
  * @param {HTMLFormElement} form
+ * @param {{ i18n: I18nInstance }} ctx
  */
-export function initContactForm(form) {
+export function initContactForm(form, { i18n }) {
   const status = form.querySelector('.form-status');
   const button = form.querySelector('button[type="submit"]');
 
@@ -86,12 +88,12 @@ export function initContactForm(form) {
 
     if (!form.checkValidity()) {
       form.reportValidity();
-      setStatus(status, 'error', 'Please fill in the required fields correctly.');
+      setStatus(status, 'error', i18n.t('contact.status.error.validation'));
       return;
     }
 
     setBusy(button, true);
-    setStatus(status, 'pending', 'Sending…');
+    setStatus(status, 'pending', i18n.t('contact.status.pending'));
 
     try {
       const token = await getToken();
@@ -99,6 +101,7 @@ export function initContactForm(form) {
         message: payload.message,
         email: payload.email.trim() || undefined,
         token,
+        locale: i18n.locale,
       });
       const res = await fetch('/api/contact', {
         method: 'POST',
@@ -107,9 +110,9 @@ export function initContactForm(form) {
       });
       if (!res.ok) throw new Error(`Request failed: ${String(res.status)}`);
       form.reset();
-      setStatus(status, 'ok', 'Thanks! Your message is on its way.');
+      setStatus(status, 'ok', i18n.t('contact.status.ok'));
     } catch {
-      setStatus(status, 'error', 'Something went wrong. Please try again later.');
+      setStatus(status, 'error', i18n.t('contact.status.error.generic'));
     } finally {
       setBusy(button, false);
     }

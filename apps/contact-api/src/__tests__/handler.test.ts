@@ -73,17 +73,22 @@ describe('handler', () => {
     process.env.RECAPTCHA_ACTION = 'contact';
     process.env.SUBJECT_PREFIX = '[lean.dev.br]';
     process.env.MIN_SCORE = '0.5';
+    process.env.SEND_ACK = 'true';
   });
 
-  it('returns 400 when body is not valid JSON', async () => {
+  afterEach(() => {
+    delete process.env.SEND_ACK;
+  });
+
+  it('returns 400 with problem+json when body is not valid JSON', async () => {
     const res = await handler(makeEvent('not-json'));
-    expect(res).toMatchObject({ statusCode: 400 });
+    expect(res).toMatchObject({ statusCode: 400, headers: { 'content-type': 'application/problem+json' } });
     expect(mockVerify).not.toHaveBeenCalled();
   });
 
   it('returns 400 when body is not an object', async () => {
     const res = await handler(makeEvent(null));
-    expect(res).toMatchObject({ statusCode: 400 });
+    expect(res).toMatchObject({ statusCode: 400, headers: { 'content-type': 'application/problem+json' } });
     expect(mockVerify).not.toHaveBeenCalled();
   });
 
@@ -102,35 +107,52 @@ describe('handler', () => {
   it('returns 403 when reCAPTCHA rejects', async () => {
     mockVerify.mockRejectedValueOnce(new Error('low score'));
     const res = await handler(makeEvent({ message: 'Hello', token: 'bad' }));
-    expect(res).toMatchObject({ statusCode: 403 });
+    expect(res).toMatchObject({ statusCode: 403, headers: { 'content-type': 'application/problem+json' } });
     expect(mockSend).not.toHaveBeenCalled();
   });
 
   it('returns 502 when notify SES call fails', async () => {
     mockSend.mockRejectedValueOnce(new Error('SES error'));
     const res = await handler(makeEvent({ message: 'Hello', token: 'tok' }));
-    expect(res).toMatchObject({ statusCode: 502 });
+    expect(res).toMatchObject({ statusCode: 502, headers: { 'content-type': 'application/problem+json' } });
   });
 
-  it('returns 200 and sends notify when valid (no visitor email)', async () => {
+  it('returns 200 with application/json and sends notify when valid (no visitor email)', async () => {
     const res = await handler(makeEvent({ message: 'Hello', token: 'tok' }));
-    expect(res).toMatchObject({ statusCode: 200 });
+    expect(res).toMatchObject({ statusCode: 200, headers: { 'content-type': 'application/json' } });
     expect(mockSend).toHaveBeenCalledOnce();
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ to: 'andre@example.com', replyTo: undefined }),
     );
   });
 
-  it('returns 200, sends notify with Reply-To, and fires ACK when visitor email provided', async () => {
+  it('returns 200, sends notify with Reply-To, and fires en-US ACK by default', async () => {
     const res = await handler(
       makeEvent({ message: 'Hello', token: 'tok', email: 'visitor@example.com' }),
     );
     expect(res).toMatchObject({ statusCode: 200 });
-    // Let the fire-and-forget ACK settle
     await vi.waitFor(() => { expect(mockSend).toHaveBeenCalledTimes(2); });
     const [notify, ack] = mockSend.mock.calls;
     expect(notify[0]).toMatchObject({ to: 'andre@example.com', replyTo: 'visitor@example.com' });
-    expect(ack[0]).toMatchObject({ to: 'visitor@example.com', from: 'do-not-reply@lean.dev.br' });
+    expect(ack[0]).toMatchObject({ to: 'visitor@example.com', subject: 'Got your message' });
+  });
+
+  it('sends pt-BR ACK when locale is pt-BR', async () => {
+    await handler(
+      makeEvent({ message: 'Olá', token: 'tok', email: 'visitor@example.com', locale: 'pt-BR' }),
+    );
+    await vi.waitFor(() => { expect(mockSend).toHaveBeenCalledTimes(2); });
+    const [, ack] = mockSend.mock.calls;
+    expect(ack[0]).toMatchObject({ to: 'visitor@example.com', subject: 'Mensagem recebida' });
+  });
+
+  it('falls back to en-US ACK for unknown locale', async () => {
+    await handler(
+      makeEvent({ message: 'Hi', token: 'tok', email: 'visitor@example.com', locale: 'fr-FR' }),
+    );
+    await vi.waitFor(() => { expect(mockSend).toHaveBeenCalledTimes(2); });
+    const [, ack] = mockSend.mock.calls;
+    expect(ack[0]).toMatchObject({ subject: 'Got your message' });
   });
 
   it('returns 200 even when ACK email fails', async () => {

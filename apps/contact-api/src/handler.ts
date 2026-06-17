@@ -28,9 +28,43 @@ function json(statusCode: number, body: Record<string, unknown>): APIGatewayProx
   };
 }
 
+function problem(status: number, title: string): APIGatewayProxyResultV2 {
+  return {
+    statusCode: status,
+    body: JSON.stringify({ type: 'about:blank', status, title }),
+    headers: { 'content-type': 'application/problem+json' },
+  };
+}
+
 function truncate(s: string, max: number): string {
   return s.length <= max ? s : `${s.slice(0, max)}…`;
 }
+
+const SUPPORTED_LOCALES = ['en-US', 'pt-BR'] as const;
+type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+
+const ACK_TEMPLATES: Record<SupportedLocale, { subject: string; body: string }> = {
+  'en-US': {
+    subject: 'Got your message',
+    body: [
+      'Thanks for reaching out!',
+      '',
+      "Your message has been received. I'll get back to you if possible.",
+      '',
+      '— André',
+    ].join('\n'),
+  },
+  'pt-BR': {
+    subject: 'Mensagem recebida',
+    body: [
+      'Obrigado pelo contato!',
+      '',
+      'Sua mensagem foi recebida. Retornarei assim que possível.',
+      '',
+      '— André',
+    ].join('\n'),
+  },
+};
 
 export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> => {
   if (event.rawPath === '/api/csp-report') {
@@ -55,21 +89,26 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
   try {
     parsed = JSON.parse(event.body ?? '{}');
   } catch {
-    return json(400, { error: 'Invalid JSON' });
+    return problem(400, 'Invalid JSON');
   }
 
   if (typeof parsed !== 'object' || parsed === null) {
-    return json(400, { error: 'Invalid body' });
+    return problem(400, 'Invalid body');
   }
 
-  const { message, email, token } = parsed as Record<string, unknown>;
+  const { message, email, token, locale: rawLocale } = parsed as Record<string, unknown>;
 
   if (typeof token !== 'string' || token.trim().length === 0) {
-    return json(400, { error: 'Missing token' });
+    return problem(400, 'Missing token');
   }
   if (typeof message !== 'string' || message.trim().length === 0) {
-    return json(400, { error: 'Missing message' });
+    return problem(400, 'Missing message');
   }
+
+  const locale: SupportedLocale =
+    typeof rawLocale === 'string' && (SUPPORTED_LOCALES as readonly string[]).includes(rawLocale)
+      ? (rawLocale as SupportedLocale)
+      : 'en-US';
 
   const visitorEmail = typeof email === 'string' && email.trim().length > 0 ? email.trim() : null;
 
@@ -83,7 +122,7 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
     );
   } catch (err) {
     console.warn('reCAPTCHA rejection:', err);
-    return json(403, { error: 'Bot check failed' });
+    return problem(403, 'Bot check failed');
   }
 
   const subject = `${SUBJECT_PREFIX} ${truncate(message.trim(), 60)}`;
@@ -102,24 +141,18 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
     });
   } catch (err) {
     console.error('SES notify failed:', err);
-    return json(502, { error: 'Failed to send message' });
+    return problem(502, 'Failed to send message');
   }
 
   // ACK disabled while SES is in sandbox (requires production access to send to unverified addresses).
   // Enable via Pulumi config: `pulumi config set sendAck true`
   if (visitorEmail && process.env.SEND_ACK === 'true') {
-    const ackBody = [
-      'Thanks for reaching out!',
-      '',
-      "Your message has been received. I'll get back to you if possible.",
-      '',
-      '— André',
-    ].join('\n');
+    const ack = ACK_TEMPLATES[locale];
     sendMail({
       from: FROM_EMAIL,
       to: visitorEmail,
-      subject: 'Got your message',
-      body: ackBody,
+      subject: ack.subject,
+      body: ack.body,
     }).catch((err: unknown) => {
       console.warn('ACK email failed (non-fatal):', err);
     });

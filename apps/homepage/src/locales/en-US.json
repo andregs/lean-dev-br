@@ -13,5 +13,9 @@
   "contact.submit": "Send message",
   "not-found.back": "← Home",
   "lang.toggle": "PT",
-  "lang.toggle.label": "Switch to Portuguese"
+  "lang.toggle.label": "Switch to Portuguese",
+  "contact.status.pending": "Sending…",
+  "contact.status.ok": "Thanks! Your message is on its way.",
+  "contact.status.error.generic": "Something went wrong. Please try again later.",
+  "contact.status.error.validation": "Please fill in the required fields correctly."
 }
