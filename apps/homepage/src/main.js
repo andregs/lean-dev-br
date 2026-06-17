@@ -77,6 +77,35 @@ function updateNav(i18n) {
   }
 }
 
+const ORIGIN = 'https://lean.dev.br';
+
+/**
+ * Update <link rel="alternate" hreflang> tags in <head> to reflect the current route.
+ * Allows search engines to discover the pt-BR equivalent for each page.
+ * @param {string} pathname  current window.location.pathname
+ */
+function updateHreflang(pathname) {
+  const canon = canonicalPath(pathname);
+  const enHref = ORIGIN + canon;
+  const ptHref = ORIGIN + '/pt' + (canon === '/' ? '' : canon);
+
+  /** @param {string} hreflang @param {string} href */
+  function setLink(hreflang, href) {
+    let el = document.querySelector(`link[hreflang="${hreflang}"]`);
+    if (!el) {
+      el = document.createElement('link');
+      el.setAttribute('rel', 'alternate');
+      el.setAttribute('hreflang', hreflang);
+      document.head.appendChild(el);
+    }
+    el.setAttribute('href', href);
+  }
+
+  setLink('en', enHref);
+  setLink('pt-BR', ptHref);
+  setLink('x-default', enHref);
+}
+
 // --- Render ---
 
 function render() {
@@ -88,6 +117,7 @@ function render() {
 
   document.documentElement.lang = i18n.locale === 'pt-BR' ? 'pt-BR' : 'en';
   document.body.classList.toggle('route-contact', canonicalPath(path) === '/contact');
+  updateHreflang(path);
 
   const toggle = document.querySelector('[data-lang-toggle]');
   if (toggle instanceof HTMLElement) {

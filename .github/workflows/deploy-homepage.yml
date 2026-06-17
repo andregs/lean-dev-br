@@ -23,6 +23,7 @@ jobs:
       - run: pnpm nx run-many -t build -p homepage,contact-api,todo --skip-nx-cache
         env:
           VITE_RECAPTCHA_SITE_KEY: ${{ vars.VITE_RECAPTCHA_SITE_KEY }}
+          VITE_FLAGS_URL: ${{ vars.VITE_FLAGS_URL }}
           VITE_RUM_APP_MONITOR_ID: ${{ vars.VITE_RUM_APP_MONITOR_ID }}
           VITE_RUM_IDENTITY_POOL_ID: ${{ vars.VITE_RUM_IDENTITY_POOL_ID }}
           VITE_RUM_SESSION_SAMPLE_RATE: ${{ vars.VITE_RUM_SESSION_SAMPLE_RATE }}
