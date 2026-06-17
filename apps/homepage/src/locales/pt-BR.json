@@ -12,8 +12,6 @@
   "contact.field.message": "Mensagem",
   "contact.submit": "Enviar mensagem",
   "not-found.back": "← Início",
-  "lang.toggle": "EN",
-  "lang.toggle.label": "Mudar para inglês",
   "contact.status.pending": "Enviando…",
   "contact.status.ok": "Mensagem enviada! Obrigado.",
   "contact.status.error.generic": "Algo deu errado. Tente novamente mais tarde.",

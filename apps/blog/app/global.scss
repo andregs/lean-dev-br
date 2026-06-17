@@ -1,8 +1,8 @@
 // Shared foundation — tokens + structural styles, single source for apex + blog.
-@import '@lean-dev-br/styles/tokens.css';
-@import '@lean-dev-br/styles/base.css';
-@import '@lean-dev-br/styles/nav.css';
-@import '@lean-dev-br/styles/footer.css';
+@import '@lean-dev-br/design-system/tokens.css';
+@import '@lean-dev-br/design-system/base.css';
+@import '@lean-dev-br/design-system/nav.css';
+@import '@lean-dev-br/design-system/footer.css';
 
 a {
   color: var(--accent);

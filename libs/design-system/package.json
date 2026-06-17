@@ -1,0 +1,19 @@
+{
+  "name": "@lean-dev-br/design-system",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Shared design tokens, CSS, and interactive components for lean.dev.br apps.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./tokens.css": "./tokens.css",
+    "./base.css": "./base.css",
+    "./nav.css": "./nav.css",
+    "./footer.css": "./footer.css"
+  }
+}

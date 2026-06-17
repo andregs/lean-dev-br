@@ -5,16 +5,16 @@
   <url>
     <loc>https://lean.dev.br/</loc>
     <xhtml:link rel="alternate" hreflang="en"      href="https://lean.dev.br/"/>
-    <xhtml:link rel="alternate" hreflang="pt-BR"   href="https://lean.dev.br/pt"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR"   href="https://lean.dev.br/pt-BR"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lean.dev.br/"/>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://lean.dev.br/pt</loc>
+    <loc>https://lean.dev.br/pt-BR</loc>
     <xhtml:link rel="alternate" hreflang="en"      href="https://lean.dev.br/"/>
-    <xhtml:link rel="alternate" hreflang="pt-BR"   href="https://lean.dev.br/pt"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR"   href="https://lean.dev.br/pt-BR"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lean.dev.br/"/>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
@@ -23,16 +23,16 @@
   <url>
     <loc>https://lean.dev.br/labs</loc>
     <xhtml:link rel="alternate" hreflang="en"      href="https://lean.dev.br/labs"/>
-    <xhtml:link rel="alternate" hreflang="pt-BR"   href="https://lean.dev.br/pt/labs"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR"   href="https://lean.dev.br/pt-BR/labs"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lean.dev.br/labs"/>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://lean.dev.br/pt/labs</loc>
+    <loc>https://lean.dev.br/pt-BR/labs</loc>
     <xhtml:link rel="alternate" hreflang="en"      href="https://lean.dev.br/labs"/>
-    <xhtml:link rel="alternate" hreflang="pt-BR"   href="https://lean.dev.br/pt/labs"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR"   href="https://lean.dev.br/pt-BR/labs"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lean.dev.br/labs"/>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -41,16 +41,16 @@
   <url>
     <loc>https://lean.dev.br/contact</loc>
     <xhtml:link rel="alternate" hreflang="en"      href="https://lean.dev.br/contact"/>
-    <xhtml:link rel="alternate" hreflang="pt-BR"   href="https://lean.dev.br/pt/contact"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR"   href="https://lean.dev.br/pt-BR/contact"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lean.dev.br/contact"/>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://lean.dev.br/pt/contact</loc>
+    <loc>https://lean.dev.br/pt-BR/contact</loc>
     <xhtml:link rel="alternate" hreflang="en"      href="https://lean.dev.br/contact"/>
-    <xhtml:link rel="alternate" hreflang="pt-BR"   href="https://lean.dev.br/pt/contact"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR"   href="https://lean.dev.br/pt-BR/contact"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lean.dev.br/contact"/>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>

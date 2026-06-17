@@ -11,6 +11,9 @@ importers:
       '@lean-dev-br/csp':
         specifier: workspace:*
         version: link:libs/csp
+      '@lean-dev-br/design-system':
+        specifier: workspace:*
+        version: link:libs/design-system
       '@lean-dev-br/flags':
         specifier: workspace:*
         version: link:libs/flags
@@ -20,9 +23,6 @@ importers:
       '@lean-dev-br/rum':
         specifier: workspace:*
         version: link:libs/rum
-      '@lean-dev-br/styles':
-        specifier: workspace:*
-        version: link:libs/styles
       '@lean-dev-br/trusted-types':
         specifier: workspace:*
         version: link:libs/trusted-types
@@ -41,6 +41,9 @@ importers:
       i18next:
         specifier: ^26.3.1
         version: 26.3.1(typescript@6.0.3)
+      i18next-browser-languagedetector:
+        specifier: ^8.2.1
+        version: 8.2.1
       next:
         specifier: ~16.1.6
         version: 16.1.7(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.62.1)
@@ -254,13 +257,13 @@ importers:
 
   libs/csp: {}
 
+  libs/design-system: {}
+
   libs/flags: {}
 
   libs/i18n: {}
 
   libs/rum: {}
-
-  libs/styles: {}
 
   libs/trusted-types:
     dependencies:
@@ -5884,6 +5887,9 @@ packages:
   hyperdyperid@1.2.0:
     resolution: {integrity: sha512-Y93lCzHYgGWdrJ66yIktxiaGULYc6oGiABxhcO5AufBeOyoIdZF7bIfLaOrbM0iGIOXQQgxxRrFEnb+Y6w1n4A==}
     engines: {node: '>=10.18'}
+
+  i18next-browser-languagedetector@8.2.1:
+    resolution: {integrity: sha512-bZg8+4bdmaOiApD7N7BPT9W8MLZG+nPTOFlLiJiT8uzKXFjhxw4v2ierCXOwB5sFDMtuA5G4kgYZ0AznZxQ/cw==}
 
   i18next@26.3.1:
     resolution: {integrity: sha512-txQqd5EULsqEh9OJqRH15aCaOuy/nLJyhw5EHCSKLKJE1aBbb3Zve2+uQIxgWhPm1QqUQoWyQBm2kfmmIrzkcQ==}
@@ -16093,6 +16099,10 @@ snapshots:
   human-signals@8.0.1: {}
 
   hyperdyperid@1.2.0: {}
+
+  i18next-browser-languagedetector@8.2.1:
+    dependencies:
+      '@babel/runtime': 7.29.7
 
   i18next@26.3.1(typescript@6.0.3):
     optionalDependencies:

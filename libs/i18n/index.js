@@ -1,6 +1,7 @@
 // @ts-check
 /** @import { Locale, I18nInstance } from './index.js' */
 import i18next from 'i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
 
 /** @type {readonly ['en-US', 'pt-BR']} */
 export const SUPPORTED_LOCALES = /** @type {const} */ (['en-US', 'pt-BR']);
@@ -16,34 +17,27 @@ export const sharedCatalog = {
     'nav.blog': 'Blog',
     'nav.labs': 'Labs',
     'nav.contact': 'Contact',
+    'lang.toggle': 'PT',
+    'lang.toggle.label': 'Switch to Portuguese',
   },
   'pt-BR': {
     'nav.blog': 'Blog',
     'nav.labs': 'Labs',
     'nav.contact': 'Contato',
+    'lang.toggle': 'EN',
+    'lang.toggle.label': 'Mudar para inglês',
   },
 };
 
 /**
  * Derive the active locale from the URL pathname.
- * `/pt` and `/pt/*` → `pt-BR`, everything else → `en-US`.
+ * `/pt-BR` and `/pt-BR/*` → `pt-BR`, everything else → `en-US`.
  *
  * @param {string} pathname
  * @returns {Locale}
  */
 export function localeFromPath(pathname) {
-  return pathname === '/pt' || pathname.startsWith('/pt/') ? 'pt-BR' : 'en-US';
-}
-
-/**
- * Derive the active locale from the browser's language preference.
- * `pt` and `pt-*` → `pt-BR`, everything else → `en-US`.
- *
- * @param {string} [lang] - defaults to `navigator.language`; accept explicit value for testing
- * @returns {Locale}
- */
-export function localeFromNavigator(lang = typeof navigator !== 'undefined' ? navigator.language : 'en-US') {
-  return lang === 'pt-BR' || lang.startsWith('pt') ? 'pt-BR' : 'en-US';
+  return pathname === '/pt-BR' || pathname.startsWith('/pt-BR/') ? 'pt-BR' : 'en-US';
 }
 
 const LOCALE_PREF_KEY = 'lean:locale';
@@ -61,53 +55,78 @@ function ls() {
 
 /**
  * Persist the user's explicit locale choice so all apps on the domain can read it.
- * Called whenever the user switches language (URL toggle or direct navigation to /pt).
+ * Call on toggle click or when a /pt-BR URL is visited via direct link.
  * @param {Locale} locale
  */
 export function saveLocalePreference(locale) {
   ls()?.setItem(LOCALE_PREF_KEY, locale);
 }
 
-/**
- * Read the persisted locale preference. Returns null if never set or unavailable.
- * @returns {Locale | null}
- */
-export function loadLocalePreference() {
-  const val = ls()?.getItem(LOCALE_PREF_KEY);
-  return val === 'pt-BR' || val === 'en-US' ? val : null;
-}
+
+// ---------------------------------------------------------------------------
+// createI18n
+// ---------------------------------------------------------------------------
 
 /**
  * Create a synchronously initialized i18next instance.
- * Resources are provided inline so init is always sync regardless of initAsync.
+ *
+ * When `locale` is provided the detector is skipped and that locale is used
+ * directly (useful when a feature flag forces en-US).
+ *
+ * Without `locale`, the language detector resolves via:
+ *   /pt-BR URL → localStorage (lean:locale) → navigator.language → en-US
  *
  * @param {{
- *   locale: Locale,
- *   catalog: Record<Locale, Record<string, string>>
+ *   catalog: Record<Locale, Record<string, string>>,
+ *   locale?: Locale
  * }} opts
- *   `catalog` is a flat key → string map per locale (dots are literal, not nesting).
- *   Merge sharedCatalog + app-specific keys before passing in.
  * @returns {I18nInstance}
  */
 export function createI18n({ locale, catalog }) {
-  const instance = i18next.createInstance(
-    {
-      lng: locale,
-      fallbackLng: 'en-US',
-      defaultNS: 'common',
-      resources: {
-        'en-US': { common: catalog['en-US'] ?? {} },
-        'pt-BR': { common: catalog['pt-BR'] ?? {} },
-      },
-      keySeparator: false,
-      nsSeparator: ':',
-      interpolation: { escapeValue: false },
+  const instance = i18next.createInstance();
+
+  /** @type {import('i18next').InitOptions} */
+  const baseOpts = {
+    fallbackLng: 'en-US',
+    defaultNS: 'common',
+    resources: {
+      'en-US': { common: catalog['en-US'] ?? {} },
+      'pt-BR': { common: catalog['pt-BR'] ?? {} },
     },
-    () => { /* callback required to trigger synchronous init in createInstance */ },
+    keySeparator: false,
+    nsSeparator: ':',
+    interpolation: { escapeValue: false },
+  };
+
+  if (locale) {
+    instance.init({ ...baseOpts, lng: locale }, () => { /* sync init */ });
+  } else {
+    // Path detection: reads first segment (e.g. /pt-BR/contact → 'pt-BR').
+    // Non-locale segments like 'contact' are not in supportedLngs, so i18next
+    // discards them and falls through to the next detector (localStorage, then
+    // navigator). convertDetectedLanguage maps pt/* → pt-BR.
+    instance.use(LanguageDetector).init({
+      ...baseOpts,
+      supportedLngs: ['en-US', 'pt-BR'],
+      detection: {
+        order: ['path', 'localStorage', 'navigator'],
+        lookupFromPathIndex: 0,
+        lookupLocalStorage: LOCALE_PREF_KEY,
+        convertDetectedLanguage: (/** @type {string} */ l) =>
+          l.startsWith('pt') ? 'pt-BR' : l,
+        caches: ['localStorage'],
+      },
+    }, () => { /* sync init */ });
+  }
+
+  const detectedLocale = /** @type {Locale} */ (
+    (SUPPORTED_LOCALES).includes(/** @type {Locale} */ (instance.language))
+      ? instance.language
+      : 'en-US'
   );
 
   return {
-    locale,
+    locale: locale ?? detectedLocale,
     t(key) {
       const result = instance.t(key);
       return typeof result === 'string' ? result : key;
