@@ -1,23 +1,22 @@
 // @ts-check
+/** @import { FlagClient } from '@lean-dev-br/flags' */
+/** @import { I18nInstance } from '@lean-dev-br/i18n' */
 import { setHTML } from '../trusted-types.js';
 
 /**
- * Render the landing hero.
  * @param {HTMLElement} root
+ * @param {{ i18n: I18nInstance, flags: FlagClient }} ctx
  */
-export function renderHome(root) {
+export function renderHome(root, { i18n }) {
   root.className = 'hero';
-  setHTML(root, `
-    <div class="hero-inner">
-      <h1>Hi, I'm <span class="name">André</span>.</h1>
-
+  setHTML(
+    root,
+    `<div class="hero-inner">
+      <h1>${i18n.t('hero.title')}</h1>
       <hr class="rule" />
-
       <p class="description">
-        I'll publish about <strong>software engineering</strong> here.<br />
-        Notes, demos, and experiments on building systems that are pleasant to
-        maintain, easy to understand, and reliable in production.<span class="cursor" aria-hidden="true"></span>
+        ${i18n.t('hero.desc')}<span class="cursor" aria-hidden="true"></span>
       </p>
-    </div>
-  `);
+    </div>`,
+  );
 }

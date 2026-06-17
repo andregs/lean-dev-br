@@ -1,0 +1,17 @@
+{
+  "hero.title": "Hi, I'm <span class=\"name\">André</span>.",
+  "hero.desc": "I'll publish about <strong>software engineering</strong> here.<br />Notes, demos, and experiments on building systems that are pleasant to\n        maintain, easy to understand, and reliable in production.",
+  "labs.title": "Labs",
+  "labs.desc": "Demos and experiments.",
+  "labs.todo.title": "Todo",
+  "labs.todo.desc": "Local-first, E2E-encrypted. WebAuthn PRF key derivation, Yjs CRDT, AES-GCM relay sync.",
+  "contact.title": "Contact",
+  "contact.desc": "Drop me a message. Leave your email if you want a reply.",
+  "contact.field.email": "Your email",
+  "contact.field.email.optional": "(optional)",
+  "contact.field.message": "Message",
+  "contact.submit": "Send message",
+  "not-found.back": "← Home",
+  "lang.toggle": "PT",
+  "lang.toggle.label": "Switch to Portuguese"
+}

@@ -4,6 +4,24 @@
 @import '@lean-dev-br/styles/nav.css';
 @import '@lean-dev-br/styles/footer.css';
 
+/* ---------- lang toggle ---------- */
+.lang-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color var(--duration-fast);
+  font-family: inherit;
+}
+
+.lang-toggle:hover {
+  color: var(--fg);
+}
+
 /* ---------- hero ---------- */
 .hero {
   flex: 1;
