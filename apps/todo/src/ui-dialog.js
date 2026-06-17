@@ -1,4 +1,5 @@
 // @ts-check
+/** @import { I18nInstance } from '@lean-dev-br/i18n' */
 
 const EMOJI_RE = /^\p{Extended_Pictographic}/u;
 
@@ -21,10 +22,11 @@ async function closeDialog(dialog) {
 /**
  * Show the new-list dialog and resolve with { emoji, title } on submit, or null on cancel.
  * @param {HTMLDialogElement} dialog
- * @param {string[]} [existingNames] - already-taken list names; blocks duplicate submit
+ * @param {string[]} existingNames - already-taken list names; blocks duplicate submit
+ * @param {I18nInstance} i18n
  * @returns {Promise<{ emoji: string, title: string } | null>}
  */
-export function showListDialog(dialog, existingNames = []) {
+export function showListDialog(dialog, existingNames = [], i18n) {
   return new Promise((resolve) => {
     const form = /** @type {HTMLFormElement} */ (dialog.querySelector('.list-form'));
     const emojiInput = /** @type {HTMLInputElement} */ (dialog.querySelector('#lf-emoji'));
@@ -60,7 +62,7 @@ export function showListDialog(dialog, existingNames = []) {
         return;
       }
       if (existingNames.includes(`${emoji} ${title}`)) {
-        nameInput.setCustomValidity('A list with this name already exists.');
+        nameInput.setCustomValidity(i18n.t('dialog.duplicate'));
         nameInput.reportValidity();
         return;
       }

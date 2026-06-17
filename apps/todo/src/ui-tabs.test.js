@@ -5,6 +5,9 @@ import { renderTabs } from './ui-tabs.js';
 
 const LISTS = ['📋 Tasks', '🎯 Goals'];
 
+/** @type {import('@lean-dev-br/i18n').I18nInstance} */
+const testI18n = { locale: 'en-US', t: (k) => ({ 'tabs.add.aria': 'New list' })[k] ?? k };
+
 afterEach(() => {
   document.body.innerHTML = '';
 });
@@ -13,7 +16,7 @@ describe('renderTabs', () => {
   it('renders one tab per list', () => {
     const rail = document.createElement('div');
     document.body.append(rail);
-    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd: vi.fn() });
+    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd: vi.fn() }, testI18n);
 
     expect(rail.querySelectorAll('[role="tab"]')).toHaveLength(2);
   });
@@ -21,7 +24,7 @@ describe('renderTabs', () => {
   it('renders a + button to add a new list', () => {
     const rail = document.createElement('div');
     document.body.append(rail);
-    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd: vi.fn() });
+    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd: vi.fn() }, testI18n);
 
     expect(rail.querySelector('[aria-label="New list"]')).toBeTruthy();
   });
@@ -29,7 +32,7 @@ describe('renderTabs', () => {
   it('active tab has aria-selected=true, inactive tabs false', () => {
     const rail = document.createElement('div');
     document.body.append(rail);
-    renderTabs(rail, LISTS, '🎯 Goals', { onSwitch: vi.fn(), onAdd: vi.fn() });
+    renderTabs(rail, LISTS, '🎯 Goals', { onSwitch: vi.fn(), onAdd: vi.fn() }, testI18n);
 
     // data-idx is an ASCII attribute set in the template — safe for jsdom CSS selectors
     expect(rail.querySelector('[data-idx="1"]')?.getAttribute('aria-selected')).toBe('true');
@@ -39,7 +42,7 @@ describe('renderTabs', () => {
   it('tab label shows the list emoji and aria-label is the full name', () => {
     const rail = document.createElement('div');
     document.body.append(rail);
-    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd: vi.fn() });
+    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd: vi.fn() }, testI18n);
 
     const tab0 = rail.querySelector('[data-idx="0"]');
     const tab1 = rail.querySelector('[data-idx="1"]');
@@ -53,7 +56,7 @@ describe('renderTabs', () => {
     const rail = document.createElement('div');
     document.body.append(rail);
     const onSwitch = vi.fn();
-    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch, onAdd: vi.fn() });
+    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch, onAdd: vi.fn() }, testI18n);
 
     await userEvent.setup().click(/** @type {Element} */ (rail.querySelector('[data-idx="1"]')));
 
@@ -65,7 +68,7 @@ describe('renderTabs', () => {
     const rail = document.createElement('div');
     document.body.append(rail);
     const onAdd = vi.fn();
-    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd });
+    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd }, testI18n);
 
     await userEvent.setup().click(/** @type {Element} */ (rail.querySelector('[aria-label="New list"]')));
 
@@ -75,7 +78,7 @@ describe('renderTabs', () => {
   it('tab color cycles by position', () => {
     const rail = document.createElement('div');
     document.body.append(rail);
-    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd: vi.fn() });
+    renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd: vi.fn() }, testI18n);
 
     expect(rail.querySelector('[data-idx="0"]')?.getAttribute('data-color')).toBe('0');
     expect(rail.querySelector('[data-idx="1"]')?.getAttribute('data-color')).toBe('1');

@@ -1,4 +1,5 @@
 // @ts-check
+/** @import { I18nInstance } from '@lean-dev-br/i18n' */
 import { SyncedPasskeyKeyProvider } from './key-provider.js';
 import { createSync } from './sync.js';
 import {
@@ -20,26 +21,26 @@ import { animateExit, buildTodoItem, renderTodos } from './ui-todos.js';
 
 const RELAY_URL = import.meta.env.VITE_RELAY_URL ?? 'http://localhost:8080';
 const TAB_COLORS = 6;
-const DEFAULT_LIST = '📋 tasks';
 
 // ── setup / unlock screens (exported for main.js) ─────────────────────────────
 
 /**
  * @param {HTMLElement} root
+ * @param {I18nInstance} i18n
  * @returns {Promise<{ roomId: string, aesKey: CryptoKey }>}
  */
-export function renderSetup(root) {
+export function renderSetup(root, i18n) {
   return new Promise((resolve) => {
     root.className = 'todo';
     setHTML(
       root,
       `<div class="setup-screen">
         <div class="setup-inner">
-          <h1 class="setup-heading">Your encrypted notebook</h1>
+          <h1 class="setup-heading">${i18n.t('setup.heading')}</h1>
           <hr class="rule" />
-          <p class="setup-desc">Tasks are encrypted on-device. A passkey derives the key — nothing is sent to a server.</p>
-          <button class="setup-btn" id="unlock-btn" type="button">Unlock with passkey</button>
-          <button class="setup-btn setup-btn--secondary" id="setup-btn" type="button">Create new notebook</button>
+          <p class="setup-desc">${i18n.t('setup.desc')}</p>
+          <button class="setup-btn" id="unlock-btn" type="button">${i18n.t('setup.unlock')}</button>
+          <button class="setup-btn setup-btn--secondary" id="setup-btn" type="button">${i18n.t('setup.create')}</button>
           <span class="setup-status" id="setup-status"></span>
         </div>
       </div>`,
@@ -60,32 +61,35 @@ export function renderSetup(root) {
       } catch (e) {
         unlockBtn.disabled = false;
         setupBtn.disabled = false;
-        status.textContent = e instanceof Error ? e.message : 'Something went wrong — try again.';
+        status.textContent = e instanceof Error ? e.message : i18n.t('setup.status.error');
       }
     }
 
     unlockBtn.addEventListener('click', () =>
-      attempt('Authenticating…', () => SyncedPasskeyKeyProvider.discover()),
+      attempt(i18n.t('setup.status.authenticating'), () => SyncedPasskeyKeyProvider.discover()),
     );
 
     setupBtn.addEventListener('click', () =>
-      attempt('Creating passkey…', async () => {
+      attempt(i18n.t('setup.status.creating'), async () => {
         const provider = await SyncedPasskeyKeyProvider.register();
-        status.textContent = 'Authenticating…';
+        status.textContent = i18n.t('setup.status.authenticating');
         return provider.resolve();
       }),
     );
   });
 }
 
-/** @param {HTMLElement} root */
-export function renderUnlocking(root) {
+/**
+ * @param {HTMLElement} root
+ * @param {I18nInstance} i18n
+ */
+export function renderUnlocking(root, i18n) {
   root.className = 'todo';
   setHTML(
     root,
     `<div class="setup-screen">
       <div class="setup-inner">
-        <span class="setup-status">Unlocking…</span>
+        <span class="setup-status">${i18n.t('setup.status.unlocking')}</span>
       </div>
     </div>`,
   );
@@ -94,27 +98,28 @@ export function renderUnlocking(root) {
 /**
  * @param {HTMLElement} root
  * @param {SyncedPasskeyKeyProvider} provider
+ * @param {I18nInstance} i18n
  */
-export function renderUnlockError(root, provider) {
+export function renderUnlockError(root, provider, i18n) {
   root.className = 'todo';
   setHTML(
     root,
     `<div class="setup-screen">
       <div class="setup-inner">
-        <h1 class="setup-heading">Unlock failed</h1>
+        <h1 class="setup-heading">${i18n.t('unlock.failed.heading')}</h1>
         <hr class="rule" />
-        <p class="setup-desc">Authentication was cancelled or timed out.</p>
-        <button class="setup-btn" id="retry-btn" type="button">Try again</button>
+        <p class="setup-desc">${i18n.t('unlock.failed.desc')}</p>
+        <button class="setup-btn" id="retry-btn" type="button">${i18n.t('unlock.failed.retry')}</button>
       </div>
     </div>`,
   );
   document.getElementById('retry-btn')?.addEventListener('click', async () => {
-    renderUnlocking(root);
+    renderUnlocking(root, i18n);
     try {
       const session = await provider.resolve();
-      await renderNotebook(root, session);
+      await renderNotebook(root, session, i18n);
     } catch {
-      renderUnlockError(root, provider);
+      renderUnlockError(root, provider, i18n);
     }
   });
 }
@@ -124,24 +129,25 @@ export function renderUnlockError(root, provider) {
 /**
  * @param {HTMLElement} root
  * @param {{ aesKey: CryptoKey, roomId: string }} session
+ * @param {I18nInstance} i18n
  */
-export async function renderNotebook(root, session) {
+export async function renderNotebook(root, session, i18n) {
   await openPersistence(session.roomId);
-  let activeListId = deriveLists(DEFAULT_LIST)[0];
+  let activeListId = deriveLists(i18n.t('default.list'))[0];
 
   root.className = 'todo';
   setHTML(
     root,
     `<div class="notebook">
-      <aside class="tab-rail" id="tab-rail" role="tablist" aria-label="Lists"></aside>
+      <aside class="tab-rail" id="tab-rail" role="tablist" aria-label="${i18n.t('notebook.tabs.aria')}"></aside>
       <div class="page-area" id="page-area">
         <header class="page-header">
           <h1 class="page-title" id="page-title"></h1>
           <div class="page-actions">
           <span class="sync-pill" id="sync-pill"></span>
           <button class="clear-done-btn" id="clear-done-btn" type="button"
-                  aria-label="Clear completed tasks" hidden>
-            <span class="clear-done-label">Clear done</span>
+                  aria-label="${i18n.t('notebook.clear.aria')}" hidden>
+            <span class="clear-done-label">${i18n.t('notebook.clear.label')}</span>
           </button>
           </div>
         </header>
@@ -149,28 +155,28 @@ export async function renderNotebook(root, session) {
         <form class="todo-form" id="todo-form" autocomplete="off">
           <span class="todo-form-dot" aria-hidden="true"></span>
           <input class="todo-input" id="todo-input" type="text"
-                 placeholder="Add a task…" maxlength="300" aria-label="New task" />
+                 placeholder="${i18n.t('notebook.input.placeholder')}" maxlength="300" aria-label="${i18n.t('notebook.input.aria')}" />
         </form>
       </div>
     </div>
     <dialog id="list-dialog">
       <form class="list-form" id="list-form">
-        <h2 class="list-form-title">New list</h2>
+        <h2 class="list-form-title">${i18n.t('notebook.dialog.title')}</h2>
         <div class="list-form-row">
           <div class="list-field">
-            <label class="list-field-label" for="lf-emoji">Emoji</label>
+            <label class="list-field-label" for="lf-emoji">${i18n.t('notebook.dialog.emoji.label')}</label>
             <input class="list-field-input list-field-input--emoji" id="lf-emoji"
                    type="text" maxlength="8" placeholder="📝" autocomplete="off" spellcheck="false" />
           </div>
           <div class="list-field">
-            <label class="list-field-label" for="lf-name">Name</label>
+            <label class="list-field-label" for="lf-name">${i18n.t('notebook.dialog.name.label')}</label>
             <input class="list-field-input" id="lf-name"
-                   type="text" maxlength="30" placeholder="my list" autocomplete="off" required />
+                   type="text" maxlength="30" placeholder="${i18n.t('notebook.dialog.name.placeholder')}" autocomplete="off" required />
           </div>
         </div>
         <div class="list-form-actions">
-          <button class="btn-cancel" type="button">Cancel</button>
-          <button class="btn-create" type="submit">Create</button>
+          <button class="btn-cancel" type="button">${i18n.t('notebook.dialog.cancel')}</button>
+          <button class="btn-create" type="submit">${i18n.t('notebook.dialog.create')}</button>
         </div>
       </form>
     </dialog>`,
@@ -204,10 +210,10 @@ export async function renderNotebook(root, session) {
 
     pageTitle.textContent = activeListId;
     setActiveTabColor(activeIdx);
-    renderTabs(tabRail, lists, activeListId, { onSwitch, onAdd });
+    renderTabs(tabRail, lists, activeListId, { onSwitch, onAdd }, i18n);
 
     const items = todos.filter((item) => item.listId === activeListId);
-    renderTodos(todoList, items, { onToggle, onEdit, onDelete });
+    renderTodos(todoList, items, { onToggle, onEdit, onDelete }, i18n);
     clearBtn.hidden = !items.some((i) => i.completed);
   }
 
@@ -221,7 +227,7 @@ export async function renderNotebook(root, session) {
 
   async function onAdd() {
     const currentLists = deriveLists(activeListId);
-    const result = await showListDialog(listDialog, currentLists);
+    const result = await showListDialog(listDialog, currentLists, i18n);
     if (!result) return;
     activeListId = `${result.emoji} ${result.title}`;
     refreshAll();
@@ -236,9 +242,9 @@ export async function renderNotebook(root, session) {
   /** @param {import('./types').SyncStatus | 'idle'} s */
   function applyPillStatus(s) {
     const labels = /** @type {Record<string, string>} */ ({
-      syncing: '↻ syncing',
-      synced: '✓ synced',
-      error: '⚠ error',
+      syncing: i18n.t('notebook.sync.syncing'),
+      synced: i18n.t('notebook.sync.synced'),
+      error: i18n.t('notebook.sync.error'),
     });
     syncPill.textContent = labels[s] ?? '';
     syncPill.className = s === 'idle' ? 'sync-pill' : `sync-pill sync-pill--${s}`;
@@ -286,7 +292,7 @@ export async function renderNotebook(root, session) {
       const checkBtn = li.querySelector('.todo-check');
       if (checkBtn) {
         checkBtn.setAttribute('aria-pressed', String(nowDone));
-        checkBtn.setAttribute('aria-label', nowDone ? 'Mark incomplete' : 'Mark complete');
+        checkBtn.setAttribute('aria-label', nowDone ? i18n.t('todo.check.incomplete') : i18n.t('todo.check.complete'));
       }
     }
     clearBtn.hidden = todoList.querySelectorAll('.todo-item--done').length === 0;
@@ -315,6 +321,7 @@ export async function renderNotebook(root, session) {
       buildTodoItem(
         { id, title, completed: false, listId: activeListId, createdAt: Date.now() },
         { onToggle, onEdit, onDelete },
+        i18n,
       ),
     );
     clearBtn.hidden = todoList.querySelectorAll('.todo-item--done').length === 0;

@@ -3,14 +3,23 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { buildTodoItem, renderTodos } from './ui-todos.js';
 
+/** @type {import('@lean-dev-br/i18n').I18nInstance} */
+const testI18n = {
+  locale: 'en-US',
+  t: (k) => ({
+    'todo.check.complete': 'Mark complete',
+    'todo.check.incomplete': 'Mark incomplete',
+    'todo.delete': 'Delete',
+  })[k] ?? k,
+};
+
 /** @returns {import('./types').TodoItem} */
 const makeTodo = (overrides = {}) => ({
   id: 't1',
   title: 'Buy milk',
   completed: false,
   listId: 'l1',
-  hlc: 'h1',
-  createdHlc: 'h1',
+  createdAt: Date.now(),
   ...overrides,
 });
 
@@ -31,25 +40,25 @@ afterEach(() => {
 
 describe('todo item — rendering', () => {
   it('shows the title', () => {
-    document.body.append(buildTodoItem(makeTodo({ title: 'Write tests' }), makeHandlers()));
+    document.body.append(buildTodoItem(makeTodo({ title: 'Write tests' }), makeHandlers(), testI18n));
     expect(document.querySelector('.todo-text')?.textContent).toBe('Write tests');
   });
 
   it('incomplete item has no done class', () => {
-    document.body.append(buildTodoItem(makeTodo({ completed: false }), makeHandlers()));
+    document.body.append(buildTodoItem(makeTodo({ completed: false }), makeHandlers(), testI18n));
     expect(document.querySelector('.todo-item')?.classList.contains('todo-item--done')).toBe(false);
   });
 
   it('completed item has done class', () => {
-    document.body.append(buildTodoItem(makeTodo({ completed: true }), makeHandlers()));
+    document.body.append(buildTodoItem(makeTodo({ completed: true }), makeHandlers(), testI18n));
     expect(document.querySelector('.todo-item')?.classList.contains('todo-item--done')).toBe(true);
   });
 
   it('check button label reflects completion state', () => {
-    document.body.append(buildTodoItem(makeTodo({ completed: false }), makeHandlers()));
+    document.body.append(buildTodoItem(makeTodo({ completed: false }), makeHandlers(), testI18n));
     expect(document.querySelector('.todo-check')?.getAttribute('aria-label')).toBe('Mark complete');
     document.body.innerHTML = '';
-    document.body.append(buildTodoItem(makeTodo({ completed: true }), makeHandlers()));
+    document.body.append(buildTodoItem(makeTodo({ completed: true }), makeHandlers(), testI18n));
     expect(document.querySelector('.todo-check')?.getAttribute('aria-label')).toBe('Mark incomplete');
   });
 });
@@ -59,7 +68,7 @@ describe('todo item — rendering', () => {
 describe('todo item — toggling complete', () => {
   it('clicking check on incomplete item calls onToggle(id, false)', async () => {
     const h = makeHandlers();
-    const li = buildTodoItem(makeTodo({ id: 't1', completed: false }), h);
+    const li = buildTodoItem(makeTodo({ id: 't1', completed: false }), h, testI18n);
     document.body.append(li);
 
     await userEvent.setup().click(within(li, '.todo-check'));
@@ -69,7 +78,7 @@ describe('todo item — toggling complete', () => {
 
   it('reads live DOM state — calls onToggle(id, true) after item class is toggled', async () => {
     const h = makeHandlers();
-    const li = buildTodoItem(makeTodo({ id: 't1', completed: false }), h);
+    const li = buildTodoItem(makeTodo({ id: 't1', completed: false }), h, testI18n);
     document.body.append(li);
 
     const user = userEvent.setup();
@@ -89,7 +98,7 @@ describe('todo item — toggling complete', () => {
 describe('todo item — editing', () => {
   it('editing text and blurring calls onEdit with new title', async () => {
     const h = makeHandlers();
-    const li = buildTodoItem(makeTodo({ id: 't1', title: 'Old title' }), h);
+    const li = buildTodoItem(makeTodo({ id: 't1', title: 'Old title' }), h, testI18n);
     document.body.append(li);
 
     const user = userEvent.setup();
@@ -105,7 +114,7 @@ describe('todo item — editing', () => {
 
   it('pressing Enter saves the edit', async () => {
     const h = makeHandlers();
-    const li = buildTodoItem(makeTodo({ id: 't1', title: 'Draft' }), h);
+    const li = buildTodoItem(makeTodo({ id: 't1', title: 'Draft' }), h, testI18n);
     document.body.append(li);
 
     const user = userEvent.setup();
@@ -119,7 +128,7 @@ describe('todo item — editing', () => {
 
   it('pressing Escape reverts to original without calling onEdit', async () => {
     const h = makeHandlers();
-    const li = buildTodoItem(makeTodo({ id: 't1', title: 'Original' }), h);
+    const li = buildTodoItem(makeTodo({ id: 't1', title: 'Original' }), h, testI18n);
     document.body.append(li);
 
     const user = userEvent.setup();
@@ -134,7 +143,7 @@ describe('todo item — editing', () => {
 
   it('blurring without change does not call onEdit', async () => {
     const h = makeHandlers();
-    const li = buildTodoItem(makeTodo({ title: 'Same text' }), h);
+    const li = buildTodoItem(makeTodo({ title: 'Same text' }), h, testI18n);
     document.body.append(li);
 
     const user = userEvent.setup();
@@ -146,8 +155,8 @@ describe('todo item — editing', () => {
 
   it('clicking item B while editing A triggers blur on A, saving its edit', async () => {
     const hA = makeHandlers();
-    const liA = buildTodoItem(makeTodo({ id: 'a', title: 'Item A' }), hA);
-    const liB = buildTodoItem(makeTodo({ id: 'b', title: 'Item B' }), makeHandlers());
+    const liA = buildTodoItem(makeTodo({ id: 'a', title: 'Item A' }), hA, testI18n);
+    const liB = buildTodoItem(makeTodo({ id: 'b', title: 'Item B' }), makeHandlers(), testI18n);
     document.body.append(liA, liB);
 
     const user = userEvent.setup();
@@ -167,7 +176,7 @@ describe('todo item — editing', () => {
 describe('todo item — deleting', () => {
   it('clicking delete calls onDelete with item id and the li', async () => {
     const h = makeHandlers();
-    const li = buildTodoItem(makeTodo({ id: 't1' }), h);
+    const li = buildTodoItem(makeTodo({ id: 't1' }), h, testI18n);
     document.body.append(li);
 
     await userEvent.setup().click(within(li, '.todo-delete'));
@@ -186,6 +195,7 @@ describe('renderTodos', () => {
       list,
       [makeTodo({ id: 'a', title: 'First' }), makeTodo({ id: 'b', title: 'Second' })],
       makeHandlers(),
+      testI18n,
     );
 
     const texts = [...list.querySelectorAll('.todo-text')].map((el) => el.textContent);
@@ -195,8 +205,8 @@ describe('renderTodos', () => {
   it('re-render clears and replaces previous items', () => {
     const list = document.createElement('ul');
     document.body.append(list);
-    renderTodos(list, [makeTodo({ id: 'old', title: 'Old' })], makeHandlers());
-    renderTodos(list, [makeTodo({ id: 'new', title: 'New' })], makeHandlers());
+    renderTodos(list, [makeTodo({ id: 'old', title: 'Old' })], makeHandlers(), testI18n);
+    renderTodos(list, [makeTodo({ id: 'new', title: 'New' })], makeHandlers(), testI18n);
 
     expect(list.querySelectorAll('.todo-item')).toHaveLength(1);
     expect(list.querySelector('.todo-text')?.textContent).toBe('New');
@@ -205,7 +215,7 @@ describe('renderTodos', () => {
   it('empty list renders nothing', () => {
     const list = document.createElement('ul');
     document.body.append(list);
-    renderTodos(list, [], makeHandlers());
+    renderTodos(list, [], makeHandlers(), testI18n);
 
     expect(list.children).toHaveLength(0);
   });

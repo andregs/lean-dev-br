@@ -1,4 +1,5 @@
 // @ts-check
+/** @import { I18nInstance } from '@lean-dev-br/i18n' */
 import { setHTML } from './trusted-types.js';
 
 /**
@@ -16,8 +17,9 @@ function parseListName(name) {
  * @param {string[]} lists       - sorted list names; must include activeListId
  * @param {string} activeListId
  * @param {{ onSwitch: (name: string) => void, onAdd: () => void }} callbacks
+ * @param {I18nInstance} i18n
  */
-export function renderTabs(rail, lists, activeListId, { onSwitch, onAdd }) {
+export function renderTabs(rail, lists, activeListId, { onSwitch, onAdd }, i18n) {
   const tabsHtml = lists
     .map((name, i) => {
       const isActive = name === activeListId;
@@ -27,9 +29,10 @@ export function renderTabs(rail, lists, activeListId, { onSwitch, onAdd }) {
     })
     .join('');
 
+  const addLabel = i18n.t('tabs.add.aria');
   setHTML(
     rail,
-    tabsHtml + `<button class="tab tab--add" aria-label="New list" title="New list">+</button>`,
+    tabsHtml + `<button class="tab tab--add" aria-label="${addLabel}" title="${addLabel}">+</button>`,
   );
 
   for (const [i, name] of lists.entries()) {

@@ -3,6 +3,9 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { showListDialog } from './ui-dialog.js';
 
+/** @type {import('@lean-dev-br/i18n').I18nInstance} */
+const testI18n = { locale: 'en-US', t: (k) => ({ 'dialog.duplicate': 'A list with this name already exists.' })[k] ?? k };
+
 // jsdom doesn't implement HTMLDialogElement.showModal — add a minimal shim
 beforeAll(() => {
   if (!HTMLDialogElement.prototype.showModal) {
@@ -54,7 +57,7 @@ const q = (sel) => /** @type {Element} */ (document.querySelector(sel));
 describe('showListDialog', () => {
   it('submitting with a name resolves with default emoji and the title', async () => {
     const dialog = makeDialog();
-    const result = showListDialog(dialog);
+    const result = showListDialog(dialog, [], testI18n);
 
     const user = userEvent.setup();
     await user.type(q('#lf-name'), 'Work tasks');
@@ -66,7 +69,7 @@ describe('showListDialog', () => {
 
   it('a valid emoji is passed through to the result', async () => {
     const dialog = makeDialog();
-    const result = showListDialog(dialog);
+    const result = showListDialog(dialog, [], testI18n);
 
     const user = userEvent.setup();
     await user.type(q('#lf-emoji'), '🎯');
@@ -79,7 +82,7 @@ describe('showListDialog', () => {
 
   it('an invalid emoji marks the field invalid and blocks submit', async () => {
     const dialog = makeDialog();
-    const result = showListDialog(dialog);
+    const result = showListDialog(dialog, [], testI18n);
 
     const user = userEvent.setup();
     await user.type(q('#lf-emoji'), 'abc');
@@ -94,7 +97,7 @@ describe('showListDialog', () => {
 
   it('Cancel button resolves with null', async () => {
     const dialog = makeDialog();
-    const result = showListDialog(dialog);
+    const result = showListDialog(dialog, [], testI18n);
 
     await userEvent.setup().click(q('.btn-cancel'));
     fireAnimationEnd(dialog);
@@ -106,7 +109,7 @@ describe('showListDialog', () => {
     const dialog = makeDialog();
 
     // First open: fill in name and cancel
-    let result = showListDialog(dialog);
+    let result = showListDialog(dialog, [], testI18n);
     const user = userEvent.setup();
     await user.type(q('#lf-name'), 'Stale input');
     await user.click(q('.btn-cancel'));
@@ -114,7 +117,7 @@ describe('showListDialog', () => {
     await result;
 
     // Second open: form.reset() should have cleared the name field
-    result = showListDialog(dialog);
+    result = showListDialog(dialog, [], testI18n);
     expect(/** @type {HTMLInputElement} */ (q('#lf-name')).value).toBe('');
 
     // Clean up

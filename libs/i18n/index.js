@@ -36,6 +36,48 @@ export function localeFromPath(pathname) {
 }
 
 /**
+ * Derive the active locale from the browser's language preference.
+ * `pt` and `pt-*` → `pt-BR`, everything else → `en-US`.
+ *
+ * @param {string} [lang] - defaults to `navigator.language`; accept explicit value for testing
+ * @returns {Locale}
+ */
+export function localeFromNavigator(lang = typeof navigator !== 'undefined' ? navigator.language : 'en-US') {
+  return lang === 'pt-BR' || lang.startsWith('pt') ? 'pt-BR' : 'en-US';
+}
+
+const LOCALE_PREF_KEY = 'lean:locale';
+
+/** @returns {Storage | null} */
+function ls() {
+  try {
+    return typeof localStorage !== 'undefined' && typeof localStorage.setItem === 'function'
+      ? localStorage
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Persist the user's explicit locale choice so all apps on the domain can read it.
+ * Called whenever the user switches language (URL toggle or direct navigation to /pt).
+ * @param {Locale} locale
+ */
+export function saveLocalePreference(locale) {
+  ls()?.setItem(LOCALE_PREF_KEY, locale);
+}
+
+/**
+ * Read the persisted locale preference. Returns null if never set or unavailable.
+ * @returns {Locale | null}
+ */
+export function loadLocalePreference() {
+  const val = ls()?.getItem(LOCALE_PREF_KEY);
+  return val === 'pt-BR' || val === 'en-US' ? val : null;
+}
+
+/**
  * Create a synchronously initialized i18next instance.
  * Resources are provided inline so init is always sync regardless of initAsync.
  *

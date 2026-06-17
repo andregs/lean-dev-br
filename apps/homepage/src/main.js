@@ -4,7 +4,7 @@
 import './rum.js';
 import './observer.js';
 import { createFlagClient, loadStoredOverrides, parseOverrides } from '@lean-dev-br/flags';
-import { createI18n, localeFromPath, sharedCatalog } from '@lean-dev-br/i18n';
+import { createI18n, localeFromPath, saveLocalePreference, sharedCatalog } from '@lean-dev-br/i18n';
 import { renderHome } from './views/home.js';
 import { renderContact } from './views/contact.js';
 import { renderLabs } from './views/labs.js';
@@ -114,6 +114,7 @@ function render() {
 
   const path = window.location.pathname;
   const i18n = createI18n({ locale: localeFromPath(path), catalog });
+  saveLocalePreference(i18n.locale);
 
   document.documentElement.lang = i18n.locale === 'pt-BR' ? 'pt-BR' : 'en';
   document.body.classList.toggle('route-contact', canonicalPath(path) === '/contact');

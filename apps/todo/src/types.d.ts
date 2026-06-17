@@ -13,3 +13,7 @@ export interface TodoItem {
 }
 
 export type SyncStatus = 'syncing' | 'synced' | 'error';
+
+interface ImportMetaEnv {
+  readonly VITE_FLAGS_URL?: string;
+}

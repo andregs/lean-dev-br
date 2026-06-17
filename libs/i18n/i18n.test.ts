@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createI18n, localeFromPath, sharedCatalog } from './index.js';
+import { createI18n, loadLocalePreference, localeFromNavigator, localeFromPath, saveLocalePreference, sharedCatalog } from './index.js';
 import type { Locale } from './index.js';
 
 const catalog: Record<Locale, Record<string, string>> = {
@@ -13,6 +13,23 @@ describe('localeFromPath', () => {
   it('maps / to en-US', () => { expect(localeFromPath('/')).toBe('en-US'); });
   it('maps /contact to en-US', () => { expect(localeFromPath('/contact')).toBe('en-US'); });
   it('does not match /pt-extra as pt-BR', () => { expect(localeFromPath('/pt-extra')).toBe('en-US'); });
+});
+
+describe('localeFromNavigator', () => {
+  it('maps pt-BR to pt-BR', () => { expect(localeFromNavigator('pt-BR')).toBe('pt-BR'); });
+  it('maps pt to pt-BR', () => { expect(localeFromNavigator('pt')).toBe('pt-BR'); });
+  it('maps pt-PT to pt-BR', () => { expect(localeFromNavigator('pt-PT')).toBe('pt-BR'); });
+  it('maps en-US to en-US', () => { expect(localeFromNavigator('en-US')).toBe('en-US'); });
+  it('maps fr-FR to en-US', () => { expect(localeFromNavigator('fr-FR')).toBe('en-US'); });
+});
+
+describe('saveLocalePreference / loadLocalePreference', () => {
+  it('loadLocalePreference returns null when localStorage unavailable (node env)', () => {
+    expect(loadLocalePreference()).toBeNull();
+  });
+  it('saveLocalePreference does not throw when localStorage unavailable', () => {
+    expect(() => { saveLocalePreference('pt-BR'); }).not.toThrow();
+  });
 });
 
 describe('createI18n — en-US', () => {

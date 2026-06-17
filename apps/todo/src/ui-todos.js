@@ -1,5 +1,6 @@
 // @ts-check
 /** @import { TodoItem } from './types' */
+/** @import { I18nInstance } from '@lean-dev-br/i18n' */
 import { setHTML, svgIcon } from './trusted-types.js';
 
 /**
@@ -10,11 +11,12 @@ import { setHTML, svgIcon } from './trusted-types.js';
  *   onEdit:   (id: string, title: string) => void,
  *   onDelete: (id: string, li: HTMLElement) => void,
  * }} handlers
+ * @param {I18nInstance} i18n
  */
-export function renderTodos(container, items, handlers) {
+export function renderTodos(container, items, handlers, i18n) {
   container.innerHTML = '';
   for (const item of items) {
-    container.append(buildTodoItem(item, handlers));
+    container.append(buildTodoItem(item, handlers, i18n));
   }
 }
 
@@ -25,8 +27,9 @@ export function renderTodos(container, items, handlers) {
  *   onEdit:   (id: string, title: string) => void,
  *   onDelete: (id: string, li: HTMLElement) => void,
  * }} handlers
+ * @param {I18nInstance} i18n
  */
-export function buildTodoItem(item, handlers) {
+export function buildTodoItem(item, handlers, i18n) {
   const li = document.createElement('li');
   li.className = `todo-item${item.completed ? ' todo-item--done' : ''}`;
   li.dataset.id = item.id;
@@ -35,7 +38,7 @@ export function buildTodoItem(item, handlers) {
     li,
     `<button class="todo-check" type="button"></button>
      <span class="todo-text" spellcheck="false"></span>
-     <button class="todo-delete" type="button" aria-label="Delete"></button>`,
+     <button class="todo-delete" type="button"></button>`,
   );
 
   const checkBtn = /** @type {HTMLButtonElement} */ (li.querySelector('.todo-check'));
@@ -47,8 +50,9 @@ export function buildTodoItem(item, handlers) {
   delBtn.append(svgIcon('icon-x'));
   textSpan.setAttribute('contenteditable', 'plaintext-only');
 
-  checkBtn.setAttribute('aria-label', item.completed ? 'Mark incomplete' : 'Mark complete');
+  checkBtn.setAttribute('aria-label', item.completed ? i18n.t('todo.check.incomplete') : i18n.t('todo.check.complete'));
   checkBtn.setAttribute('aria-pressed', String(item.completed));
+  delBtn.setAttribute('aria-label', i18n.t('todo.delete'));
   textSpan.textContent = item.title;
 
   // Read live DOM state — item.completed is stale after in-place toggle
