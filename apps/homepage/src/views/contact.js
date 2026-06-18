@@ -1,12 +1,11 @@
 // @ts-check
-/** @import { FlagClient } from '@lean-dev-br/flags' */
 /** @import { I18nInstance } from '@lean-dev-br/i18n' */
 import { initContactForm } from '../contact-form.js';
 import { setHTML } from '../trusted-types.js';
 
 /**
  * @param {HTMLElement} root
- * @param {{ i18n: I18nInstance, flags: FlagClient }} ctx
+ * @param {{ i18n: I18nInstance }} ctx
  */
 export function renderContact(root, { i18n }) {
   root.className = 'contact';

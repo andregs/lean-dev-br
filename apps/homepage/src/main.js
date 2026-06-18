@@ -1,7 +1,5 @@
 // @ts-check
-/** @import { FlagClient } from '@lean-dev-br/flags' */
 /** @import { I18nInstance, Locale } from '@lean-dev-br/i18n' */
-import { createFlagClient } from '@lean-dev-br/flags';
 import { initNav } from '@lean-dev-br/design-system';
 import { createI18n, saveLocalePreference, sharedCatalog } from '@lean-dev-br/i18n';
 import enUS from './locales/en-US.json';
@@ -13,7 +11,7 @@ import { renderHome } from './views/home.js';
 import { renderLabs } from './views/labs.js';
 import { renderNotFound } from './views/not-found.js';
 
-/** @type {Record<string, (root: HTMLElement, ctx: { i18n: I18nInstance, flags: FlagClient }) => void>} */
+/** @type {Record<string, (root: HTMLElement, ctx: { i18n: I18nInstance }) => void>} */
 const routes = {
   '/': renderHome,
   '/contact': renderContact,
@@ -25,16 +23,6 @@ const catalog = {
   'en-US': { ...sharedCatalog['en-US'], ...enUS },
   'pt-BR': { ...sharedCatalog['pt-BR'], ...ptBR },
 };
-
-// --- Flags init (async — fetch before first render) ---
-const flagsUrl = import.meta.env.VITE_FLAGS_URL ?? '/flags.json';
-let flagsJson;
-try {
-  flagsJson = await fetch(flagsUrl).then((r) => r.json());
-} catch {
-  flagsJson = { flags: {} };
-}
-const flags = await createFlagClient(flagsJson);
 
 // Kept between renders so onLangToggle knows the current locale without re-reading storage.
 /** @type {I18nInstance} */
@@ -95,7 +83,6 @@ function render() {
   updateHreflang(path);
 
   initNav({
-    flags,
     i18n: currentI18n,
     localePrefix: currentI18n.locale === 'pt-BR' ? '/pt-BR' : '',
     onToggle: (newLocale) => {
@@ -110,7 +97,7 @@ function render() {
   });
 
   const view = routes[canonicalPath(path)] ?? renderNotFound;
-  view(app, { i18n: currentI18n, flags });
+  view(app, { i18n: currentI18n });
 }
 
 // --- Navigation ---

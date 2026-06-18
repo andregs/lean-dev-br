@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import i18nextLib from 'i18next';
-import { I18nextProvider, initReactI18next, useTranslation } from 'react-i18next';
-import { createFlagClient, type FlagsJson } from '@lean-dev-br/flags';
 import { saveLocalePreference } from '@lean-dev-br/i18n';
+import i18nextLib from 'i18next';
+import Link from 'next/link';
+import { useMemo } from 'react';
+import { I18nextProvider, initReactI18next, useTranslation } from 'react-i18next';
 import { BASE_OPTIONS } from '../lib/i18n';
 import type { Locale } from '../lib/posts';
 
@@ -17,15 +16,6 @@ interface Props {
 
 function Nav({ locale, slug }: Props) {
   const { t } = useTranslation('common');
-  const [showToggle, setShowToggle] = useState(false);
-
-  useEffect(() => {
-    void fetch('/flags.json')
-      .then((r) => r.json() as Promise<FlagsJson>)
-      .then((json) => createFlagClient(json))
-      .then((client) => { setShowToggle(client.getBooleanValue('lang-toggle', false)); })
-      .catch(() => { /* ignore: toggle stays hidden on flags fetch failure */ });
-  }, []);
 
   const targetLocale: Locale = locale === 'pt-BR' ? 'en-US' : 'pt-BR';
   // Full absolute href — locale switch crosses root layouts → full page reload.
@@ -57,17 +47,18 @@ function Nav({ locale, slug }: Props) {
           <li>
             <a href="/contact">{t('nav.contact')}</a>
           </li>
-          {showToggle && (
-            <li>
-              <a
-                href={toggleHref}
-                aria-label={t('lang.toggle.label')}
-                onClick={() => { saveLocalePreference(targetLocale); }}
-              >
-                {t('lang.toggle')}
-              </a>
-            </li>
-          )}
+          <li>
+            <a
+              href={toggleHref}
+              aria-label={t('lang.toggle.label')}
+              title={t('lang.toggle.label')}
+              onClick={() => {
+                saveLocalePreference(targetLocale);
+              }}
+            >
+              {t('lang.toggle')}
+            </a>
+          </li>
         </ul>
       </div>
     </nav>
