@@ -225,6 +225,46 @@ a:hover {
   color: var(--accent);
 }
 
+// ---------- lang note (fallback pill — "só em inglês") ----------
+// Dashed border = pending/placeholder semantic; amber ≠ green to stay distinct
+// from .draft-badge. cursor:help surfaces the title="por enquanto" tooltip.
+// Light-first: deep golden (#7a5c00) ~5.8:1 on #fafaf8; dark override: #c8a44a ~5.3:1 on #0c0e11.
+.post-lang-note {
+  display: inline-block;
+  margin: 0 0.35rem;
+  padding: 0.05rem 0.45rem;
+  border: 1px dashed rgba(122, 92, 0, 0.4);
+  border-radius: 3px;
+  background: rgba(122, 92, 0, 0.07);
+  color: #7a5c00;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-base);
+  vertical-align: middle;
+  cursor: help;
+  transition:
+    background var(--duration-fast),
+    border-color var(--duration-fast);
+}
+
+.post-lang-note:hover {
+  background: rgba(122, 92, 0, 0.13);
+  border-color: rgba(122, 92, 0, 0.65);
+}
+
+@media (prefers-color-scheme: dark) {
+  .post-lang-note {
+    color: #c8a44a;
+    background: rgba(200, 164, 74, 0.07);
+    border-color: rgba(200, 164, 74, 0.45);
+  }
+
+  .post-lang-note:hover {
+    background: rgba(200, 164, 74, 0.14);
+    border-color: rgba(200, 164, 74, 0.7);
+  }
+}
+
 // ---------- draft badge ----------
 .draft-badge {
   display: inline-block;
