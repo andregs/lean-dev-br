@@ -1,11 +1,9 @@
 'use client';
 
-// Runs once in the EN tree. If the visitor has no stored locale preference
-// and their browser language starts with 'pt', redirect them to the pt-BR
-// equivalent path. Mirrors the apex/todo pt-* → pt-BR default.
-//
-// An explicit stored choice ('lean:locale' in localStorage) always wins —
-// a user who manually switched to EN stays on EN.
+// Runs once in the EN tree. Redirects to the pt-BR equivalent when:
+//   - lean:locale is explicitly 'pt-BR' (set by the toggle on any app), OR
+//   - no stored preference and navigator.language starts with 'pt'
+// An explicit 'en-US' stored choice stays on EN (the user switched deliberately).
 
 import { useEffect } from 'react';
 
@@ -13,10 +11,10 @@ const LOCALE_KEY = 'lean:locale';
 
 export function LocaleDefaultBoot() {
   useEffect(() => {
-    if (localStorage.getItem(LOCALE_KEY)) return;
-    if (!navigator.language.startsWith('pt')) return;
+    const stored = localStorage.getItem(LOCALE_KEY);
+    const prefersPt = stored === 'pt-BR' || (!stored && navigator.language.startsWith('pt'));
+    if (!prefersPt) return;
 
-    // Rewrite /blog/<rest> → /blog/pt-BR/<rest>
     const { pathname } = window.location;
     const afterBase = pathname.replace(/^\/blog/, '');
     window.location.replace(`/blog/pt-BR${afterBase}`);

@@ -3,7 +3,7 @@
     "lang-toggle": {
       "state": "ENABLED",
       "variants": { "on": true, "off": false },
-      "defaultVariant": "off"
+      "defaultVariant": "on"
     }
   }
 }
