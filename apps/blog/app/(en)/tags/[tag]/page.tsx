@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { PageHeading } from '../../PageHeading';
-import { formatDate } from '../../../lib/format';
-import { allTags, postsByTag } from '../../../lib/posts';
+import { PostList } from '../../../PostList';
+import { PageHeading } from '../../../PageHeading';
+import { allTags, postsByTag } from '../../../../lib/posts';
 
 export function generateStaticParams() {
   return allTags.map((tag) => ({ tag }));
@@ -27,20 +26,8 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
   if (posts.length === 0) notFound();
 
   return (
-    <>
+    <PostList posts={posts} makeHref={(s) => `/${s}/`}>
       <PageHeading>#{tag}</PageHeading>
-      <ul className="post-list">
-        {posts.map((post) => (
-          <li key={post.slug}>
-            <Link className="post-title" href={`/${post.slug}/`}>
-              {post.title}
-            </Link>
-            {post.draft && <span className="draft-badge">DRAFT</span>}
-            <time dateTime={post.date}>{formatDate(post.date)}</time>
-            {post.description && <p>{post.description}</p>}
-          </li>
-        ))}
-      </ul>
-    </>
+    </PostList>
   );
 }

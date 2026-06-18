@@ -1,0 +1,9 @@
+{
+  "blog.index.heading": "Blog",
+  "blog.post.nav.prev": "← Previous",
+  "blog.post.nav.next": "Next →",
+  "blog.post.tags.heading": "Tags",
+  "blog.tags.heading": "#{tag}",
+  "blog.fallback.note": "English only",
+  "blog.fallback.tooltip": "Translation coming soon"
+}
