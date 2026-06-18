@@ -10,6 +10,16 @@
       "options": { "cwd": "apps/todo" },
       "cache": true,
       "inputs": ["default", "^default"]
+    },
+    "i18n-check": {
+      "command": "node ../../libs/i18n/check-parity.mjs src/locales",
+      "options": { "cwd": "apps/todo" },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/src/locales/en-US.json",
+        "{projectRoot}/src/locales/pt-BR.json",
+        "{workspaceRoot}/libs/i18n/check-parity.mjs"
+      ]
     }
   }
 }
