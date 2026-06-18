@@ -1,9 +1,12 @@
 import { defineConfig, defineCollection, s } from 'velite';
 import rehypeHighlight from 'rehype-highlight';
 
-// Posts live as markdown under content/posts/ named `YYYY-MM-DD-slug.md`. The
-// date prefix gives natural ordering + filename uniqueness; the URL slug strips
-// it for clean paths. Frontmatter `date` is authoritative for sorting.
+// Posts live as markdown under content/posts/{locale}/ named `YYYY-MM-DD-slug.md`.
+// The date prefix gives natural ordering + filename uniqueness; the URL slug
+// strips it for clean paths. Frontmatter `date` is authoritative for sorting.
+// `locale` is derived from the parent directory name (en → en-US, pt-BR → pt-BR).
+// The slug is shared across locales — the same story in two languages has the
+// same slug, which drives hreflang linking and the EN-fallback logic.
 const posts = defineCollection({
   name: 'Post',
   pattern: 'posts/**/*.md',
@@ -18,8 +21,11 @@ const posts = defineCollection({
       html: s.markdown(),
     })
     .transform((data) => {
-      const file = data.path.split('/').pop() ?? data.path;
-      return { ...data, slug: file.replace(/^\d{4}-\d{2}-\d{2}-/, '') };
+      const segments = data.path.split('/');
+      const file = segments.pop() ?? data.path;
+      const dir = segments.pop() ?? 'en';
+      const locale = dir === 'pt-BR' ? 'pt-BR' : 'en-US';
+      return { ...data, slug: file.replace(/^\d{4}-\d{2}-\d{2}-/, ''), locale };
     }),
 });
 
