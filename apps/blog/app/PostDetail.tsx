@@ -23,11 +23,13 @@ interface Props {
   makeHref: (slug: string) => string;
   /** Maps a tag slug to its in-tree href. */
   makeTagHref: (tag: string) => string;
+  /** Maps a tag slug to its display label (localized). Defaults to identity. */
+  tagDisplay?: (tag: string) => string;
   /** Slot for dev-only controls (PostDevControls) or JSON-LD. */
   header?: React.ReactNode;
 }
 
-export function PostDetail({ post, locale, prev, next, makeHref, makeTagHref, header }: Props) {
+export function PostDetail({ post, locale, prev, next, makeHref, makeTagHref, tagDisplay, header }: Props) {
   const t = getT(locale);
   return (
     <article className="post">
@@ -51,7 +53,7 @@ export function PostDetail({ post, locale, prev, next, makeHref, makeTagHref, he
           <ul className="tag-list">
             {post.tags.map((tag) => (
               <li key={tag}>
-                <Link href={makeTagHref(tag)}>#{tag}</Link>
+                <Link href={makeTagHref(tag)}>#{tagDisplay ? tagDisplay(tag) : tag}</Link>
               </li>
             ))}
           </ul>

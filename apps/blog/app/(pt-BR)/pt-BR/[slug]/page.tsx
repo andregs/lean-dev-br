@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PostDetail } from '../../../PostDetail';
 import { allPostsFor, getAdjacentLocalized, getPostLocalized } from '../../../../lib/posts';
+import { tagLabel } from '../../../../lib/tag-labels';
 import { AUTHOR, blogUrl } from '../../../../lib/site';
 
 export function generateStaticParams() {
@@ -62,6 +63,7 @@ export default async function PtBRPostPage({ params }: { params: Promise<{ slug:
       next={next}
       makeHref={(s) => `/pt-BR/${s}/`}
       makeTagHref={(t) => `/pt-BR/tags/${t}/`}
+      tagDisplay={(t) => tagLabel(t, 'pt-BR')}
       header={
         /* JSON-LD is data, not executed script — safe to inline under the CSP. */
         <script
