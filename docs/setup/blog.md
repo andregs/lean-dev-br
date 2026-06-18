@@ -5,8 +5,9 @@ CloudFront distribution. Posts are markdown files in `content/posts/` — no CMS
 
 ## Post format
 
-**Filename:** `YYYY-MM-DD-slug.md` inside `apps/blog/content/posts/`.
-The date prefix drives ordering; the slug is the URL path under `/blog/`.
+**Filename:** `YYYY-MM-DD-slug.md` inside `apps/blog/content/posts/en/` (English) or
+`apps/blog/content/posts/pt-BR/` (Portuguese). The date prefix drives ordering; the slug
+(filename without the date prefix) is the shared identity across locales.
 
 **Frontmatter:**
 
@@ -21,6 +22,51 @@ draft: true                 # optional; default false. Draft posts render in dev
 ---
 ```
 
+The `locale` field is derived automatically from the parent directory (`en/` → `en-US`,
+`pt-BR/` → `pt-BR`). Do not set it manually in frontmatter.
+
+## Localization
+
+The blog is bilingual. URLs are:
+
+| Locale | Index | Post | Tag |
+|--------|-------|------|-----|
+| English | `/blog/` | `/blog/[slug]/` | `/blog/tags/[tag]/` |
+| Portuguese | `/blog/pt-BR/` | `/blog/pt-BR/[slug]/` | `/blog/pt-BR/tags/[tag]/` |
+
+### Writing a translation
+
+1. Create `apps/blog/content/posts/pt-BR/YYYY-MM-DD-same-slug.md` — **same date prefix and
+   slug** as the English original. Velite matches them by slug.
+2. Translate title, description, and body. Tags stay as English slugs (display labels are
+   handled by `lib/tag-labels.ts`).
+3. The translation replaces the fallback for that post in the pt-BR tree.
+
+### EN fallback (untranslated posts)
+
+If a slug has no `pt-BR/` counterpart, the pt-BR index and tag pages still list the post
+with the English body. A **"só em inglês"** pill (`title="por enquanto"`) marks these posts.
+`lib/posts.ts` sets `fallback: true` on them; `app/PostList.tsx` and `app/PostDetail.tsx`
+render the pill.
+
+### Locale default redirect
+
+First-time pt-* visitors (no stored `lean:locale`) are redirected from `/blog/…` to
+`/blog/pt-BR/…` by `app/LocaleDefaultBoot.tsx` (client-side, EN tree only). An explicit
+stored preference always wins.
+
+### Tag labels
+
+English tag slugs are canonical. `lib/tag-labels.ts` maps translatable tags to pt-BR
+display labels (`security → segurança`, `decisions → decisões`,
+`infrastructure → infraestrutura`). Tech proper nouns pass through unchanged.
+
+## Lang toggle (feature flag)
+
+The nav toggle between `/blog/` ↔ `/blog/pt-BR/` is gated by the `lang-toggle` OpenFeature
+flag (`flags.json`). Toggle the flag to show/hide it globally without a redeploy. See
+`docs/setup/feature-flags.md` for the flip runbook.
+
 ## Authoring flow
 
 ### Option A — editor UI (recommended)
@@ -33,7 +79,7 @@ editor without AI features.
    existing post).
 3. Write; click **Proofread** for AI prose suggestions, **Suggest tags** for tag ideas.
 4. Toggle `draft: false` in the frontmatter pane to mark ready for publish.
-5. Save — the editor writes directly to `content/posts/`.
+5. Save — the editor writes directly to `content/posts/en/`.
 
 **Chrome flags required for built-in AI** (one-time setup):
 - `chrome://flags/#prompt-api-for-gemini-nano` → Enabled
@@ -42,7 +88,7 @@ editor without AI features.
 
 ### Option B — plain text
 
-Create `apps/blog/content/posts/YYYY-MM-DD-slug.md` manually with the frontmatter above.
+Create `apps/blog/content/posts/en/YYYY-MM-DD-slug.md` manually with the frontmatter above.
 
 ## Draft → publish → deploy
 
@@ -51,6 +97,15 @@ Create `apps/blog/content/posts/YYYY-MM-DD-slug.md` manually with the frontmatte
    (`apps/blog/out/` should contain the post's `index.html`).
 3. Commit and push to `main`. GitHub Actions deploys automatically and invalidates
    `/blog/*` in CloudFront so the new content is live within seconds.
+
+## SEO
+
+- **hreflang:** Each post page's `generateMetadata` emits `alternates.languages` with
+  `en`, `pt-BR`, and `x-default` (→ EN). Google/Bing use these to serve the right locale.
+- **Sitemap:** `app/sitemap.ts` emits both locale trees with per-entry `alternates.languages`.
+- **RSS feeds:** `/blog/feed.xml` (EN), `/blog/pt-BR/feed.xml` (pt-BR, includes EN fallbacks).
+- **Locale switch reloads** the page (route groups `(en)/` and `(pt-BR)/` have separate root
+  layouts with the correct `<html lang>`). In-locale navigation is soft.
 
 ## Build
 

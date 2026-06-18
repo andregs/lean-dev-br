@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: { default: BLOG_TITLE, template: `%s — ${SITE_NAME}` },
   description: BLOG_DESCRIPTION,
   alternates: {
-    types: { 'application/rss+xml': blogUrl('/feed.xml') },
+    types: { 'application/rss+xml': blogUrl('/pt-BR/feed.xml') },
   },
   openGraph: { siteName: SITE_NAME, type: 'website' },
 };

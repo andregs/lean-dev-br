@@ -28,6 +28,11 @@ export async function generateMetadata({
     description: post.description,
     alternates: {
       canonical: url,
+      languages: {
+        en: url,
+        'pt-BR': blogUrl(`/pt-BR/${slug}/`),
+        'x-default': url,
+      },
       types: { 'application/rss+xml': blogUrl('/feed.xml') },
     },
     openGraph: {

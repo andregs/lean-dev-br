@@ -8,16 +8,32 @@ export interface SitemapPost {
   date: string;
 }
 
+function hreflang(enUrl: string, ptBrUrl: string) {
+  return { languages: { en: enUrl, 'pt-BR': ptBrUrl, 'x-default': enUrl } };
+}
+
 export function buildSitemap(
   posts: readonly SitemapPost[],
   tags: readonly string[],
 ): MetadataRoute.Sitemap {
+  const enIndex = blogUrl('/');
+  const ptIndex = blogUrl('/pt-BR/');
+
   return [
-    { url: blogUrl('/'), changeFrequency: 'weekly' },
-    ...posts.map((post) => ({
-      url: blogUrl(`/${post.slug}/`),
-      lastModified: post.date,
-    })),
-    ...tags.map((tag) => ({ url: blogUrl(`/tags/${tag}/`) })),
+    { url: enIndex, changeFrequency: 'weekly', alternates: hreflang(enIndex, ptIndex) },
+    { url: ptIndex, changeFrequency: 'weekly', alternates: hreflang(enIndex, ptIndex) },
+    ...posts.flatMap((post) => {
+      const enUrl = blogUrl(`/${post.slug}/`);
+      const ptUrl = blogUrl(`/pt-BR/${post.slug}/`);
+      const alt = hreflang(enUrl, ptUrl);
+      return [
+        { url: enUrl, lastModified: post.date, alternates: alt },
+        { url: ptUrl, lastModified: post.date, alternates: alt },
+      ];
+    }),
+    ...tags.flatMap((tag) => [
+      { url: blogUrl(`/tags/${tag}/`) },
+      { url: blogUrl(`/pt-BR/tags/${tag}/`) },
+    ]),
   ];
 }

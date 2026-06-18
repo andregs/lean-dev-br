@@ -21,10 +21,14 @@ export function escapeXml(s: string): string {
   return s.replace(/[<>&'"]/g, (c) => XML_ESCAPES[c] ?? c);
 }
 
-export function renderFeed(items: readonly FeedItem[]): string {
+export function renderFeed(
+  items: readonly FeedItem[],
+  /** URL prefix for item links — defaults to EN ('/'). Pass '/pt-BR' for the pt-BR feed. */
+  pathPrefix = '',
+): string {
   const body = items
     .map((item) => {
-      const url = blogUrl(`/${item.slug}/`);
+      const url = blogUrl(`${pathPrefix}/${item.slug}/`);
       const description = item.description
         ? `\n      <description>${escapeXml(item.description)}</description>`
         : '';
