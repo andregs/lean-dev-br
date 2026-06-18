@@ -2,7 +2,7 @@
 /** @import { Locale } from '@lean-dev-br/i18n' */
 import './styles.css';
 import { initNav } from '@lean-dev-br/design-system';
-import { createFlagClient, loadStoredOverrides, parseOverrides } from '@lean-dev-br/flags';
+import { createFlagClient } from '@lean-dev-br/flags';
 import { createI18n, saveLocalePreference, sharedCatalog } from '@lean-dev-br/i18n';
 import { SyncedPasskeyKeyProvider } from './key-provider.js';
 import { renderNotebook, renderSetup, renderUnlocking, renderUnlockError } from './ui.js';
@@ -63,9 +63,7 @@ async function boot() {
   } catch {
     flagsJson = { flags: {} };
   }
-  _flags = createFlagClient(flagsJson, {
-    overrides: { ...loadStoredOverrides(), ...parseOverrides() },
-  });
+  _flags = await createFlagClient(flagsJson);
 
   const i18n = makeI18n();
   syncNav(i18n);

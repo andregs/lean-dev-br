@@ -1,6 +1,26 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
+import type { Client } from '@openfeature/server-sdk';
+import { createFlagClient } from '@lean-dev-br/flags/server';
 import { sendMail } from './mailer.js';
 import { verifyToken } from './recaptcha.js';
+
+// Initialized at module load (cold start). Subsequent warm invocations reuse
+// the same client — no per-request flag fetch.
+let _flags: Client | null = null;
+async function getFlags(): Promise<Client> {
+  if (_flags) return _flags;
+  const url = process.env.FLAGS_URL;
+  let flagsJson = { flags: {} };
+  if (url) {
+    try {
+      flagsJson = await fetch(url).then((r) => r.json() as Promise<typeof flagsJson>);
+    } catch (err) {
+      console.warn('flags fetch failed, defaulting all flags to caller default:', err);
+    }
+  }
+  _flags = await createFlagClient(flagsJson);
+  return _flags;
+}
 
 function requireEnv(name: string): string {
   const val = process.env[name];
@@ -67,6 +87,9 @@ const ACK_TEMPLATES: Record<SupportedLocale, { subject: string; body: string }> 
 };
 
 export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> => {
+  // Flags client available for future use; initialized once per warm instance.
+  await getFlags();
+
   if (event.rawPath === '/api/csp-report') {
     // Cap is supplied by infra (CSP_REPORT_MAX_BYTES); if absent, log full body
     const maxBytes = Number(process.env.CSP_REPORT_MAX_BYTES);

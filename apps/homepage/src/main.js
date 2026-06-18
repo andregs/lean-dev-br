@@ -1,7 +1,7 @@
 // @ts-check
 /** @import { FlagClient } from '@lean-dev-br/flags' */
 /** @import { I18nInstance, Locale } from '@lean-dev-br/i18n' */
-import { createFlagClient, loadStoredOverrides, parseOverrides } from '@lean-dev-br/flags';
+import { createFlagClient } from '@lean-dev-br/flags';
 import { initNav } from '@lean-dev-br/design-system';
 import { createI18n, saveLocalePreference, sharedCatalog } from '@lean-dev-br/i18n';
 import enUS from './locales/en-US.json';
@@ -34,9 +34,7 @@ try {
 } catch {
   flagsJson = { flags: {} };
 }
-const flags = createFlagClient(flagsJson, {
-  overrides: { ...loadStoredOverrides(), ...parseOverrides() },
-});
+const flags = await createFlagClient(flagsJson);
 
 // Kept between renders so onLangToggle knows the current locale without re-reading storage.
 /** @type {I18nInstance} */

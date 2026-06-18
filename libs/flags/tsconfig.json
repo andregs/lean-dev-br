@@ -5,5 +5,5 @@
     "checkJs": true,
     "types": ["node"]
   },
-  "include": ["index.js", "index.d.ts", "vite.config.ts", "**/*.test.ts"]
+  "include": ["_adapter.js", "index.js", "index.d.ts", "server.js", "server.d.ts", "vite.config.ts", "**/*.test.ts"]
 }

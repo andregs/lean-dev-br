@@ -26,6 +26,12 @@ importers:
       '@lean-dev-br/trusted-types':
         specifier: workspace:*
         version: link:libs/trusted-types
+      '@openfeature/server-sdk':
+        specifier: ^1.22.0
+        version: 1.22.0(@openfeature/core@1.11.0)
+      '@openfeature/web-sdk':
+        specifier: ^1.9.0
+        version: 1.9.0(@openfeature/core@1.11.0)
       '@uiw/react-md-editor':
         specifier: ^4.1.1
         version: 4.1.1(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -2309,6 +2315,20 @@ packages:
 
   '@nx/workspace@22.7.5':
     resolution: {integrity: sha512-f3zx8EAOl0ANd2UXZIniBoHfDvNvi2Uy65R9Rp6emdcx7rxsuTU5Eaidryleo9wIQ5cZAcMx7Wvzp5Srj8diKA==}
+
+  '@openfeature/core@1.11.0':
+    resolution: {integrity: sha512-P0u3/ht/oZCQT89fOed+laLk0kZR529a825cS02uPDglxXbE97irWYpDAeRGGVETIzKfuy+H2g8c3Ccv/tXJNQ==}
+
+  '@openfeature/server-sdk@1.22.0':
+    resolution: {integrity: sha512-YBrf6SQkn0FNB/dRAtLEs41dvFMUE8CrQTwI+iLaMFUIqWlqGNJfGnulKSneEKS+2OgKTAC6DdmKcZ6tK7kBcg==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@openfeature/core': ^1.11.0
+
+  '@openfeature/web-sdk@1.9.0':
+    resolution: {integrity: sha512-FCrNfqvE/thHVfCNU0KKx1SD7rk+1wE2UaR5B5OPZl917QJv6AsKRwaI3N+SVgwXWI07GgtXP6hNlTVb49PGhg==}
+    peerDependencies:
+      '@openfeature/core': ^1.11.0
 
   '@opentelemetry/api-logs@0.57.2':
     resolution: {integrity: sha512-uIX52NnTM0iBh84MShlpouI7UKqkZ7MrUszTmaypHBu4r7NofznSnQRfJ+uUeDtQDj6w8eFGg5KBLDAwAPz1+A==}
@@ -11984,6 +12004,16 @@ snapshots:
       - '@swc-node/register'
       - '@swc/core'
       - debug
+
+  '@openfeature/core@1.11.0': {}
+
+  '@openfeature/server-sdk@1.22.0(@openfeature/core@1.11.0)':
+    dependencies:
+      '@openfeature/core': 1.11.0
+
+  '@openfeature/web-sdk@1.9.0(@openfeature/core@1.11.0)':
+    dependencies:
+      '@openfeature/core': 1.11.0
 
   '@opentelemetry/api-logs@0.57.2':
     dependencies:
