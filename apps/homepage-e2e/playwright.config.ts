@@ -21,7 +21,9 @@ export default defineConfig({
   webServer: isProd()
     ? undefined
     : {
-        command: 'pnpm nx run homepage:dev',
+        // VITE_RECAPTCHA_SITE_KEY must be non-empty so loadRecaptcha() passes its
+        // guard check; the real Google endpoint is mocked via page.route() in specs.
+        command: 'VITE_RECAPTCHA_SITE_KEY=test-e2e pnpm nx run homepage:dev',
         url: `http://localhost:${String(LOCAL_PORT)}`,
         reuseExistingServer: true,
         timeout: 120_000,
