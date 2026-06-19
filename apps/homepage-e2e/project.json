@@ -1,0 +1,25 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "homepage-e2e",
+  "projectType": "application",
+  "tags": ["scope:homepage", "type:e2e"],
+  "implicitDependencies": ["homepage"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/playwright:playwright",
+      "outputs": [
+        "{projectRoot}/playwright-report",
+        "{projectRoot}/test-results"
+      ],
+      "options": {
+        "config": "{projectRoot}/playwright.config.ts"
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "reporter": "line"
+        }
+      }
+    }
+  }
+}

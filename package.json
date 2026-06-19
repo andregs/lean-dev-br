@@ -5,8 +5,16 @@
   "scripts": {
     "nx": "nx"
   },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions"
+  ],
   "devDependencies": {
     "@aws-sdk/client-ses": "^3.1062.0",
+    "@nx/playwright": "22.7.5",
+    "@playwright/test": "1.61.0",
     "@eslint/js": "^10.0.1",
     "@next/eslint-plugin-next": "^16.1.6",
     "@nx/esbuild": "22.7.5",

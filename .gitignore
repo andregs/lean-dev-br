@@ -26,3 +26,8 @@ out
 vitest.config.*.timestamp*
 
 apps/relay-service/target/
+
+# Playwright
+playwright-report/
+test-results/
+**/.last-run.json

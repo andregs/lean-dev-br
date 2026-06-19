@@ -1,6 +1,10 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "targetDefaults": {
+    "e2e": {
+      "cache": true,
+      "inputs": ["default", "^default"]
+    },
     "build": {
       "cache": true
     },

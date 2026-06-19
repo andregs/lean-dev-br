@@ -18,6 +18,8 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "paths": {}
+    "paths": {
+      "@lean-dev-br/e2e-support": ["./libs/e2e-support/src/index.ts"]
+    }
   }
 }

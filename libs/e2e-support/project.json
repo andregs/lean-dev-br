@@ -1,0 +1,7 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "e2e-support",
+  "projectType": "library",
+  "sourceRoot": "libs/e2e-support/src",
+  "tags": ["scope:e2e", "type:lib"]
+}
