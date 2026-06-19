@@ -78,14 +78,19 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<!-- AOT runs at native-image build time; @Profile-conditional beans (e.g.
-				     FirestoreRoomStore) are baked in then, not re-evaluated from the
-				     SPRING_PROFILES_ACTIVE env var at container runtime. -->
-				<configuration>
-					<profiles>
-						<profile>prod</profile>
-					</profiles>
-				</configuration>
+				<executions>
+					<!-- AOT (native image build) bakes @Profile-conditional beans at build
+					     time; activate prod here only. Plugin-level config would also leak
+					     into spring-boot:run (the nx `serve` target) and break local dev. -->
+					<execution>
+						<id>process-aot</id>
+						<configuration>
+							<profiles>
+								<profile>prod</profile>
+							</profiles>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
