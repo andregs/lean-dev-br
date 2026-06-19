@@ -3,9 +3,9 @@ import '@uiw/react-md-editor/markdown-editor.css';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { PageHeading } from '../PageHeading';
-import { proofread, suggestTags, summarize } from '../../lib/chrome-ai';
-import { slugFromFilename } from '../../lib/draft';
+import { PageHeading } from '../../PageHeading';
+import { proofread, suggestTags, summarize } from '../../../lib/chrome-ai';
+import { slugFromFilename } from '../../../lib/draft';
 import styles from './Editor.module.scss';
 
 // MDEditor touches the DOM on import — load it client-only.

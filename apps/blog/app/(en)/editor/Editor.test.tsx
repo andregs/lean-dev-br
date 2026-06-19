@@ -16,7 +16,7 @@ vi.mock('@uiw/react-md-editor', () => ({
     />
   ),
 }));
-vi.mock('../../lib/chrome-ai', () => ({
+vi.mock('../../../lib/chrome-ai', () => ({
   proofread: vi.fn(),
   suggestTags: vi.fn(),
   summarize: vi.fn(),
