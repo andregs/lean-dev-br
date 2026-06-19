@@ -24,6 +24,13 @@ export function draftFilename(date: string, title: string): string {
   return `${day}-${slugify(title)}.md`;
 }
 
+/** Like draftFilename but uses a pre-computed slug instead of slugifying the title.
+ *  Use when the slug must stay pinned (e.g. pt-BR translation shares EN slug). */
+export function draftFilenameFor(date: string, slug: string): string {
+  const day = new Date(date).toISOString().slice(0, 10);
+  return `${day}-${slug}.md`;
+}
+
 // Exactly the shape draftFilename() produces — no path separators or `..`, so a
 // client-supplied filename can't traverse out of content/posts/.
 const DRAFT_FILENAME = /^\d{4}-\d{2}-\d{2}-[a-z0-9-]+\.md$/;

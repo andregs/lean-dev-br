@@ -17,6 +17,8 @@ export function LocaleDefaultBoot() {
 
     const { pathname } = window.location;
     const afterBase = pathname.replace(/^\/blog/, '');
+    // Dev-only routes have no pt-BR equivalent — skip the redirect.
+    if (afterBase.startsWith('/editor')) return;
     window.location.replace(`/blog/pt-BR${afterBase}`);
   }, []);
 

@@ -4,10 +4,15 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import styles from './DevControls.module.scss';
 
+interface Props {
+  slug: string;
+  locale?: 'en' | 'pt-BR';
+}
+
 // Dev-only floating edit/delete controls for a post. Dead-branch-imported by the
 // post page so it (and its CSS) never ships to the static export. Delete has no
 // confirmation by design — `git` is the undo.
-export function PostDevControls({ slug }: { slug: string }) {
+export function PostDevControls({ slug, locale = 'en' }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -16,22 +21,28 @@ export function PostDevControls({ slug }: { slug: string }) {
     setBusy(true);
     setError('');
     try {
-      const res = await fetch(`/blog/api/draft/?slug=${encodeURIComponent(slug)}`, {
+      const params = new URLSearchParams({ slug, locale });
+      const res = await fetch(`/blog/api/draft/?${params.toString()}`, {
         method: 'DELETE',
       });
-      const data = (await res.json()) as { error?: string };
-      if (!res.ok) throw new Error(data.error ?? 'delete failed');
-      router.push('/'); // SPA back to the blog index (basePath-aware)
+      const data = (await res.json()) as { error?: string; detail?: string };
+      if (!res.ok) throw new Error(data.detail ?? data.error ?? 'delete failed');
+      const returnPath = locale === 'pt-BR' ? '/pt-BR/' : '/';
+      router.push(returnPath);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setBusy(false);
     }
   }
 
+  const editHref = locale === 'pt-BR'
+    ? `/editor?slug=${slug}&locale=pt-BR`
+    : `/editor?slug=${slug}`;
+
   return (
     <div className={styles.fabStack}>
       {error && <span className={styles.error}>{error}</span>}
-      <Link className={styles.fab} href={`/editor?slug=${slug}`} aria-label="Edit post" title="Edit post">
+      <Link className={styles.fab} href={editHref} aria-label="Edit post" title="Edit post">
         ✏️
       </Link>
       <button

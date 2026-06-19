@@ -51,7 +51,7 @@ function input(label: string): HTMLInputElement {
 }
 
 describe('Editor form (new post)', () => {
-  it('POSTs the entered fields as a normalized draft payload with the pinned date', async () => {
+  it('defaults locale to en and includes it in the save payload', async () => {
     fetchMock.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ filename: '2026-06-08-my-post.md' }),
@@ -64,7 +64,7 @@ describe('Editor form (new post)', () => {
     await user.type(input('Description'), 'a desc');
 
     const draft = input('Draft');
-    expect(draft.checked).toBe(true); // drafts default on
+    expect(draft.checked).toBe(true);
     await user.click(draft);
     expect(draft.checked).toBe(false);
 
@@ -76,15 +76,16 @@ describe('Editor form (new post)', () => {
     expect(init.method).toBe('POST');
     const body = JSON.parse(init.body as string) as Record<string, unknown>;
     expect(body).toMatchObject({
+      locale: 'en',
       title: 'My Post',
-      tags: ['nextjs', 'csp'], // trimmed, blanks dropped
+      tags: ['nextjs', 'csp'],
       description: 'a desc',
       draft: false,
-      date: '2026-06-08T15:30:00.000Z', // datetime-local default round-trips to the pinned instant
+      date: '2026-06-08T15:30:00.000Z',
     });
   });
 
-  it('shows a success status with a view-post link after saving', async () => {
+  it('shows a success status with an EN view-post link after saving', async () => {
     fetchMock.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ filename: '2026-06-08-my-post.md' }),
@@ -95,20 +96,43 @@ describe('Editor form (new post)', () => {
     await user.type(input('Title'), 'My Post');
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
-    expect(await screen.findByText(/Saved content\/posts\/2026-06-08-my-post\.md/)).toBeDefined();
-    // basePath (/blog) is applied by next/link at runtime, not in this unit test.
-    expect((await screen.findByText('View post →')).getAttribute('href')).toContain('my-post');
+    expect(await screen.findByText(/Saved content\/posts\/en\/2026-06-08-my-post\.md/)).toBeDefined();
+    const viewLink = await screen.findByText('View post →');
+    expect(viewLink.getAttribute('href')).toContain('my-post');
+    expect(viewLink.getAttribute('href')).not.toContain('/pt-BR/');
+  });
+
+  it('shows a pt-BR view-post link when ?locale=pt-BR is in the URL', async () => {
+    window.history.replaceState(null, '', '?locale=pt-BR');
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ filename: '2026-06-08-meu-post.md' }),
+    });
+    const user = userEvent.setup();
+    render(<Editor />);
+
+    await user.type(input('Title'), 'Meu Post');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0] as [string, RequestInit])[1].body as string,
+    ) as Record<string, unknown>;
+    expect(body.locale).toBe('pt-BR');
+
+    const viewLink = await screen.findByText('View post →');
+    expect(viewLink.getAttribute('href')).toContain('/pt-BR/');
   });
 });
 
 describe('Editor form (edit mode)', () => {
-  it('loads ?slug into the fields, populated and titled "Edit post"', async () => {
+  it('loads ?slug into the fields, sends locale to /api/draft/load/, titles "Edit post"', async () => {
     window.history.replaceState(null, '', '?slug=existing');
     fetchMock.mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
           filename: '2026-06-07-existing.md',
+          seededFromEn: false,
           title: 'Existing Post',
           date: '2026-06-07T09:00:00.000Z',
           tags: ['meta', 'nextjs'],
@@ -126,12 +150,82 @@ describe('Editor form (edit mode)', () => {
     expect(input('Tags (comma-separated)').value).toBe('meta, nextjs');
     expect(input('Description').value).toBe('old desc');
     expect(input('Date').value).toBe('2026-06-07T09:00');
-    expect((input('Draft')).checked).toBe(false);
+    expect(input('Draft').checked).toBe(false);
     expect(screen.getByText('Edit post')).toBeDefined();
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/blog/api/draft/load/',
-      expect.objectContaining({ method: 'POST' }),
-    );
+    const [loadUrl, loadInit] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(loadUrl).toBe('/blog/api/draft/load/');
+    expect(loadInit.method).toBe('POST');
+    const loadBody = JSON.parse(loadInit.body as string) as Record<string, unknown>;
+    expect(loadBody).toMatchObject({ slug: 'existing', locale: 'en' });
+  });
+
+  it('sends pt-BR locale to /api/draft/load/ when ?slug=…&locale=pt-BR', async () => {
+    window.history.replaceState(null, '', '?slug=existing&locale=pt-BR');
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          filename: '2026-06-07-existing.md',
+          seededFromEn: false,
+          title: 'Post Existente',
+          date: '2026-06-07T09:00:00.000Z',
+          tags: [],
+          draft: false,
+          body: 'corpo',
+        }),
+    });
+
+    render(<Editor />);
+
+    await waitFor(() => {
+      expect(input('Title').value).toBe('Post Existente');
+    });
+
+    const loadBody = JSON.parse(
+      (fetchMock.mock.calls[0] as [string, RequestInit])[1].body as string,
+    ) as Record<string, unknown>;
+    expect(loadBody).toMatchObject({ slug: 'existing', locale: 'pt-BR' });
+  });
+
+  it('sends slugOverride on save when seeded from EN', async () => {
+    window.history.replaceState(null, '', '?slug=hello-world&locale=pt-BR');
+    // First call = load (seeded), second call = save.
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            seededFromEn: true,
+            slug: 'hello-world',
+            title: 'Hello World',
+            date: '2026-06-07T00:00:00.000Z',
+            tags: [],
+            draft: false,
+            body: 'english body',
+          }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ filename: '2026-06-07-hello-world.md' }),
+      });
+
+    const user = userEvent.setup();
+    render(<Editor />);
+
+    await waitFor(() => {
+      expect(input('Title').value).toBe('Hello World');
+    });
+
+    await user.clear(input('Title'));
+    await user.type(input('Title'), 'Olá Mundo');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    const saveBody = JSON.parse(
+      (fetchMock.mock.calls[1] as [string, RequestInit])[1].body as string,
+    ) as Record<string, unknown>;
+    expect(saveBody.slugOverride).toBe('hello-world'); // must not use pt-BR title slug
+    expect(saveBody.title).toBe('Olá Mundo'); // translated title still goes to frontmatter
+    expect(saveBody.locale).toBe('pt-BR');
   });
 });

@@ -74,7 +74,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       makeTagHref={(t) => `/tags/${t}/`}
       header={
         <>
-          <PostDevControls slug={slug} />
+          <PostDevControls slug={slug} locale="en" />
           {/* JSON-LD is data, not executed script — safe to inline under the CSP. */}
           <script
             type="application/ld+json"

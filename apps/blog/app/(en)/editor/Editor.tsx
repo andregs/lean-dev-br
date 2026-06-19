@@ -11,6 +11,8 @@ import styles from './Editor.module.scss';
 // MDEditor touches the DOM on import — load it client-only.
 const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false });
 
+type Locale = 'en' | 'pt-BR';
+
 function nowLocalDatetime(): string {
   return isoToLocalInput(new Date().toISOString());
 }
@@ -42,16 +44,19 @@ function useColorScheme(): 'light' | 'dark' {
 
 interface LoadedPost {
   filename?: string;
+  slug?: string;
+  seededFromEn?: boolean;
   title?: string;
   date?: string;
   tags?: string[];
   description?: string;
   draft?: boolean;
   body?: string;
-  error?: string;
+  detail?: string;
 }
 
 export function Editor() {
+  const [locale, setLocale] = useState<Locale>('en');
   const [title, setTitle] = useState('');
   const [dateLocal, setDateLocal] = useState(nowLocalDatetime());
   const [tags, setTags] = useState('');
@@ -59,6 +64,10 @@ export function Editor() {
   const [draft, setDraft] = useState(true);
   const [body, setBody] = useState('');
   const [savedFilename, setSavedFilename] = useState<string | null>(null);
+  // When translating an EN post to pt-BR, the pt-BR file must share the EN slug.
+  // The load endpoint returns `slug` when seeded; we pin it here and send it as
+  // `slugOverride` on save so title changes don't create a divergent slug.
+  const [pinnedSlug, setPinnedSlug] = useState<string | null>(null);
   const [heading, setHeading] = useState('New post');
   const [status, setStatus] = useState('');
   const [tone, setTone] = useState<'info' | 'ok' | 'error'>('info');
@@ -70,9 +79,12 @@ export function Editor() {
     setTone(statusTone);
   }
 
-  // Edit mode: ?slug=… loads the existing post's raw fields.
+  // Edit mode: ?slug=…&locale=… loads the existing post's raw fields.
   useEffect(() => {
-    const slug = new URLSearchParams(window.location.search).get('slug');
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('slug');
+    const queryLocale = params.get('locale') === 'pt-BR' ? 'pt-BR' : 'en';
+    setLocale(queryLocale);
     if (!slug) return;
     setHeading('Edit post');
     void (async () => {
@@ -80,10 +92,10 @@ export function Editor() {
         const res = await fetch('/blog/api/draft/load/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slug }),
+          body: JSON.stringify({ slug, locale: queryLocale }),
         });
         const data = (await res.json()) as LoadedPost;
-        if (!res.ok) throw new Error(data.error ?? 'load failed');
+        if (!res.ok) throw new Error(data.detail ?? 'load failed');
         setTitle(data.title ?? '');
         if (data.date) setDateLocal(isoToLocalInput(data.date));
         setTags((data.tags ?? []).join(', '));
@@ -91,7 +103,9 @@ export function Editor() {
         setDraft(data.draft ?? false);
         setBody(data.body ?? '');
         setSavedFilename(data.filename ?? null);
-        report(`Editing ${data.filename ?? slug}.`, 'info');
+        if (data.seededFromEn && data.slug) setPinnedSlug(data.slug);
+        const note = data.seededFromEn ? ' (seeded from EN — will create a new pt-BR file)' : '';
+        report(`Editing ${data.filename ?? slug}.${note}`, 'info');
       } catch (err) {
         report(err instanceof Error ? err.message : String(err), 'error');
       }
@@ -119,6 +133,7 @@ export function Editor() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          locale,
           title,
           date: new Date(dateLocal).toISOString(),
           tags: tags
@@ -129,18 +144,27 @@ export function Editor() {
           draft,
           body,
           previousFilename: savedFilename ?? undefined,
+          slugOverride: pinnedSlug ?? undefined,
         }),
       });
-      const data = (await res.json()) as { filename?: string; error?: string };
-      if (!res.ok) throw new Error(data.error ?? 'save failed');
+      const data = (await res.json()) as { filename?: string; detail?: string };
+      if (!res.ok) throw new Error(data.detail ?? 'save failed');
       setSavedFilename(data.filename ?? null);
-      report(`Saved content/posts/${data.filename ?? ''} — commit to publish.`, 'ok');
+      setPinnedSlug(null); // file now exists — subsequent saves use previousFilename rename
+      report(`Saved content/posts/${locale}/${data.filename ?? ''} — commit to publish.`, 'ok');
     } catch (err) {
       report(err instanceof Error ? err.message : String(err), 'error');
     } finally {
       setBusy(false);
     }
   }
+
+  const viewHref =
+    savedFilename
+      ? locale === 'pt-BR'
+        ? `/pt-BR/${slugFromFilename(savedFilename)}/`
+        : `/${slugFromFilename(savedFilename)}/`
+      : null;
 
   return (
     <div className={styles.admin}>
@@ -291,8 +315,8 @@ export function Editor() {
         >
           {status}
         </span>
-        {savedFilename && (
-          <Link className={styles.viewLink} href={`/${slugFromFilename(savedFilename)}/`}>
+        {viewHref && (
+          <Link className={styles.viewLink} href={viewHref}>
             View post →
           </Link>
         )}

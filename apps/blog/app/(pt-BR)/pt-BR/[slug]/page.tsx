@@ -1,9 +1,15 @@
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 import { PostDetail } from '../../../PostDetail';
 import { allPostsFor, getAdjacentLocalized, getPostLocalized } from '../../../../lib/posts';
 import { tagLabel } from '../../../../lib/tag-labels';
 import { AUTHOR, blogUrl } from '../../../../lib/site';
+
+const PostDevControls =
+  process.env.NODE_ENV === 'production'
+    ? () => null
+    : dynamic(() => import('../../../dev/PostDevControls').then((m) => m.PostDevControls));
 
 export function generateStaticParams() {
   return allPostsFor('pt-BR').map((post) => ({ slug: post.slug }));
@@ -70,11 +76,14 @@ export default async function PtBRPostPage({ params }: { params: Promise<{ slug:
       makeTagHref={(t) => `/pt-BR/tags/${t}/`}
       tagDisplay={(t) => tagLabel(t, 'pt-BR')}
       header={
-        /* JSON-LD is data, not executed script — safe to inline under the CSP. */
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <>
+          <PostDevControls slug={slug} locale="pt-BR" />
+          {/* JSON-LD is data, not executed script — safe to inline under the CSP. */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
+        </>
       }
     />
   );
