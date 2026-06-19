@@ -5,5 +5,8 @@
   "blog.post.tags.heading": "Tags",
   "blog.tags.heading": "#{tag}",
   "blog.fallback.note": "só em inglês",
-  "blog.fallback.tooltip": "por enquanto"
+  "blog.fallback.tooltip": "por enquanto",
+  "tag.security": "segurança",
+  "tag.decisions": "decisões",
+  "tag.infrastructure": "infraestrutura"
 }
