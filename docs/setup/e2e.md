@@ -73,12 +73,20 @@ Nightly monitor: `.github/workflows/synthetic-monitor.yml` runs at 06:00 UTC aga
 ## Debugging failures
 
 ```bash
+# Interactive UI mode — call Playwright directly (bypasses Nx executor):
+# PLAYWRIGHT_TRACING_NO_WEBSOCKET_FRAMES=1 workaround required until 1.62.0 stable
+# (fix merged June 19 2026, tracked at github.com/microsoft/playwright/issues/41351)
+PLAYWRIGHT_TRACING_NO_WEBSOCKET_FRAMES=1 pnpm exec playwright test --config apps/blog-e2e/playwright.config.ts --ui
+
+# Headed mode — browser visible, results printed to terminal:
+pnpm exec playwright test --config apps/blog-e2e/playwright.config.ts --headed
+
 # Show last run trace (on-first-retry):
 pnpm exec playwright show-trace apps/homepage-e2e/test-results/**/trace.zip
 
 # Show HTML report:
 pnpm exec playwright show-report apps/homepage-e2e/playwright-report
 
-# Debug mode (requires display; works with WSLg):
-PWDEBUG=1 pnpm nx run homepage-e2e:e2e
+# Step-by-step debugger (requires display; works with WSLg):
+PWDEBUG=1 pnpm exec playwright test --config apps/homepage-e2e/playwright.config.ts --headed
 ```
