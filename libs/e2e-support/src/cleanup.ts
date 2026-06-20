@@ -1,6 +1,6 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 const MANIFEST_PATH = join(process.cwd(), 'test-results', 'e2e-manifest.json');
 
@@ -15,6 +15,7 @@ function readManifest(): Manifest {
 }
 
 function writeManifest(m: Manifest): void {
+  mkdirSync(dirname(MANIFEST_PATH), { recursive: true });
   writeFileSync(MANIFEST_PATH, JSON.stringify(m, null, 2));
 }
 
