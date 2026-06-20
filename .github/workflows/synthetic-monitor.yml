@@ -1,0 +1,47 @@
+name: Synthetic monitor
+
+on:
+  schedule:
+    # Nightly at 07:00 São Paulo (BRT = UTC-3) → 10:00 UTC
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .tool-versions
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-all-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install Playwright browsers
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps
+
+      - name: Run prod smoke tests
+        env:
+          E2E_BASE_URL: https://lean.dev.br
+          E2E_FULL: '1'
+        run: pnpm nx run-many -t e2e -- --grep @prod-safe
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: '**/playwright-report/'
+          retention-days: 7
