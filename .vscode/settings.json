@@ -1,7 +1,8 @@
 {
   "github-actions.workflows.pinned.workflows": [
-    ".github/workflows/deploy-homepage.yml",
-    ".github/workflows/deploy-relay-service.yml"
+    ".github/workflows/synthetic-monitor.yml",
+    ".github/workflows/main.yml",
+    ".github/workflows/ci.yml"
   ],
 
   "editor.formatOnSave": true,
