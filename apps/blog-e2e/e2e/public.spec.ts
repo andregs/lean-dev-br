@@ -39,6 +39,6 @@ test('feed.xml returns XML content', { tag: ['@prod-safe'] }, async ({ page }) =
 });
 
 test('pt-BR index renders Portuguese heading', { tag: ['@prod-safe'] }, async ({ page }) => {
-  await page.goto(blogPath('/pt-BR'));
+  await page.goto(blogPath('/pt-BR/'));
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
 });
