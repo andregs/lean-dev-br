@@ -31,6 +31,19 @@ export function recordRelayRoom(roomId: string): void {
 }
 
 /**
+ * Post-run teardown: deletes blog drafts recorded in the manifest.
+ * Backstop for crashes where inline cleanup in tests didn't complete.
+ */
+export async function teardownBlogDrafts(blogApiBase: string): Promise<void> {
+  const m = readManifest();
+  for (const slug of m.blogSlugs) {
+    await fetch(`${blogApiBase}/api/draft/?slug=${encodeURIComponent(slug)}&locale=en`, {
+      method: 'DELETE',
+    }).catch(() => undefined);
+  }
+}
+
+/**
  * Pre-run sweeper: deletes any stale e2e- blog drafts regardless of manifest.
  * Cascade delete (en → pt-BR) is handled by the API itself.
  */

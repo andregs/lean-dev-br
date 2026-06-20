@@ -1,0 +1,185 @@
+name: Main
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy-frontend: ${{ steps.flags.outputs.deploy-frontend }}
+      deploy-relay: ${{ steps.flags.outputs.deploy-relay }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .tool-versions
+          cache: pnpm
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install Playwright system deps
+        run: pnpm exec playwright install-deps chromium
+
+      - name: Install Playwright browsers
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install chromium
+
+      - name: Derive NX_BASE
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ]; then
+            echo "NX_BASE=HEAD~1" >> "$GITHUB_ENV"
+          else
+            echo "NX_BASE=${BEFORE_SHA}" >> "$GITHUB_ENV"
+          fi
+          echo "NX_HEAD=${HEAD_SHA}" >> "$GITHUB_ENV"
+
+      - name: Compute deploy flags
+        id: flags
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            # Manual trigger: always deploy everything that verify passes
+            echo "deploy-frontend=true" >> "$GITHUB_OUTPUT"
+            echo "deploy-relay=true" >> "$GITHUB_OUTPUT"
+          else
+            AFFECTED=$(pnpm nx show projects --affected 2>/dev/null || echo "[]")
+            echo "Affected: $AFFECTED"
+            if echo "$AFFECTED" | jq -e 'any(.[]; . == "homepage" or . == "contact-api" or . == "todo" or . == "blog" or . == "@lean-dev-br/infra-homepage")' > /dev/null; then
+              echo "deploy-frontend=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "deploy-frontend=false" >> "$GITHUB_OUTPUT"
+            fi
+            if echo "$AFFECTED" | jq -e 'any(.[]; . == "relay-service" or . == "@lean-dev-br/infra-relay-service")' > /dev/null; then
+              echo "deploy-relay=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "deploy-relay=false" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - run: pnpm nx affected -t lint typecheck test build e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: '**/playwright-report/'
+          retention-days: 7
+
+  deploy-frontend:
+    needs: verify
+    if: needs.verify.result == 'success' && needs.verify.outputs.deploy-frontend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .tool-versions
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm nx run-many -t build -p homepage,contact-api,todo --skip-nx-cache
+        env:
+          VITE_RECAPTCHA_SITE_KEY: ${{ vars.VITE_RECAPTCHA_SITE_KEY }}
+          VITE_FLAGS_URL: ${{ vars.VITE_FLAGS_URL }}
+          VITE_RUM_APP_MONITOR_ID: ${{ vars.VITE_RUM_APP_MONITOR_ID }}
+          VITE_RUM_IDENTITY_POOL_ID: ${{ vars.VITE_RUM_IDENTITY_POOL_ID }}
+          VITE_RUM_SESSION_SAMPLE_RATE: ${{ vars.VITE_RUM_SESSION_SAMPLE_RATE }}
+          VITE_RELAY_URL: ${{ vars.VITE_RELAY_URL }}
+
+      - run: pnpm nx run blog:postbuild --skip-nx-cache
+        env:
+          NEXT_PUBLIC_RUM_APP_MONITOR_ID: ${{ vars.VITE_RUM_APP_MONITOR_ID }}
+          NEXT_PUBLIC_RUM_IDENTITY_POOL_ID: ${{ vars.VITE_RUM_IDENTITY_POOL_ID }}
+          NEXT_PUBLIC_RUM_SESSION_SAMPLE_RATE: ${{ vars.VITE_RUM_SESSION_SAMPLE_RATE }}
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - uses: pulumi/actions@v7
+        with:
+          command: up
+          stack-name: prod
+          work-dir: infra/homepage
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+  deploy-relay:
+    needs: verify
+    if: needs.verify.result == 'success' && needs.verify.outputs.deploy-relay == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .tool-versions
+          cache: pnpm
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
+      - name: Set image ref
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          echo "RELAY_IMAGE=us-central1-docker.pkg.dev/lean-dev-br/relay-service/relay-service:${SHORT_SHA}" >> "$GITHUB_ENV"
+          echo "SHORT_SHA=${SHORT_SHA}" >> "$GITHUB_ENV"
+
+      - name: Build native image
+        run: pnpm nx run relay-service:docker-build
+
+      - name: Push image
+        run: pnpm nx run relay-service:docker-push
+
+      - name: Deploy to Cloud Run
+        run: |
+          pnpm exec pulumi up --stack prod --yes \
+            --config "lean-dev-br-relay-service:imageTag=${SHORT_SHA}"
+        working-directory: infra/relay-service
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

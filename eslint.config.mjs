@@ -15,6 +15,8 @@ export default defineConfig([
     '**/.nx',
     '**/vite.config.*.timestamp*',
     '**/*.timestamp-*',
+    '**/playwright-report/**',
+    '**/test-results/**',
     // CloudFront Function scripts run in a restricted CF runtime — not workspace JS
     'infra/homepage/cloudfront-edge.js',
   ]),

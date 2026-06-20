@@ -3,7 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "nx": "nx"
+    "nx": "nx",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,tsx,jsx}": [
+      "prettier --write",
+      "eslint --fix --no-warn-ignored"
+    ],
+    "*.{json,jsonc,css,html,md,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "browserslist": [
     "last 2 Chrome versions",
@@ -13,8 +23,6 @@
   ],
   "devDependencies": {
     "@aws-sdk/client-ses": "^3.1062.0",
-    "@nx/playwright": "22.7.5",
-    "@playwright/test": "1.61.0",
     "@eslint/js": "^10.0.1",
     "@next/eslint-plugin-next": "^16.1.6",
     "@nx/esbuild": "22.7.5",
@@ -22,9 +30,11 @@
     "@nx/eslint-plugin": "22.7.5",
     "@nx/js": "22.7.5",
     "@nx/next": "22.7.5",
+    "@nx/playwright": "22.7.5",
     "@nx/vite": "22.7.5",
     "@nx/vitest": "^22.7.5",
     "@nx/web": "22.7.5",
+    "@playwright/test": "1.61.0",
     "@swc-node/register": "~1.11.1",
     "@swc/cli": "~0.8.0",
     "@swc/core": "~1.15.5",
@@ -49,9 +59,11 @@
     "eslint-plugin-react-hooks": "5.0.0",
     "fake-indexeddb": "^6.2.5",
     "globals": "^17.6.0",
+    "husky": "^9.1.7",
     "jiti": "2.4.2",
     "jsdom": "^29.1.1",
     "jsonc-eslint-parser": "^3.1.0",
+    "lint-staged": "^17.0.7",
     "nx": "22.7.5",
     "prettier": "^3.8.3",
     "rehype-highlight": "^7.0.2",

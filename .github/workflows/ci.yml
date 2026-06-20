@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  lint-typecheck-test-build:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -22,6 +22,11 @@ jobs:
           node-version-file: .tool-versions
           cache: pnpm
 
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+
       - run: pnpm install --frozen-lockfile
 
       - name: Cache Playwright browsers
@@ -31,26 +36,29 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-${{ hashFiles('**/pnpm-lock.yaml') }}
 
+      - name: Install Playwright system deps
+        run: pnpm exec playwright install-deps chromium
+
       - name: Install Playwright browsers
         if: steps.pw-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install chromium
 
       - name: Derive NX_BASE
         env:
           EVENT_NAME: ${{ github.event_name }}
           BEFORE_SHA: ${{ github.event.before }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          CURRENT_SHA: ${{ github.sha }}
+          HEAD_SHA: ${{ github.sha }}
         run: |
           if [ "$EVENT_NAME" = "pull_request" ]; then
-            echo "NX_BASE=$PR_BASE_SHA" >> "$GITHUB_ENV"
-          elif [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            echo "NX_BASE=${PR_BASE_SHA}" >> "$GITHUB_ENV"
+          elif [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ]; then
             # First push to a new branch — no previous commit on remote; diff against main
             echo "NX_BASE=origin/main" >> "$GITHUB_ENV"
           else
-            echo "NX_BASE=$BEFORE_SHA" >> "$GITHUB_ENV"
+            echo "NX_BASE=${BEFORE_SHA}" >> "$GITHUB_ENV"
           fi
-          echo "NX_HEAD=$CURRENT_SHA" >> "$GITHUB_ENV"
+          echo "NX_HEAD=${HEAD_SHA}" >> "$GITHUB_ENV"
 
       - run: pnpm nx affected -t lint typecheck test build e2e
 

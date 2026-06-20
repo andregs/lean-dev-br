@@ -34,20 +34,20 @@ Each project's `playwright.config.ts` starts the relevant dev server if `E2E_BAS
 
 ## Test tags
 
-| Tag | Meaning | When run |
-|---|---|---|
+| Tag          | Meaning                              | When run                            |
+| ------------ | ------------------------------------ | ----------------------------------- |
 | `@prod-safe` | Read-only, no writes, no auth needed | CI (local) + nightly monitor (prod) |
-| `@dev-only` | Requires dev server, may write files | CI (local) only |
-| `@writes` | Creates records on the server | CI (local) only |
+| `@dev-only`  | Requires dev server, may write files | CI (local) only                     |
+| `@writes`    | Creates records on the server        | CI (local) only                     |
 
 Nightly monitor uses `--grep @prod-safe` so only read-only specs run against production.
 
 ## Environment variables
 
-| Variable | Purpose | Default |
-|---|---|---|
-| `E2E_BASE_URL` | Override base URL | `http://localhost:<port>` |
-| `E2E_FULL` | Enable full browser matrix (Firefox, WebKit, mobile) | unset (Chromium only) |
+| Variable       | Purpose                                              | Default                   |
+| -------------- | ---------------------------------------------------- | ------------------------- |
+| `E2E_BASE_URL` | Override base URL                                    | `http://localhost:<port>` |
+| `E2E_FULL`     | Enable full browser matrix (Firefox, WebKit, mobile) | unset (Chromium only)     |
 
 Setting `E2E_BASE_URL=https://lean.dev.br` switches to prod mode: `isProd()` returns true, webServers are not started, and `blogPath()` uses the `/blog` prefix.
 
@@ -58,17 +58,31 @@ Setting `E2E_BASE_URL=https://lean.dev.br` switches to prod mode: `isProd()` ret
 
 ## Ports
 
-| App | Dev port | Base path |
-|---|---|---|
-| homepage | 5173 | `/` |
-| blog | 3001 | `/blog/` (Next.js `basePath`) |
-| todo | 4201 | `/todo/` (Vite `base`) |
+| App      | Dev port | Base path                     |
+| -------- | -------- | ----------------------------- |
+| homepage | 5173     | `/`                           |
+| blog     | 3001     | `/blog/` (Next.js `basePath`) |
+| todo     | 4201     | `/todo/` (Vite `base`)        |
 
-## CI
+## Local dev server topology
 
-PRs: `pnpm nx affected -t lint typecheck test build e2e` — Chromium only, mocked, dev server per project. Playwright browsers cached by `pnpm-lock.yaml` hash. Report uploaded as artifact on failure (7-day retention).
+Each e2e project starts **its own per-app dev server** on a fixed port (see table above). There is no single-origin proxy for local runs — this means cross-app navigation (e.g. homepage linking into `/blog`) is not exercised by e2e locally. The prod monitor covers that path via the real domain.
 
-Nightly monitor: `.github/workflows/synthetic-monitor.yml` runs at 06:00 UTC against `https://lean.dev.br` with `E2E_FULL=1` (all browsers + mobile). Trigger manually with `workflow_dispatch`.
+## CI / CD
+
+Three workflows govern the project:
+
+| Workflow                | Trigger                                         | What it does                                                             |
+| ----------------------- | ----------------------------------------------- | ------------------------------------------------------------------------ |
+| `ci.yml`                | Push to any branch except `main`; PRs to `main` | `nx affected -t lint typecheck test build e2e` — Chromium only, mocked   |
+| `main.yml`              | Push to `main`; `workflow_dispatch`             | Same verify step, then **affected-only deploys** gated on verify success |
+| `synthetic-monitor.yml` | Nightly 10:00 UTC; `workflow_dispatch`          | All engines + mobile, `--grep @prod-safe` against `https://lean.dev.br`  |
+
+**Deploy gate**: `deploy-frontend` and `deploy-relay` jobs in `main.yml` have `needs: verify` — a red verify commit lands on `main` but never reaches production. Fix the failing tests, push again.
+
+**Affected-only deploys**: `main.yml` computes `nx show projects --affected` and skips the deploy job if no relevant project changed. Pulumi `up` is idempotent regardless — a re-deploy of an unchanged stack is a safe no-op.
+
+Playwright browsers cached by `pnpm-lock.yaml` hash. Report uploaded as artifact on failure (7-day retention). System dependencies (`install-deps`) run unconditionally; only the browser binaries are cache-gated.
 
 ## Debugging failures
 

@@ -28,9 +28,12 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-all-${{ hashFiles('**/pnpm-lock.yaml') }}
 
+      - name: Install Playwright system deps
+        run: pnpm exec playwright install-deps
+
       - name: Install Playwright browsers
         if: steps.pw-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install --with-deps
+        run: pnpm exec playwright install
 
       - name: Run prod smoke tests
         env:
