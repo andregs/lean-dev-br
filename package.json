@@ -75,7 +75,7 @@
     "vite": "^8.0.0",
     "vitest": "~4.1.0"
   },
-  "packageManager": "pnpm@11.4.0",
+  "packageManager": "pnpm@11.8.0",
   "dependencies": {
     "@lean-dev-br/csp": "workspace:*",
     "@lean-dev-br/design-system": "workspace:*",
