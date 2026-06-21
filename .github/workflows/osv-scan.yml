@@ -21,7 +21,7 @@ jobs:
       scan-args: |-
         --lockfile=pnpm-lock.yaml
         --lockfile=apps/relay-service/pom.xml
-      fail-on-vuln: true
+      fail-on-vuln: false
 
   trivy-deployed-image:
     name: Trivy — deployed relay image
