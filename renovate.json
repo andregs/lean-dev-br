@@ -1,0 +1,71 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["before 9am on Monday"],
+  "minimumReleaseAge": "3 days",
+  "internalChecksFilter": "strict",
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "automerge": true,
+    "minimumReleaseAge": null
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 9am on Monday"]
+  },
+  "platformAutomerge": true,
+  "pruneStaleBranches": true,
+  "packageRules": [
+    {
+      "description": "Auto-merge patch and minor updates after cooldown",
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Group and auto-merge GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions",
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Group and auto-merge dev-tool updates (.tool-versions)",
+      "matchManagers": ["asdf"],
+      "groupName": "dev-tools",
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Group npm dev dependencies to reduce PR noise",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["devDependencies"],
+      "groupName": "npm-dev-deps"
+    },
+    {
+      "description": "Manual review for all major updates",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["needs-review"]
+    },
+    {
+      "description": "Manual review for Spring Boot (any update type)",
+      "matchPackageNames": ["/^org\\.springframework\\.boot/"],
+      "automerge": false,
+      "labels": ["needs-review"]
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Paketo buildpack builder image pinned in pom.xml property",
+      "managerFilePatterns": ["/^apps/relay-service/pom\\.xml$/"],
+      "matchStrings": [
+        "<paketo\\.builder>paketobuildpacks/builder-jammy-tiny:(?<currentValue>[^<]+)</paketo\\.builder>"
+      ],
+      "depNameTemplate": "paketobuildpacks/builder-jammy-tiny",
+      "datasourceTemplate": "docker"
+    }
+  ]
+}
