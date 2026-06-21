@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@lean-dev-br/csp": "workspace:*",
-    "@pulumi/aws": "^6.0.0",
+    "@pulumi/aws": "^7.0.0",
     "@pulumi/pulumi": "^3.0.0",
     "@pulumi/synced-folder": "^0.12.0"
   },
