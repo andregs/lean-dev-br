@@ -277,7 +277,7 @@ importers:
     dependencies:
       '@pulumi/gcp':
         specifier: ^9.0.0
-        version: 9.26.0(typescript@6.0.3)
+        version: 9.27.0(typescript@6.0.3)
       '@pulumi/pulumi':
         specifier: ^3.0.0
         version: 3.244.0(typescript@6.0.3)
@@ -2757,8 +2757,8 @@ packages:
   '@pulumi/aws@6.83.3':
     resolution: {integrity: sha512-tq6xvgUoBDcg4hVR/DC7YvpZVgvq45NiYyfJrwRYrUeZloiyA9j3/2+fTWiODxE61KbwQkZzk5S/5bZ/3sC2hg==}
 
-  '@pulumi/gcp@9.26.0':
-    resolution: {integrity: sha512-N7VE3lK1AqMfnK7uKDfXpRDgxH1Vc1HV9Pt+UYLVXVwtrRkDPs8alS5eJgfb9iwWQcWOv71rOa4QJf77BzxPzQ==}
+  '@pulumi/gcp@9.27.0':
+    resolution: {integrity: sha512-VAb3uMvDuR0LU+m1CoWjFgbkpBXkXZkSZKs6Go2EvDakBFVsJaRrcQmZVUEiCEdSbq0FfjCMgXIVaenlHfHDaA==}
 
   '@pulumi/pulumi@3.244.0':
     resolution: {integrity: sha512-vJnzsxPalz0mtatiheaVvZmImiBIufaPyXRpfABLM8l6Q/sQJHp/BDdX359XeAdxg1uuNTAxIQEgoIDjQYKlMg==}
@@ -8413,6 +8413,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  semver@7.8.5:
+    resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   send@0.19.2:
     resolution: {integrity: sha512-VMbMxbDeehAxpOtWJXlcUS5E8iXh6QmN+BkRX1GARS3wRaXEEgzCcB10gTQazO42tpNIya8xIyNx8fll1OFPrg==}
     engines: {node: '>= 0.8.0'}
@@ -11620,7 +11625,7 @@ snapshots:
       npm-pick-manifest: 10.0.0
       proc-log: 5.0.0
       promise-retry: 2.0.1
-      semver: 7.7.4
+      semver: 7.8.5
       which: 5.0.0
 
   '@npmcli/git@7.0.2':
@@ -11667,7 +11672,7 @@ snapshots:
       hosted-git-info: 8.1.0
       json-parse-even-better-errors: 4.0.0
       proc-log: 5.0.0
-      semver: 7.7.4
+      semver: 7.8.5
       validate-npm-package-license: 3.0.4
 
   '@npmcli/package-json@7.0.5':
@@ -12605,7 +12610,7 @@ snapshots:
       - ts-node
       - typescript
 
-  '@pulumi/gcp@9.26.0(typescript@6.0.3)':
+  '@pulumi/gcp@9.27.0(typescript@6.0.3)':
     dependencies:
       '@npmcli/package-json': 6.2.0
       '@pulumi/pulumi': 3.244.0(typescript@6.0.3)
@@ -17775,7 +17780,7 @@ snapshots:
 
   npm-install-checks@7.1.2:
     dependencies:
-      semver: 7.7.4
+      semver: 7.8.5
 
   npm-install-checks@8.0.0:
     dependencies:
@@ -17789,7 +17794,7 @@ snapshots:
     dependencies:
       hosted-git-info: 8.1.0
       proc-log: 5.0.0
-      semver: 7.7.4
+      semver: 7.8.5
       validate-npm-package-name: 6.0.2
 
   npm-package-arg@13.0.2:
@@ -17809,7 +17814,7 @@ snapshots:
       npm-install-checks: 7.1.2
       npm-normalize-package-bin: 4.0.0
       npm-package-arg: 12.0.2
-      semver: 7.7.4
+      semver: 7.8.5
 
   npm-pick-manifest@11.0.3:
     dependencies:
@@ -19294,6 +19299,8 @@ snapshots:
   semver@7.6.3: {}
 
   semver@7.7.4: {}
+
+  semver@7.8.5: {}
 
   send@0.19.2:
     dependencies:
