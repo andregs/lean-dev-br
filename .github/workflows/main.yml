@@ -50,7 +50,9 @@ jobs:
           BEFORE_SHA: ${{ github.event.before }}
           HEAD_SHA: ${{ github.sha }}
         run: |
-          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ]; then
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] \
+            || [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ] \
+            || ! git cat-file -e "${BEFORE_SHA}" 2>/dev/null; then
             echo "NX_BASE=HEAD~1" >> "$GITHUB_ENV"
           else
             echo "NX_BASE=${BEFORE_SHA}" >> "$GITHUB_ENV"

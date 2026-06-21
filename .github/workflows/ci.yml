@@ -52,8 +52,9 @@ jobs:
         run: |
           if [ "$EVENT_NAME" = "pull_request" ]; then
             echo "NX_BASE=${PR_BASE_SHA}" >> "$GITHUB_ENV"
-          elif [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ]; then
-            # First push to a new branch — no previous commit on remote; diff against main
+          elif [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ] \
+            || ! git cat-file -e "${BEFORE_SHA}" 2>/dev/null; then
+            # First push to branch, or force-push that orphaned the previous commit
             echo "NX_BASE=origin/main" >> "$GITHUB_ENV"
           else
             echo "NX_BASE=${BEFORE_SHA}" >> "$GITHUB_ENV"
