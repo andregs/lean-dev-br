@@ -19,4 +19,4 @@ config:
   lean-dev-br-homepage:notifyEmail:
     secure: AAABAGuUMUxT1TPG3teKIzO38YtusrKhXZvDsL4GeQc29LNmg1ISzi1bEQIZsuQAyw==
   lean-dev-br-homepage:recaptchaSecret:
-    secure: AAABALZtdQpcB6L7iXeR5UvRoOLLcuK0gyJbliwhPJtQnt4N0qOOYSdP13wsQCGwo9+GbGvU22sOK7zDNoXp76th00IGdKG4
+    secure: AAABACBzpG7Q4MvSYlQhO1HHmZy29Cv/BUX64sxYc0MxKtpMUEJrSa46zJOWYwL0q1vOC5mSOJDWJpDAJBA2cgwD5IMVwkNF
