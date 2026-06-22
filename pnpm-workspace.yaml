@@ -3,6 +3,8 @@ packages:
   - 'libs/*'
   - 'infra/*'
 
+dedupePeers: true
+
 allowBuilds:
   '@parcel/watcher': true
   '@swc/core': true
