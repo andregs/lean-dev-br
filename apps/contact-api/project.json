@@ -15,6 +15,7 @@
         "outputFileName": "handler.cjs",
         "tsConfig": "apps/contact-api/tsconfig.json",
         "format": ["cjs"],
+        "thirdParty": true,
         "external": ["@aws-sdk/client-ses"],
         "assets": []
       }
@@ -35,6 +36,13 @@
       "executor": "@nx/vitest:test",
       "options": {
         "configFile": "apps/contact-api/vite.config.integration.ts"
+      }
+    },
+    "test:bundle": {
+      "executor": "@nx/vitest:test",
+      "dependsOn": ["build"],
+      "options": {
+        "configFile": "apps/contact-api/vite.config.bundle.ts"
       }
     }
   }

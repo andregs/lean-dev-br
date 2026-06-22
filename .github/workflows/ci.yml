@@ -61,7 +61,7 @@ jobs:
           fi
           echo "NX_HEAD=${HEAD_SHA}" >> "$GITHUB_ENV"
 
-      - run: pnpm nx affected -t lint typecheck test build e2e
+      - run: pnpm nx affected -t lint typecheck test test:bundle build e2e
 
       - name: Upload Playwright report
         if: failure()
