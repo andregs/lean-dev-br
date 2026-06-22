@@ -20,26 +20,30 @@ export async function verifyToken(
 
   const raw: unknown = await res.json();
 
-  if (
-    typeof raw !== 'object' ||
-    raw === null ||
-    !('success' in raw) ||
-    !('score' in raw) ||
-    !('action' in raw)
-  ) {
+  if (typeof raw !== 'object' || raw === null || !('success' in raw)) {
     throw new Error('Unexpected siteverify response shape');
   }
 
+  if (raw.success !== true) {
+    const codes =
+      'error-codes' in raw && Array.isArray(raw['error-codes'])
+        ? (raw['error-codes'] as string[]).join(', ')
+        : 'unknown';
+    throw new Error(`reCAPTCHA rejected by Google: ${codes}`);
+  }
+
+  if (!('score' in raw) || !('action' in raw)) {
+    throw new Error('Unexpected siteverify response shape: missing score or action');
+  }
+
   const result: RecaptchaResult = {
-    success: raw.success === true,
+    success: true,
     score: typeof raw.score === 'number' ? raw.score : 0,
     action: typeof raw.action === 'string' ? raw.action : '',
   };
 
-  if (!result.success || result.action !== expectedAction || result.score < minScore) {
-    throw new Error(
-      `reCAPTCHA rejected: success=${String(result.success)} action=${result.action} score=${String(result.score)}`,
-    );
+  if (result.action !== expectedAction || result.score < minScore) {
+    throw new Error(`reCAPTCHA rejected: action=${result.action} score=${String(result.score)}`);
   }
 
   return result;
