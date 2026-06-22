@@ -261,7 +261,7 @@ importers:
         version: 6.83.4(typescript@6.0.3)
       '@pulumi/pulumi':
         specifier: ^3.0.0
-        version: 3.246.0(typescript@6.0.3)
+        version: 3.247.0(typescript@6.0.3)
       '@pulumi/synced-folder':
         specifier: ^0.12.0
         version: 0.12.4(typescript@6.0.3)
@@ -280,7 +280,7 @@ importers:
         version: 9.27.0(typescript@6.0.3)
       '@pulumi/pulumi':
         specifier: ^3.0.0
-        version: 3.246.0(typescript@6.0.3)
+        version: 3.247.0(typescript@6.0.3)
     devDependencies:
       '@types/node':
         specifier: ^25.9.1
@@ -2772,8 +2772,8 @@ packages:
   '@pulumi/gcp@9.27.0':
     resolution: {integrity: sha512-VAb3uMvDuR0LU+m1CoWjFgbkpBXkXZkSZKs6Go2EvDakBFVsJaRrcQmZVUEiCEdSbq0FfjCMgXIVaenlHfHDaA==}
 
-  '@pulumi/pulumi@3.246.0':
-    resolution: {integrity: sha512-YvUQJatWpNpVlb6ftNvbSuS2ViCNa8LoG9FiJXtG24Rx/9leYQOMSTQ61vPeNtydGh8650lBal4pTmaB+JgkPA==}
+  '@pulumi/pulumi@3.247.0':
+    resolution: {integrity: sha512-JaXgWfRaT8XLQaqy6MriSxnphuyE56EjD8enZcNSEZ9nWthuTLV6i+w7q1KdcDJKGuMEn6yBeZuBoNafQtx4XA==}
     engines: {node: '>=20'}
     peerDependencies:
       ts-node: '>= 7.0.1 < 12'
@@ -12711,7 +12711,7 @@ snapshots:
 
   '@pulumi/aws@6.83.4(typescript@6.0.3)':
     dependencies:
-      '@pulumi/pulumi': 3.246.0(typescript@6.0.3)
+      '@pulumi/pulumi': 3.247.0(typescript@6.0.3)
       mime: 2.6.0
     transitivePeerDependencies:
       - supports-color
@@ -12721,14 +12721,14 @@ snapshots:
   '@pulumi/gcp@9.27.0(typescript@6.0.3)':
     dependencies:
       '@npmcli/package-json': 6.2.0
-      '@pulumi/pulumi': 3.246.0(typescript@6.0.3)
+      '@pulumi/pulumi': 3.247.0(typescript@6.0.3)
       '@types/express': 4.17.25
     transitivePeerDependencies:
       - supports-color
       - ts-node
       - typescript
 
-  '@pulumi/pulumi@3.246.0(typescript@6.0.3)':
+  '@pulumi/pulumi@3.247.0(typescript@6.0.3)':
     dependencies:
       '@grpc/grpc-js': 1.14.4
       '@logdna/tail-file': 2.2.0
@@ -12764,7 +12764,7 @@ snapshots:
 
   '@pulumi/synced-folder@0.12.4(typescript@6.0.3)':
     dependencies:
-      '@pulumi/pulumi': 3.246.0(typescript@6.0.3)
+      '@pulumi/pulumi': 3.247.0(typescript@6.0.3)
     transitivePeerDependencies:
       - supports-color
       - ts-node
