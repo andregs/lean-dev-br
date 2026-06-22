@@ -1,53 +1,71 @@
 # lean.dev.br
 
-Personal portfolio and demo projects — full-stack across multiple technologies and cloud platforms.
+Full-stack portfolio — a NX monorepo containing frontend & backend code, serverless, JVM-native microservice, multi-cloud IaC, security hardening, observability, and end-to-end testing. For now.
 
-**Domain:** [lean.dev.br](https://lean.dev.br)
+**Live site:** [lean.dev.br](https://lean.dev.br)
 
-## Stack
+## Highlights
 
-- **Frontend:** Plain HTML5 / CSS3 / JS (Iteration 1)
-- **Infra:** AWS S3 + CloudFront + Route53, managed with [Pulumi](https://www.pulumi.com/)
-- **Monorepo:** [Nx](https://nx.dev/)
-- **CI/CD:** GitHub Actions
-- **Version manager:** [asdf](https://asdf-vm.com/)
-- **Package manager:** pnpm
+- **WebAuthn passkeys + offline CRDT sync** — todo app uses PRF-extension passkeys for auth and Yjs for conflict-free offline editing synced over a relay
+- **GraalVM native-image service on Cloud Run** — Spring Boot 4 relay service compiles to a native binary, deployed to GCP Cloud Run
+- **Multi-cloud IaC with Pulumi** — AWS stack (S3, CloudFront, Route53, API Gateway, SES) and GCP stack (Artifact Registry, Cloud Run, Firestore) managed as TypeScript programs
+- **Security hardening** — strict Content-Security-Policy, Trusted Types policies, reCAPTCHA v3 on contact form, `application/problem+json` error responses (RFC 7807)
+- **Feature flags + i18n** — OpenFeature-backed flags (web + server) and i18next with en / pt-BR path-prefix routing, shared as workspace libraries
+- **Real-user monitoring** — CloudWatch RUM via a shared `rum` library
+- **Affected-based CI** — Nx Cloud-aware pipelines run only what changed; OSV vulnerability scanning and synthetic monitoring run on a schedule
 
-## Local Setup
+## Tech Stack
 
-See [docs/setup/local-tooling.md](docs/setup/local-tooling.md) for full instructions.
+| Layer           | Technologies                                                                        |
+| --------------- | ----------------------------------------------------------------------------------- |
+| **Frontend**    | Vanilla HTML/CSS/TS (homepage, todo), Next.js 16 / React 19 + MDX (blog)            |
+| **Backend**     | AWS Lambda / Node.js (contact-api), Spring Boot 4 / Java 25 GraalVM (relay-service) |
+| **Infra (AWS)** | S3, CloudFront, Route53, API Gateway, SES, Lambda@Edge — Pulumi/TS                  |
+| **Infra (GCP)** | Artifact Registry, Cloud Run, Firestore — Pulumi/TS                                 |
+| **Monorepo**    | Nx 22, pnpm 11, asdf                                                                |
+| **Testing**     | Vitest (unit), Playwright (e2e)                                                     |
+| **CI/CD**       | GitHub Actions (lint, test, build, deploy, OSV scan, synthetic monitor)             |
 
-Quick start (assumes asdf and plugins already installed):
-
-```zsh
-asdf install      # install pinned tool versions
-pnpm install      # install Node dependencies
-```
-
-You will also need:
-- AWS credentials configured — see [docs/setup/aws.md](docs/setup/aws.md)
-- Pulumi Cloud account and login — see [docs/setup/pulumi.md](docs/setup/pulumi.md)
-
-## Deploying
-
-Push to `main` triggers GitHub Actions which runs `pulumi up` — syncing content to S3 and applying any infra changes.
-
-For local deploys:
-
-```zsh
-cd infra/homepage && pulumi up --stack prod
-```
-
-## Project Structure
+## Project Layout
 
 ```
 apps/
-  homepage/
-    public/       # web assets (synced to S3 on deploy)
+  homepage/         — portfolio landing page (vanilla HTML/CSS/TS + Vite)
+  blog/             — dev blog (Next.js, MDX via Velite)
+  todo/             — offline-first todo PWA (WebAuthn passkeys, Yjs CRDT)
+  contact-api/      — contact-form Lambda handler (reCAPTCHA v3 + SES)
+  relay-service/    — Yjs sync relay (Spring Boot / GraalVM, GCP Cloud Run)
+  *-e2e/            — Playwright suites for homepage, blog, and todo
+
+libs/
+  design-system/    — shared design tokens, CSS, and components
+  csp/              — Content-Security-Policy builder helpers
+  trusted-types/    — Trusted Types policies
+  flags/            — OpenFeature wrapper (web + server)
+  i18n/             — i18next setup with en/pt-BR + parity check
+  rum/              — CloudWatch RUM initialisation
+  e2e-support/      — shared Playwright utilities
+
 infra/
-  homepage/       # Pulumi IaC — S3, CloudFront, Route53
-.github/
-  workflows/      # CI/CD pipelines
-docs/
-  setup/          # setup guides for contributors
+  homepage/         — AWS resources (S3, CloudFront, Route53, API GW, SES)
+  relay-service/    — GCP resources (Cloud Run, Artifact Registry, Firestore)
+
+docs/setup/         — step-by-step setup guides (AWS, GCP, Pulumi, DNS, …)
 ```
+
+## Getting Started
+
+```zsh
+asdf install          # install pinned tool versions (.tool-versions)
+pnpm install          # install Node dependencies
+
+pnpm nx run-many -t build           # build all projects
+pnpm nx affected -t test            # test only what changed
+```
+
+Cloud and service credentials are required for most apps. See the guides in [docs/setup/](docs/setup/):
+[AWS](docs/setup/aws.md) · [GCP](docs/setup/gcp.md) · [Pulumi](docs/setup/pulumi.md) · [reCAPTCHA](docs/setup/recaptcha.md) · [SES](docs/setup/ses.md) · [DNS](docs/setup/dns.md) · [Observability](docs/setup/observability.md) · [Feature Flags](docs/setup/feature-flags.md) · [E2E](docs/setup/e2e.md)
+
+## Deploying
+
+Push to `main` triggers the GitHub Actions deploy workflow — builds affected projects and applies Pulumi stacks. See [docs/setup/](docs/setup/) for manual deploy instructions per stack.

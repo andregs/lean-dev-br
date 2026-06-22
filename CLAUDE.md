@@ -1,11 +1,46 @@
 # CLAUDE.md - Project Context
 
 ## Project Overview
+
 **lean.dev.br** is a monorepo containing a personal portfolio and demo projects that showcase full-stack development across multiple technologies and cloud platforms.
 
 **Domain:** lean.dev.br
 
 **Repository:** GitHub monorepo
+
+---
+
+## Workspace Map
+
+### Apps (`apps/`)
+
+| Project         | Tech                                                 | Purpose                                                                 |
+| --------------- | ---------------------------------------------------- | ----------------------------------------------------------------------- |
+| `homepage`      | Vanilla HTML/CSS/TS, Vite (`@nx/web`)                | Portfolio landing page                                                  |
+| `blog`          | Next.js 16, React 19, MDX (Velite), rehype-highlight | Dev blog                                                                |
+| `todo`          | Vanilla TS PWA, Yjs + y-indexeddb                    | Offline-first todo — WebAuthn PRF passkeys, CRDT sync via relay         |
+| `contact-api`   | AWS Lambda (Node.js), AWS SES                        | Contact form handler — reCAPTCHA v3 verify + email send                 |
+| `relay-service` | Spring Boot 4, Java 25 GraalVM Community (Maven)     | Yjs in-memory relay + Firestore persistence; GCP Cloud Run native image |
+| `*-e2e`         | Playwright                                           | E2E suites for homepage, blog, todo                                     |
+
+### Libs (`libs/`)
+
+| Library         | Purpose                                                            |
+| --------------- | ------------------------------------------------------------------ |
+| `design-system` | Shared design tokens, CSS, interactive components                  |
+| `csp`           | Content-Security-Policy builder helpers                            |
+| `trusted-types` | Trusted Types policies                                             |
+| `flags`         | OpenFeature wrapper — web SDK + server SDK                         |
+| `i18n`          | i18next with en / pt-BR (path-prefix routing), parity check script |
+| `rum`           | CloudWatch RUM (aws-rum-web) initialisation                        |
+| `e2e-support`   | Shared Playwright utilities                                        |
+
+### Infra (`infra/`, Pulumi/TS)
+
+| Stack           | Cloud | Resources                                              |
+| --------------- | ----- | ------------------------------------------------------ |
+| `homepage`      | AWS   | S3, CloudFront, Route53, API Gateway, SES, Lambda@Edge |
+| `relay-service` | GCP   | Artifact Registry, Cloud Run, Firestore                |
 
 ---
 
@@ -26,8 +61,11 @@
 
 - [Nx Documentation](https://nx.dev/docs/reference)
 - [AWS Pricing](https://aws.amazon.com/pricing/)
+- [GCP Cloud Run](https://cloud.google.com/run/docs)
+- [Pulumi Documentation](https://www.pulumi.com/docs/)
+- [OpenFeature](https://openfeature.dev/docs/reference/intro/)
+- [Playwright](https://playwright.dev/docs/intro)
 - [reCAPTCHA](https://developers.google.com/recaptcha/docs)
-
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
@@ -50,6 +88,5 @@
 - USE for: advanced config options, unfamiliar flags, migration guides, plugin configuration, edge cases
 - DON'T USE for: basic generator syntax (`nx g @nx/react:app`), standard commands, things you already know
 - The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
-
 
 <!-- nx configuration end-->
