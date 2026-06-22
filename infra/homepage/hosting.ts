@@ -61,7 +61,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
     { provider: usEast1 },
   );
 
-  const bucket = new aws.s3.BucketV2('bucket', {
+  const bucket = new aws.s3.Bucket('bucket', {
     bucket: 'lean-dev-br-homepage',
     forceDestroy: true,
   });
@@ -79,7 +79,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
     rule: { objectOwnership: 'BucketOwnerPreferred' },
   });
 
-  const blogBucket = new aws.s3.BucketV2('blog-bucket', {
+  const blogBucket = new aws.s3.Bucket('blog-bucket', {
     bucket: 'lean-dev-br-blog',
     forceDestroy: true,
   });
@@ -97,7 +97,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
     rule: { objectOwnership: 'BucketOwnerPreferred' },
   });
 
-  const todoBucket = new aws.s3.BucketV2('todo-bucket', {
+  const todoBucket = new aws.s3.Bucket('todo-bucket', {
     bucket: 'lean-dev-br-todo',
     forceDestroy: true,
   });
@@ -218,7 +218,11 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
           override: true,
         },
         contentSecurityPolicy: {
-          contentSecurityPolicy: cspHeader({ mode: 'prod', app: 'todo', signalUrl: relayServiceUrl }),
+          contentSecurityPolicy: cspHeader({
+            mode: 'prod',
+            app: 'todo',
+            signalUrl: relayServiceUrl,
+          }),
           override: true,
         },
       },

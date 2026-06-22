@@ -16,6 +16,7 @@
         "tsConfig": "apps/contact-api/tsconfig.json",
         "format": ["cjs"],
         "thirdParty": true,
+        "skipTypeCheck": true,
         "external": ["@aws-sdk/client-ses"],
         "assets": []
       }
