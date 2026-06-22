@@ -69,7 +69,7 @@ jobs:
             echo "deploy-frontend=true" >> "$GITHUB_OUTPUT"
             echo "deploy-relay=true" >> "$GITHUB_OUTPUT"
           else
-            AFFECTED=$(pnpm nx show projects --affected 2>/dev/null || echo "[]")
+            AFFECTED=$(pnpm nx show projects --affected --json 2>/dev/null || echo "[]")
             echo "Affected: $AFFECTED"
             if echo "$AFFECTED" | jq -e 'any(.[]; . == "homepage" or . == "contact-api" or . == "todo" or . == "blog" or . == "@lean-dev-br/infra-homepage")' > /dev/null; then
               echo "deploy-frontend=true" >> "$GITHUB_OUTPUT"
