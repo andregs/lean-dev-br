@@ -38,10 +38,22 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
+      - name: Check image exists
+        id: image-check
+        run: |
+          if docker manifest inspect us-central1-docker.pkg.dev/lean-dev-br/relay-service/relay-service:latest > /dev/null 2>&1; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::relay :latest not yet published — skipping deployed-image scan"
+          fi
+
       - name: Pull deployed image
+        if: steps.image-check.outputs.present == 'true'
         run: docker pull us-central1-docker.pkg.dev/lean-dev-br/relay-service/relay-service:latest
 
       - name: Scan deployed image for CVEs
+        if: steps.image-check.outputs.present == 'true'
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: us-central1-docker.pkg.dev/lean-dev-br/relay-service/relay-service:latest
@@ -51,8 +63,8 @@ jobs:
           exit-code: '0'
 
       - name: Upload Trivy SARIF
+        if: steps.image-check.outputs.present == 'true' && !cancelled()
         uses: github/codeql-action/upload-sarif@dd903d2e4f5405488e5ef1422510ee31c8b32357 # v3
-        if: ${{ !cancelled() }}
         with:
           sarif_file: trivy-deployed.sarif
           category: trivy-relay-deployed
