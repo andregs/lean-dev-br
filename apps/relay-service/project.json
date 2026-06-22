@@ -9,28 +9,28 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/relay-service",
-        "command": "./mvnw clean package -DskipTests"
+        "command": "./mvnw clean package -DskipTests --no-transfer-progress"
       }
     },
     "serve": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/relay-service",
-        "command": "./mvnw spring-boot:run"
+        "command": "./mvnw spring-boot:run --no-transfer-progress"
       }
     },
     "test": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/relay-service",
-        "command": "./mvnw test"
+        "command": "./mvnw test --no-transfer-progress"
       }
     },
     "native-build": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/relay-service",
-        "command": "./mvnw -Pnative native:compile"
+        "command": "./mvnw -Pnative native:compile --no-transfer-progress"
       }
     },
     "docker-build": {
@@ -44,7 +44,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/relay-service",
-        "command": "./mvnw failsafe:integration-test failsafe:verify"
+        "command": "./mvnw failsafe:integration-test failsafe:verify --no-transfer-progress"
       }
     },
     "docker-push": {
