@@ -1,6 +1,6 @@
 nodejs 25.9.0
-pnpm 11.8.0
+pnpm 11.9.0
 java graalvm-community-25.0.2
 pulumi 3.247.0
-awscli 2.35.9
+awscli 2.35.11
 gcloud 572.0.0
