@@ -31,3 +31,5 @@ apps/relay-service/target/
 playwright-report/
 test-results/
 **/.last-run.json
+
+.nx/migrate-runs
