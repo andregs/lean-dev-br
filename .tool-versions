@@ -3,4 +3,4 @@ pnpm 11.9.0
 java graalvm-community-25.0.2
 pulumi 3.247.0
 awscli 2.35.11
-gcloud 572.0.0
+gcloud 574.0.0
