@@ -13,4 +13,10 @@ export default [
     // Generated output: Next build dir, static export, and Velite content.
     ignores: ['.next/**/*', 'out/**/*', '.velite/**/*'],
   },
+  {
+    // BlogNav links to apex-domain routes (/, /labs, /contact) that are not blog
+    // pages — raw <a> is intentional to bypass the /blog basePath.
+    files: ['app/BlogNav.tsx'],
+    rules: { '@next/next/no-html-link-for-pages': 'off' },
+  },
 ];
