@@ -45,12 +45,6 @@
       }
     },
     {
-      "plugin": "@nx/vitest",
-      "options": {
-        "testTargetName": "test"
-      }
-    },
-    {
       "plugin": "@nx/next/plugin",
       "options": {
         "startTargetName": "start",
@@ -64,9 +58,9 @@
     {
       "plugin": "@nx/vitest",
       "options": {
-        "testTargetName": "vitest:test",
-        "ciTargetName": "test-ci",
-        "testMode": "watch"
+        "testTargetName": "test",
+        "testMode": "run",
+        "ciTargetName": "test-ci"
       }
     }
   ],

@@ -32,6 +32,7 @@ function Nav({ locale, slug }: Props) {
     <nav className="site-nav">
       <div className="nav-inner">
         {/* Raw anchor: bypasses basePath so `/` hits the apex homepage, not `/blog`. */}
+        { }
         <a className="nav-logo" href="/" aria-label="lean.dev.br — home">
           <svg className="brand-mark" viewBox="0 0 112 22" role="img" aria-label="lean::dev">
             <use href="/blog/logo.svg#brand-mark" />
@@ -42,9 +43,11 @@ function Nav({ locale, slug }: Props) {
             <Link href="/">{t('nav.blog')}</Link>
           </li>
           <li>
+            { }
             <a href="/labs">{t('nav.labs')}</a>
           </li>
           <li>
+            { }
             <a href="/contact">{t('nav.contact')}</a>
           </li>
           <li>
