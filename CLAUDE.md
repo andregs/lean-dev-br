@@ -16,9 +16,9 @@
 
 | Project         | Tech                                                 | Purpose                                                                 |
 | --------------- | ---------------------------------------------------- | ----------------------------------------------------------------------- |
-| `homepage`      | Vanilla HTML/CSS/TS, Vite (`@nx/web`)                | Portfolio landing page                                                  |
+| `homepage`      | Vanilla HTML/CSS/JS, Vite (`@nx/web`)                | Portfolio landing page                                                  |
 | `blog`          | Next.js 16, React 19, MDX (Velite), rehype-highlight | Dev blog                                                                |
-| `todo`          | Vanilla TS PWA, Yjs + y-indexeddb                    | Offline-first todo — WebAuthn PRF passkeys, CRDT sync via relay         |
+| `todo`          | Vanilla JS, Yjs + y-indexeddb                        | Offline-first todo — WebAuthn PRF passkeys, CRDT sync via relay         |
 | `contact-api`   | AWS Lambda (Node.js), AWS SES                        | Contact form handler — reCAPTCHA v3 verify + email send                 |
 | `relay-service` | Spring Boot 4, Java 25 GraalVM Community (Maven)     | Yjs in-memory relay + Firestore persistence; GCP Cloud Run native image |
 | `*-e2e`         | Playwright                                           | E2E suites for homepage, blog, todo                                     |

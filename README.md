@@ -22,7 +22,7 @@ Full-stack portfolio — a NX monorepo containing frontend & backend code, serve
 | **Backend**     | AWS Lambda / Node.js (contact-api), Spring Boot 4 / Java 25 GraalVM (relay-service) |
 | **Infra (AWS)** | S3, CloudFront, Route53, API Gateway, SES, Lambda@Edge — Pulumi/TS                  |
 | **Infra (GCP)** | Artifact Registry, Cloud Run, Firestore — Pulumi/TS                                 |
-| **Monorepo**    | Nx 22, pnpm 11, asdf                                                                |
+| **Monorepo**    | Nx 23, pnpm 11, asdf                                                                |
 | **Testing**     | Vitest (unit), Playwright (e2e)                                                     |
 | **CI/CD**       | GitHub Actions (lint, test, build, deploy, OSV scan, synthetic monitor)             |
 
