@@ -1,0 +1,7 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "design-system",
+  "projectType": "library",
+  "sourceRoot": "libs/design-system",
+  "tags": ["scope:shared", "type:lib"]
+}

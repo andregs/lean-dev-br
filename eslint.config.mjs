@@ -46,7 +46,27 @@ export default defineConfig([
         {
           enforceBuildableLibDependency: true,
           allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?js$'],
-          depConstraints: [{ sourceTag: '*', onlyDependOnLibsWithTags: ['*'] }],
+          depConstraints: [
+            { sourceTag: '*', onlyDependOnLibsWithTags: ['*'] },
+            // ui-modulith boundary enforcement: direction + no feature→feature + entry-point-only
+            {
+              sourceTag: 'type:shell',
+              onlyDependOnLibsWithTags: ['type:feature', 'type:kernel', 'scope:shared'],
+            },
+            {
+              sourceTag: 'type:feature',
+              onlyDependOnLibsWithTags: ['type:kernel', 'scope:shared'],
+            },
+            { sourceTag: 'type:kernel', onlyDependOnLibsWithTags: ['scope:shared'] },
+            {
+              sourceTag: 'domain:catalog',
+              onlyDependOnLibsWithTags: ['domain:catalog', 'type:kernel', 'scope:shared'],
+            },
+            {
+              sourceTag: 'domain:cart',
+              onlyDependOnLibsWithTags: ['domain:cart', 'type:kernel', 'scope:shared'],
+            },
+          ],
         },
       ],
     },

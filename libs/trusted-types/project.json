@@ -1,0 +1,7 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "trusted-types",
+  "projectType": "library",
+  "sourceRoot": "libs/trusted-types",
+  "tags": ["scope:shared", "type:lib"]
+}

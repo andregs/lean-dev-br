@@ -1,0 +1,7 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "csp",
+  "projectType": "library",
+  "sourceRoot": "libs/csp",
+  "tags": ["scope:shared", "type:lib"]
+}
