@@ -12,6 +12,7 @@ allowBuilds:
   cpu-features: false
   esbuild: true
   less: false
+  msw: true
   nx: true
   protobufjs: true
   sharp: true
