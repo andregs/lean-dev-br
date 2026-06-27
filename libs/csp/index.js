@@ -16,22 +16,25 @@ const TRUSTED_TYPES_POLICIES = ['app', 'dompurify', 'default', 'goog#html', 'nex
  * `app: 'todo'` drops reCAPTCHA/RUM/Cognito domains; adds `signalUrl` to
  * connect-src for the encrypted Yjs blob relay (Cloud Run relay-service).
  *
- * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' | 'todo', signalUrl?: string }} opts
+ * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' | 'todo' | 'ui-modulith', signalUrl?: string }} opts
  * @returns {Record<string, string[]>}
  */
 function cspDirectives({ mode, app = 'apex', signalUrl = '' }) {
   const isTodo = app === 'todo';
+  const isModulith = app === 'ui-modulith';
 
   const connectSrc = ["'self'"];
-  if (!isTodo) {
-    // reCAPTCHA uses google.com
+  if (!isTodo && !isModulith) {
+    // reCAPTCHA uses google.com — modulith has no reCAPTCHA
     connectSrc.push('https://www.google.com');
   }
-  // RUM and Cognito are shared across all apps
-  connectSrc.push(
-    'https://dataplane.rum.us-east-1.amazonaws.com',
-    'https://cognito-identity.us-east-1.amazonaws.com',
-  );
+  if (!isModulith) {
+    // RUM and Cognito not used by the modulith lab
+    connectSrc.push(
+      'https://dataplane.rum.us-east-1.amazonaws.com',
+      'https://cognito-identity.us-east-1.amazonaws.com',
+    );
+  }
   if (isTodo && signalUrl) {
     connectSrc.push(signalUrl);
   }
@@ -40,8 +43,8 @@ function cspDirectives({ mode, app = 'apex', signalUrl = '' }) {
   }
 
   const scriptSrc = ["'self'"];
-  if (!isTodo) {
-    // reCAPTCHA scripts — todo has no reCAPTCHA
+  if (!isTodo && !isModulith) {
+    // reCAPTCHA scripts — todo and modulith have no reCAPTCHA
     scriptSrc.push('https://www.google.com', 'https://www.gstatic.com');
   }
   if (app === 'blog') {
@@ -57,9 +60,13 @@ function cspDirectives({ mode, app = 'apex', signalUrl = '' }) {
     'style-src': ["'self'", "'unsafe-inline'"],
     'font-src': ["'self'"],
   };
-  if (!isTodo) {
-    // reCAPTCHA uses a Google iframe — todo has no reCAPTCHA iframe
+  if (!isTodo && !isModulith) {
+    // reCAPTCHA uses a Google iframe — todo and modulith have no reCAPTCHA iframe
     directives['frame-src'] = ['https://www.google.com'];
+  }
+  if (isModulith) {
+    // MSW service worker requires an explicit worker-src; same-origin only
+    directives['worker-src'] = ["'self'"];
   }
   return directives;
 }
@@ -87,7 +94,7 @@ function serialize(directives) {
  * Trusted Types directive; dev omits it here — ship `trustedTypesDirective()` as
  * a separate report-only header instead so dev tooling isn't blocked.
  *
- * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' | 'todo', signalUrl?: string }} opts
+ * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' | 'todo' | 'ui-modulith', signalUrl?: string }} opts
  * @returns {string}
  */
 function cspHeader({ mode, app = 'apex', signalUrl = '' }) {

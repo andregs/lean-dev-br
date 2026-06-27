@@ -1,5 +1,10 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import { cspHeader } from '@lean-dev-br/csp';
+
+const devHeaders = {
+  'Content-Security-Policy': cspHeader({ mode: 'dev', app: 'ui-modulith' }),
+};
 
 export default defineConfig({
   root: __dirname,
@@ -8,10 +13,12 @@ export default defineConfig({
   server: {
     port: 4202,
     host: 'localhost',
+    headers: devHeaders,
   },
   preview: {
     port: 4202,
     host: 'localhost',
+    headers: devHeaders,
   },
   plugins: [react()],
   build: {
@@ -28,6 +35,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{ts,mts,tsx}'],
+    setupFiles: ['src/mocks/setup.ts'],
     reporters: ['default'],
     coverage: {
       reportsDirectory: '../../coverage/apps/ui-modulith',
