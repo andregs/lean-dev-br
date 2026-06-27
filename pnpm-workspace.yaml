@@ -1,6 +1,7 @@
 packages:
   - 'apps/*'
   - 'libs/*'
+  - 'libs/ui-modulith/*'
   - 'infra/*'
 
 dedupePeers: true
