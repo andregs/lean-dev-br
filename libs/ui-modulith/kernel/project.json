@@ -5,5 +5,16 @@
   "projectType": "library",
   "tags": ["scope:ui-modulith", "type:kernel"],
   "// targets": "to see all targets run: nx show project kernel --web",
-  "targets": {}
+  "targets": {
+    "openapi-types": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["{projectRoot}/src/api/openapi.yaml"],
+      "outputs": ["{projectRoot}/src/api/schema.d.ts"],
+      "options": {
+        "command": "openapi-typescript {projectRoot}/src/api/openapi.yaml -o {projectRoot}/src/api/schema.d.ts",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  }
 }
