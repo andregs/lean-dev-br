@@ -29,6 +29,7 @@ apps/relay-service/target/
 
 # Playwright
 playwright-report/
+.playwright-mcp/
 test-results/
 **/.last-run.json
 
