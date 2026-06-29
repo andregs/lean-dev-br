@@ -1,0 +1,46 @@
+@import '@lean-dev-br/design-system/tokens.css';
+@import '@lean-dev-br/design-system/base.css';
+@import '@lean-dev-br/design-system/nav.css';
+@import '@lean-dev-br/design-system/footer.css';
+
+/* base.css makes body a flex column with min-height 100dvh.
+   React's #root sits between body and page-shell, so we make it
+   transparent to the flex layout. */
+#root {
+  display: contents;
+}
+
+/* ── Shell layout ─────────────────────────────────────────── */
+
+.page-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Invisible spacer that occupies exactly the fixed nav's height so the
+   demo bar and page content start below it in normal document flow.
+   Height = .site-nav padding (1rem × 2) + .brand-mark height (20px) + border (1px). */
+.nav-spacer {
+  height: calc(2rem + 20px + 1px);
+  flex-shrink: 0;
+}
+
+.page-content {
+  flex: 1;
+  max-width: var(--content-width);
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem var(--pad-x) 3rem;
+}
+
+/* ── Suspense fallback ────────────────────────────────────── */
+
+.loading-shell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}

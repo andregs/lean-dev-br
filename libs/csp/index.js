@@ -47,7 +47,9 @@ function cspDirectives({ mode, app = 'apex', signalUrl = '' }) {
     // reCAPTCHA scripts — todo and modulith have no reCAPTCHA
     scriptSrc.push('https://www.google.com', 'https://www.gstatic.com');
   }
-  if (app === 'blog') {
+  // Blog (Next.js static export) and ui-modulith dev (Vite React Fast Refresh preamble)
+  // both require unsafe-inline in script-src.
+  if (app === 'blog' || (isModulith && mode === 'dev')) {
     scriptSrc.push("'unsafe-inline'");
   }
 
