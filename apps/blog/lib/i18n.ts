@@ -3,23 +3,12 @@
 // and wire initReactI18next themselves (see BlogNav.tsx).
 
 import i18nextLib from 'i18next';
-import { sharedCatalog, SUPPORTED_LOCALES } from '@lean-dev-br/i18n';
+import { createI18nOptions } from '@lean-dev-br/i18n';
 import type { Locale } from './posts';
 import enUS from '../src/locales/en-US.json';
 import ptBR from '../src/locales/pt-BR.json';
 
-export const BASE_OPTIONS = {
-  supportedLngs: SUPPORTED_LOCALES as unknown as string[],
-  fallbackLng: 'en-US' as const,
-  defaultNS: 'common',
-  resources: {
-    'en-US': { common: { ...sharedCatalog['en-US'], ...enUS } },
-    'pt-BR': { common: { ...sharedCatalog['pt-BR'], ...ptBR } },
-  },
-  keySeparator: false as const,
-  nsSeparator: ':',
-  interpolation: { escapeValue: false },
-};
+export const BASE_OPTIONS = createI18nOptions({ 'en-US': enUS, 'pt-BR': ptBR });
 
 /**
  * A plain t() function for server components — no React context needed.
