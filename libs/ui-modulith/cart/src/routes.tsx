@@ -1,3 +1,10 @@
+import { Route, Routes } from 'react-router-dom';
+import { CartPage } from './components/CartPage';
+
 export default function CartRoutes() {
-  return <p style={{ padding: '2rem', color: 'var(--muted)' }}>Cart — coming soon</p>;
+  return (
+    <Routes>
+      <Route index element={<CartPage />} />
+    </Routes>
+  );
 }

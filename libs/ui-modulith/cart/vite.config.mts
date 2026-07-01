@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
@@ -11,6 +11,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{ts,mts,tsx}'],
+    setupFiles: ['src/test-setup.ts'],
     reporters: ['default'],
     coverage: {
       reportsDirectory: '../../../coverage/libs/ui-modulith/cart',

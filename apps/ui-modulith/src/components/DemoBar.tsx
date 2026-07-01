@@ -11,6 +11,10 @@ export function DemoBar() {
   const countRef = useRef(0);
 
   useEffect(() => {
+    // bus.on replays every past cart/add event synchronously on subscribe. Resetting
+    // first makes this idempotent if the effect re-subscribes (e.g. Strict Mode's
+    // mount→cleanup→remount) — otherwise the replay would double-count.
+    countRef.current = 0;
     return bus.on('cart/add', (payload) => {
       countRef.current += payload.qty;
       setCartCount(countRef.current);
