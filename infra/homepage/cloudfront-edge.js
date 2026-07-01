@@ -46,6 +46,23 @@ function handler(event) {
     return req;
   }
 
+  // /labs/ui-modulith (no trailing slash) only reaches the default behavior — redirect.
+  if (req.uri === '/labs/ui-modulith') {
+    return {
+      statusCode: 301,
+      statusDescription: 'Moved Permanently',
+      headers: { location: { value: '/labs/ui-modulith/' } },
+    };
+  }
+
+  // ui-modulith routing: strip /labs/ui-modulith prefix so paths resolve in the dedicated
+  // bucket root. React Router SPA: extensionless paths fall back to index.html, same as /todo/*.
+  if (req.uri.startsWith('/labs/ui-modulith/')) {
+    req.uri = req.uri.slice('/labs/ui-modulith'.length);
+    if (!req.uri.match(/\.[^/]+$/)) req.uri = '/index.html';
+    return req;
+  }
+
   // Apex SPA fallback: rewrite extensionless paths to /index.html so History API routes work.
   if (!req.uri.match(/\.[^/]+$/)) req.uri = '/index.html';
   return req;

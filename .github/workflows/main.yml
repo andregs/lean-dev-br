@@ -71,7 +71,7 @@ jobs:
           else
             AFFECTED=$(pnpm nx show projects --affected --json 2>/dev/null || echo "[]")
             echo "Affected: $AFFECTED"
-            if echo "$AFFECTED" | jq -e 'any(.[]; . == "homepage" or . == "contact-api" or . == "todo" or . == "blog" or . == "@lean-dev-br/infra-homepage")' > /dev/null; then
+            if echo "$AFFECTED" | jq -e 'any(.[]; . == "homepage" or . == "contact-api" or . == "todo" or . == "blog" or . == "ui-modulith" or . == "@lean-dev-br/infra-homepage")' > /dev/null; then
               echo "deploy-frontend=true" >> "$GITHUB_OUTPUT"
             else
               echo "deploy-frontend=false" >> "$GITHUB_OUTPUT"
@@ -109,7 +109,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm nx run-many -t build -p homepage,contact-api,todo --skip-nx-cache
+      - run: pnpm nx run-many -t build -p homepage,contact-api,todo,ui-modulith --skip-nx-cache
         env:
           VITE_RECAPTCHA_SITE_KEY: ${{ vars.VITE_RECAPTCHA_SITE_KEY }}
           VITE_FLAGS_URL: ${{ vars.VITE_FLAGS_URL }}
