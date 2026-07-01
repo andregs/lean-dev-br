@@ -1,0 +1,12 @@
+# This is a personal-account repo, so every path maps to @andregs — GitHub
+# doesn't support team handles outside an Organization. The per-module split
+# below is what a real team-ownership setup would look like on a free GitHub
+# Org (unlimited members + teams): each path would map to its own team
+# (e.g. @lean-dev-br/team-catalog), with branch protection requiring review
+# from Code Owners. See apps/ui-modulith/README.md for the module boundaries
+# this mirrors.
+
+/apps/ui-modulith/        @andregs
+/libs/ui-modulith/kernel/  @andregs
+/libs/ui-modulith/catalog/ @andregs
+/libs/ui-modulith/cart/    @andregs

@@ -17,3 +17,18 @@ forbidden import fails the build instead of relying on convention.
 
 `catalog` and `cart` never import each other — they communicate only through the
 kernel's typed `EventBus` (`cart/add`). See `libs/ui-modulith/kernel/src/bus/`.
+
+![shell → {catalog, cart} → kernel, no feature↔feature edge](./docs/module-graph.png)
+
+Generated with `nx graph --focus=ui-modulith`.
+
+## Deploy
+
+Static build, served under `/labs/ui-modulith/` via the shared CloudFront distribution
+(see `infra/homepage/hosting.ts` / `static-site.ts`) — same pattern as the Todo app, a
+dedicated S3 bucket behind the same distribution. No real backend: the OpenAPI-mocked
+API (MSW) is the permanent "backend" for this demo in every environment, including
+production (see `src/main.tsx`).
+
+The homepage's `/labs` card linking here is gated behind the `labs-modulith` feature
+flag (`apps/homepage/public/flags.json`), shipped `DISABLED` by default.
