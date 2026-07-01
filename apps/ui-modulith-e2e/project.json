@@ -10,7 +10,7 @@
       "executor": "@nx/playwright:playwright",
       "outputs": ["{projectRoot}/playwright-report", "{projectRoot}/test-results"],
       "options": {
-        "config": "{projectRoot}/playwright.config.mts"
+        "config": "{projectRoot}/playwright.config.ts"
       },
       "configurations": {
         "ci": {

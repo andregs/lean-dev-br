@@ -3,16 +3,12 @@ import { baseUrl, browserProjects, isProd } from '@lean-dev-br/e2e-support';
 
 const LOCAL_PORT = 4202;
 
-export const labPath = (route: string) =>
-  `/labs/ui-modulith${route === '/' ? '/' : route}`;
+export const labPath = (route: string) => `/labs/ui-modulith${route === '/' ? '/' : route}`;
 
 export default defineConfig({
   testDir: './src',
   outputDir: 'test-results',
-  reporter: [
-    ['list'],
-    ['html', { outputFolder: 'playwright-report', open: 'never' }],
-  ],
+  reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   use: {
     baseURL: baseUrl(LOCAL_PORT),
     trace: 'on-first-retry',
