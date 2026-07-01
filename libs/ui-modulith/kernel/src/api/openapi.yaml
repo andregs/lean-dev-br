@@ -18,6 +18,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Product'
+        default:
+          description: Unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
   /products/{sku}:
     get:
       operationId: getProduct
