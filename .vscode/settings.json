@@ -12,7 +12,6 @@
   },
 
   "eslint.useFlatConfig": true,
-  "eslint.validate": ["javascript", "typescript"],
   "eslint.workingDirectories": [{ "mode": "auto" }],
 
   "prettier.requireConfig": true,

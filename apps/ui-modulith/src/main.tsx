@@ -14,7 +14,9 @@ async function prepare() {
 }
 
 void prepare().then(() => {
-  ReactDOM.createRoot(document.getElementById('root')!).render(
+  const root = document.getElementById('root');
+  if (!root) throw new Error('Root element not found.');
+  ReactDOM.createRoot(root).render(
     <StrictMode>
       <App />
     </StrictMode>,
