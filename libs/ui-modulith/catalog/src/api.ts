@@ -1,5 +1,8 @@
-import { apiClient } from '@lean-dev-br/ui-modulith-kernel';
 import type { ApiPaths } from '@lean-dev-br/ui-modulith-kernel';
+import { apiClient } from '@lean-dev-br/ui-modulith-kernel';
+// Boundary proof -- uncomment and run `nx lint catalog` to see this fail with
+// @nx/enforce-module-boundaries: "type:feature" can only depend on "type:kernel", "scope:shared".
+// import { useCartLines } from '@lean-dev-br/ui-modulith-cart';
 
 export type Product =
   ApiPaths['/products']['get']['responses']['200']['content']['application/json'][number];
