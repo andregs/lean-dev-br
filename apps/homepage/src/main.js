@@ -1,5 +1,7 @@
 // @ts-check
 /** @import { I18nInstance, Locale } from '@lean-dev-br/i18n' */
+/** @import { FlagClient } from '@lean-dev-br/flags' */
+import { createFlagClient } from '@lean-dev-br/flags';
 import { initNav } from '@lean-dev-br/design-system';
 import { createI18n, saveLocalePreference, sharedCatalog } from '@lean-dev-br/i18n';
 import enUS from './locales/en-US.json';
@@ -11,7 +13,7 @@ import { renderHome } from './views/home.js';
 import { renderLabs } from './views/labs.js';
 import { renderNotFound } from './views/not-found.js';
 
-/** @type {Record<string, (root: HTMLElement, ctx: { i18n: I18nInstance }) => void>} */
+/** @type {Record<string, (root: HTMLElement, ctx: { i18n: I18nInstance, flags: FlagClient }) => void>} */
 const routes = {
   '/': renderHome,
   '/contact': renderContact,
@@ -27,6 +29,23 @@ const catalog = {
 // Kept between renders so onLangToggle knows the current locale without re-reading storage.
 /** @type {I18nInstance} */
 let currentI18n = createI18n({ locale: 'en-US', catalog });
+
+// Starts empty (in-memory, no network) so first render never blocks on the
+// flags.json fetch — a DISABLED/missing flag always resolves to the caller's
+// default anyway. The real fetch below swaps this in and re-renders once it lands.
+/** @type {FlagClient} */
+let flags = await createFlagClient({ flags: {} });
+
+fetch('/flags.json')
+  .then((r) => r.json())
+  .then((flagsJson) => createFlagClient(flagsJson))
+  .then((client) => {
+    flags = client;
+    render();
+  })
+  .catch(() => {
+    /* keep the empty-flags fallback — gated features just stay hidden */
+  });
 
 // --- Helpers ---
 
@@ -97,7 +116,7 @@ function render() {
   });
 
   const view = routes[canonicalPath(path)] ?? renderNotFound;
-  view(app, { i18n: currentI18n });
+  view(app, { i18n: currentI18n, flags });
 }
 
 // --- Navigation ---
