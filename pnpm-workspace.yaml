@@ -1,6 +1,7 @@
 packages:
   - 'apps/*'
   - 'libs/*'
+  - 'libs/ui-modulith/*'
   - 'infra/*'
 
 dedupePeers: true
@@ -11,6 +12,7 @@ allowBuilds:
   cpu-features: false
   esbuild: true
   less: false
+  msw: true
   nx: true
   protobufjs: true
   sharp: true

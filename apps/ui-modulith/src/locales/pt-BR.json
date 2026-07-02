@@ -1,0 +1,16 @@
+{
+  "demo.title": "Frontend Modulith",
+  "demo.tagline": "Um build. Fronteiras de módulo aplicadas em tempo de compilação.",
+  "catalog.heading": "Catálogo",
+  "catalog.add-to-cart": "Adicionar ao carrinho",
+  "catalog.back": "← Voltar ao catálogo",
+  "catalog.not-found": "Produto não encontrado.",
+  "cart.heading": "Carrinho",
+  "cart.empty": "Seu carrinho está vazio.",
+  "cart.browse": "Explorar catálogo →",
+  "cart.total": "Total",
+  "cart.item-count_one": "{{count}} item",
+  "cart.item-count_other": "{{count}} itens",
+  "cart.qty": "Qtd",
+  "cart.added": "Adicionado ao carrinho"
+}

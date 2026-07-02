@@ -19,7 +19,11 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@lean-dev-br/e2e-support": ["./libs/e2e-support/src/index.ts"]
+      "@lean-dev-br/design-system/react": ["./libs/design-system/react/index.ts"],
+      "@lean-dev-br/e2e-support": ["./libs/e2e-support/src/index.ts"],
+      "@lean-dev-br/ui-modulith-kernel": ["./libs/ui-modulith/kernel/src/index.ts"],
+      "@lean-dev-br/ui-modulith-catalog": ["./libs/ui-modulith/catalog/src/index.ts"],
+      "@lean-dev-br/ui-modulith-cart": ["./libs/ui-modulith/cart/src/index.ts"]
     }
   }
 }

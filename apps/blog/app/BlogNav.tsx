@@ -1,68 +1,15 @@
 'use client';
 
-import { saveLocalePreference } from '@lean-dev-br/i18n';
 import i18nextLib from 'i18next';
-import Link from 'next/link';
 import { useMemo } from 'react';
-import { I18nextProvider, initReactI18next, useTranslation } from 'react-i18next';
+import { I18nextProvider, initReactI18next } from 'react-i18next';
+import { SiteNav } from '@lean-dev-br/design-system/react';
 import { BASE_OPTIONS } from '../lib/i18n';
 import type { Locale } from '../lib/posts';
 
 interface Props {
   locale: Locale;
-  /** Canonical EN slug — enables post-level toggle link. */
   slug?: string;
-}
-
-function Nav({ locale, slug }: Props) {
-  const { t } = useTranslation('common');
-
-  const targetLocale: Locale = locale === 'pt-BR' ? 'en-US' : 'pt-BR';
-  // Full absolute href — locale switch crosses root layouts → full page reload.
-  const toggleHref =
-    locale === 'pt-BR'
-      ? slug
-        ? `/blog/${slug}/`
-        : '/blog/'
-      : slug
-        ? `/blog/pt-BR/${slug}/`
-        : '/blog/pt-BR/';
-
-  return (
-    <nav className="site-nav">
-      <div className="nav-inner">
-        {/* Raw anchor: bypasses basePath so `/` hits the apex homepage, not `/blog`. */}
-        <a className="nav-logo" href="/" aria-label="lean.dev.br — home">
-          <svg className="brand-mark" viewBox="0 0 112 22" role="img" aria-label="lean::dev">
-            <use href="/blog/logo.svg#brand-mark" />
-          </svg>
-        </a>
-        <ul className="nav-links">
-          <li>
-            <Link href="/">{t('nav.blog')}</Link>
-          </li>
-          <li>
-            <a href="/labs">{t('nav.labs')}</a>
-          </li>
-          <li>
-            <a href="/contact">{t('nav.contact')}</a>
-          </li>
-          <li>
-            <a
-              href={toggleHref}
-              aria-label={t('lang.toggle.label')}
-              title={t('lang.toggle.label')}
-              onClick={() => {
-                saveLocalePreference(targetLocale);
-              }}
-            >
-              {t('lang.toggle')}
-            </a>
-          </li>
-        </ul>
-      </div>
-    </nav>
-  );
 }
 
 function i18nForLocale(locale: Locale) {
@@ -73,9 +20,24 @@ function i18nForLocale(locale: Locale) {
 
 export function BlogNav({ locale, slug }: Props) {
   const i18n = useMemo(() => i18nForLocale(locale), [locale]);
+
+  const toggleHref =
+    locale === 'pt-BR'
+      ? slug
+        ? `/blog/${slug}/`
+        : '/blog/'
+      : slug
+        ? `/blog/pt-BR/${slug}/`
+        : '/blog/pt-BR/';
+
   return (
     <I18nextProvider i18n={i18n}>
-      <Nav locale={locale} slug={slug} />
+      <SiteNav
+        logoUrl="/blog/logo.svg#brand-mark"
+        onLocaleToggle={() => {
+          window.location.href = toggleHref;
+        }}
+      />
     </I18nextProvider>
   );
 }

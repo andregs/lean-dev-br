@@ -1,8 +1,7 @@
 import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
-import { S3BucketFolder } from '@pulumi/synced-folder';
 import * as fs from 'fs';
-import { cspHeader } from '@lean-dev-br/csp';
+import { createBucketPolicy, createStaticSite, createSyncedFolder } from './static-site';
 
 // AWS managed cache policy IDs
 const CACHING_DISABLED_POLICY_ID = '4135ea2d-6df8-44a3-9df3-4b5a84be39ad';
@@ -61,79 +60,38 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
     { provider: usEast1 },
   );
 
-  const bucket = new aws.s3.Bucket('bucket', {
-    bucket: 'lean-dev-br-homepage',
-    forceDestroy: true,
+  // namePrefix '' preserves the apex site's original (pre-multi-app) resource names.
+  const apex = createStaticSite({
+    namePrefix: '',
+    bucketName: 'lean-dev-br-homepage',
+    oacName: 'lean-dev-br-homepage-oac',
+    headersPolicyName: 'lean-dev-br-security-headers',
   });
 
-  new aws.s3.BucketPublicAccessBlock('bucket-public-access-block', {
-    bucket: bucket.id,
-    blockPublicAcls: true,
-    blockPublicPolicy: true,
-    ignorePublicAcls: true,
-    restrictPublicBuckets: true,
+  const blog = createStaticSite({
+    namePrefix: 'blog-',
+    bucketName: 'lean-dev-br-blog',
+    oacName: 'lean-dev-br-blog-oac',
+    headersPolicyName: 'lean-dev-br-blog-security-headers',
+    cspApp: 'blog',
   });
 
-  const bucketOwnership = new aws.s3.BucketOwnershipControls('bucket-ownership', {
-    bucket: bucket.id,
-    rule: { objectOwnership: 'BucketOwnerPreferred' },
+  const todo = createStaticSite({
+    namePrefix: 'todo-',
+    bucketName: 'lean-dev-br-todo',
+    oacName: 'lean-dev-br-todo-oac',
+    headersPolicyName: 'lean-dev-br-todo-security-headers',
+    cspApp: 'todo',
+    signalUrl: relayServiceUrl,
   });
 
-  const blogBucket = new aws.s3.Bucket('blog-bucket', {
-    bucket: 'lean-dev-br-blog',
-    forceDestroy: true,
-  });
-
-  new aws.s3.BucketPublicAccessBlock('blog-bucket-public-access-block', {
-    bucket: blogBucket.id,
-    blockPublicAcls: true,
-    blockPublicPolicy: true,
-    ignorePublicAcls: true,
-    restrictPublicBuckets: true,
-  });
-
-  const blogBucketOwnership = new aws.s3.BucketOwnershipControls('blog-bucket-ownership', {
-    bucket: blogBucket.id,
-    rule: { objectOwnership: 'BucketOwnerPreferred' },
-  });
-
-  const todoBucket = new aws.s3.Bucket('todo-bucket', {
-    bucket: 'lean-dev-br-todo',
-    forceDestroy: true,
-  });
-
-  new aws.s3.BucketPublicAccessBlock('todo-bucket-public-access-block', {
-    bucket: todoBucket.id,
-    blockPublicAcls: true,
-    blockPublicPolicy: true,
-    ignorePublicAcls: true,
-    restrictPublicBuckets: true,
-  });
-
-  const todoBucketOwnership = new aws.s3.BucketOwnershipControls('todo-bucket-ownership', {
-    bucket: todoBucket.id,
-    rule: { objectOwnership: 'BucketOwnerPreferred' },
-  });
-
-  const oac = new aws.cloudfront.OriginAccessControl('oac', {
-    name: 'lean-dev-br-homepage-oac',
-    originAccessControlOriginType: 's3',
-    signingBehavior: 'always',
-    signingProtocol: 'sigv4',
-  });
-
-  const blogOac = new aws.cloudfront.OriginAccessControl('blog-oac', {
-    name: 'lean-dev-br-blog-oac',
-    originAccessControlOriginType: 's3',
-    signingBehavior: 'always',
-    signingProtocol: 'sigv4',
-  });
-
-  const todoOac = new aws.cloudfront.OriginAccessControl('todo-oac', {
-    name: 'lean-dev-br-todo-oac',
-    originAccessControlOriginType: 's3',
-    signingBehavior: 'always',
-    signingProtocol: 'sigv4',
+  // worker-src (for the MSW service worker that mocks this demo's API — no real backend).
+  const uiModulith = createStaticSite({
+    namePrefix: 'ui-modulith-',
+    bucketName: 'lean-dev-br-ui-modulith',
+    oacName: 'lean-dev-br-ui-modulith-oac',
+    headersPolicyName: 'lean-dev-br-ui-modulith-security-headers',
+    cspApp: 'ui-modulith',
   });
 
   // www → apex redirect + SPA fallback for History API routes
@@ -143,92 +101,6 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
     publish: true,
   });
 
-  const responseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(
-    'response-headers-policy',
-    {
-      name: 'lean-dev-br-security-headers',
-      securityHeadersConfig: {
-        contentTypeOptions: { override: true },
-        frameOptions: { frameOption: 'DENY', override: true },
-        xssProtection: { protection: true, modeBlock: true, override: true },
-        referrerPolicy: {
-          referrerPolicy: 'strict-origin-when-cross-origin',
-          override: true,
-        },
-        strictTransportSecurity: {
-          accessControlMaxAgeSec: 31536000,
-          includeSubdomains: true,
-          preload: true,
-          override: true,
-        },
-        contentSecurityPolicy: {
-          // Single source of truth in @lean-dev-br/csp; prod enforces Trusted Types.
-          contentSecurityPolicy: cspHeader({ mode: 'prod' }),
-          override: true,
-        },
-      },
-    },
-  );
-
-  // Separate policy for /blog/* — same security headers but blog CSP:
-  // adds 'unsafe-inline' to script-src (Next inline hydration), keeps Trusted Types.
-  const blogResponseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(
-    'blog-response-headers-policy',
-    {
-      name: 'lean-dev-br-blog-security-headers',
-      securityHeadersConfig: {
-        contentTypeOptions: { override: true },
-        frameOptions: { frameOption: 'DENY', override: true },
-        xssProtection: { protection: true, modeBlock: true, override: true },
-        referrerPolicy: {
-          referrerPolicy: 'strict-origin-when-cross-origin',
-          override: true,
-        },
-        strictTransportSecurity: {
-          accessControlMaxAgeSec: 31536000,
-          includeSubdomains: true,
-          preload: true,
-          override: true,
-        },
-        contentSecurityPolicy: {
-          contentSecurityPolicy: cspHeader({ mode: 'prod', app: 'blog' }),
-          override: true,
-        },
-      },
-    },
-  );
-
-  // Separate policy for /todo/* — todo CSP: no reCAPTCHA/RUM domains; relay-service URL in connect-src.
-  const todoResponseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(
-    'todo-response-headers-policy',
-    {
-      name: 'lean-dev-br-todo-security-headers',
-      securityHeadersConfig: {
-        contentTypeOptions: { override: true },
-        frameOptions: { frameOption: 'DENY', override: true },
-        xssProtection: { protection: true, modeBlock: true, override: true },
-        referrerPolicy: {
-          referrerPolicy: 'strict-origin-when-cross-origin',
-          override: true,
-        },
-        strictTransportSecurity: {
-          accessControlMaxAgeSec: 31536000,
-          includeSubdomains: true,
-          preload: true,
-          override: true,
-        },
-        contentSecurityPolicy: {
-          contentSecurityPolicy: cspHeader({
-            mode: 'prod',
-            app: 'todo',
-            signalUrl: relayServiceUrl,
-          }),
-          override: true,
-        },
-      },
-    },
-  );
-
   const distribution = new aws.cloudfront.Distribution('distribution', {
     enabled: true,
     defaultRootObject: 'index.html',
@@ -236,18 +108,23 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
     origins: [
       {
         originId: 's3',
-        domainName: bucket.bucketRegionalDomainName,
-        originAccessControlId: oac.id,
+        domainName: apex.bucket.bucketRegionalDomainName,
+        originAccessControlId: apex.oac.id,
       },
       {
         originId: 'blog-s3',
-        domainName: blogBucket.bucketRegionalDomainName,
-        originAccessControlId: blogOac.id,
+        domainName: blog.bucket.bucketRegionalDomainName,
+        originAccessControlId: blog.oac.id,
       },
       {
         originId: 'todo-s3',
-        domainName: todoBucket.bucketRegionalDomainName,
-        originAccessControlId: todoOac.id,
+        domainName: todo.bucket.bucketRegionalDomainName,
+        originAccessControlId: todo.oac.id,
+      },
+      {
+        originId: 'ui-modulith-s3',
+        domainName: uiModulith.bucket.bucketRegionalDomainName,
+        originAccessControlId: uiModulith.oac.id,
       },
       {
         originId: 'api',
@@ -270,7 +147,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
-        responseHeadersPolicyId: blogResponseHeadersPolicy.id,
+        responseHeadersPolicyId: blog.responseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -290,7 +167,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_DISABLED_POLICY_ID,
-        responseHeadersPolicyId: blogResponseHeadersPolicy.id,
+        responseHeadersPolicyId: blog.responseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -308,7 +185,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
-        responseHeadersPolicyId: todoResponseHeadersPolicy.id,
+        responseHeadersPolicyId: todo.responseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -326,7 +203,44 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_DISABLED_POLICY_ID,
-        responseHeadersPolicyId: todoResponseHeadersPolicy.id,
+        responseHeadersPolicyId: todo.responseHeadersPolicy.id,
+        compress: true,
+        functionAssociations: [
+          {
+            eventType: 'viewer-request',
+            functionArn: edgeFn.arn,
+          },
+        ],
+      },
+      {
+        // Vite assets are content-addressed — cache forever, no invalidation needed.
+        // Edge fn strips /labs/ui-modulith prefix so the path resolves in the bucket root.
+        pathPattern: '/labs/ui-modulith/assets/*',
+        targetOriginId: 'ui-modulith-s3',
+        viewerProtocolPolicy: 'redirect-to-https',
+        allowedMethods: ['GET', 'HEAD'],
+        cachedMethods: ['GET', 'HEAD'],
+        cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
+        responseHeadersPolicyId: uiModulith.responseHeadersPolicy.id,
+        compress: true,
+        functionAssociations: [
+          {
+            eventType: 'viewer-request',
+            functionArn: edgeFn.arn,
+          },
+        ],
+      },
+      {
+        // ui-modulith HTML/mockServiceWorker.js — not cached; always fetched fresh from S3.
+        // Edge fn strips /labs/ui-modulith prefix + rewrites extensionless paths to index.html
+        // (React Router SPA, same fallback as /todo/*).
+        pathPattern: '/labs/ui-modulith/*',
+        targetOriginId: 'ui-modulith-s3',
+        viewerProtocolPolicy: 'redirect-to-https',
+        allowedMethods: ['GET', 'HEAD'],
+        cachedMethods: ['GET', 'HEAD'],
+        cachePolicyId: CACHING_DISABLED_POLICY_ID,
+        responseHeadersPolicyId: uiModulith.responseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -352,7 +266,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
-        responseHeadersPolicyId: responseHeadersPolicy.id,
+        responseHeadersPolicyId: apex.responseHeadersPolicy.id,
         compress: true,
       },
     ],
@@ -362,7 +276,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
       allowedMethods: ['GET', 'HEAD'],
       cachedMethods: ['GET', 'HEAD'],
       cachePolicyId: CACHING_DISABLED_POLICY_ID,
-      responseHeadersPolicyId: responseHeadersPolicy.id,
+      responseHeadersPolicyId: apex.responseHeadersPolicy.id,
       compress: true,
       functionAssociations: [
         {
@@ -382,68 +296,10 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
     },
   });
 
-  new aws.s3.BucketPolicy('bucket-policy', {
-    bucket: bucket.id,
-    policy: pulumi.all([bucket.arn, distribution.arn]).apply(([bucketArn, distributionArn]) =>
-      JSON.stringify({
-        Version: '2012-10-17',
-        Statement: [
-          {
-            Sid: 'AllowCloudFrontServicePrincipal',
-            Effect: 'Allow',
-            Principal: { Service: 'cloudfront.amazonaws.com' },
-            Action: 's3:GetObject',
-            Resource: `${bucketArn}/*`,
-            Condition: {
-              StringEquals: { 'AWS:SourceArn': distributionArn },
-            },
-          },
-        ],
-      }),
-    ),
-  });
-
-  new aws.s3.BucketPolicy('blog-bucket-policy', {
-    bucket: blogBucket.id,
-    policy: pulumi.all([blogBucket.arn, distribution.arn]).apply(([bucketArn, distributionArn]) =>
-      JSON.stringify({
-        Version: '2012-10-17',
-        Statement: [
-          {
-            Sid: 'AllowCloudFrontServicePrincipal',
-            Effect: 'Allow',
-            Principal: { Service: 'cloudfront.amazonaws.com' },
-            Action: 's3:GetObject',
-            Resource: `${bucketArn}/*`,
-            Condition: {
-              StringEquals: { 'AWS:SourceArn': distributionArn },
-            },
-          },
-        ],
-      }),
-    ),
-  });
-
-  new aws.s3.BucketPolicy('todo-bucket-policy', {
-    bucket: todoBucket.id,
-    policy: pulumi.all([todoBucket.arn, distribution.arn]).apply(([bucketArn, distributionArn]) =>
-      JSON.stringify({
-        Version: '2012-10-17',
-        Statement: [
-          {
-            Sid: 'AllowCloudFrontServicePrincipal',
-            Effect: 'Allow',
-            Principal: { Service: 'cloudfront.amazonaws.com' },
-            Action: 's3:GetObject',
-            Resource: `${bucketArn}/*`,
-            Condition: {
-              StringEquals: { 'AWS:SourceArn': distributionArn },
-            },
-          },
-        ],
-      }),
-    ),
-  });
+  createBucketPolicy('', apex.bucket, distribution);
+  createBucketPolicy('blog-', blog.bucket, distribution);
+  createBucketPolicy('todo-', todo.bucket, distribution);
+  createBucketPolicy('ui-modulith-', uiModulith.bucket, distribution);
 
   for (const name of [domain, wwwDomain]) {
     new aws.route53.Record(`dns-${name.replace(/\./g, '-')}`, {
@@ -460,38 +316,19 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
     });
   }
 
-  new S3BucketFolder(
-    'synced-folder',
-    {
-      path: '../../apps/homepage/dist',
-      bucketName: bucket.bucket,
-      acl: 'private',
-    },
-    { dependsOn: [bucketOwnership] },
-  );
-
-  new S3BucketFolder(
-    'blog-synced-folder',
-    {
-      path: '../../apps/blog/out',
-      bucketName: blogBucket.bucket,
-      acl: 'private',
-    },
-    { dependsOn: [blogBucketOwnership] },
-  );
-
-  new S3BucketFolder(
-    'todo-synced-folder',
-    {
-      path: '../../apps/todo/dist',
-      bucketName: todoBucket.bucket,
-      acl: 'private',
-    },
-    { dependsOn: [todoBucketOwnership] },
+  createSyncedFolder('', '../../apps/homepage/dist', apex.bucket, [apex.bucketOwnership]);
+  createSyncedFolder('blog-', '../../apps/blog/out', blog.bucket, [blog.bucketOwnership]);
+  createSyncedFolder('todo-', '../../apps/todo/dist', todo.bucket, [todo.bucketOwnership]);
+  createSyncedFolder(
+    'ui-modulith-',
+    // Vite's outDir here is workspace-level dist/, unlike the other apps' in-app dist/.
+    '../../dist/apps/ui-modulith',
+    uiModulith.bucket,
+    [uiModulith.bucketOwnership],
   );
 
   return {
-    bucketName: bucket.bucket,
+    bucketName: apex.bucket.bucket,
     distributionId: distribution.id,
     distributionDomain: distribution.domainName,
   };

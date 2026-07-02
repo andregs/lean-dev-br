@@ -1,11 +1,9 @@
 import { devices, type Project } from '@playwright/test';
-import { fullMatrix } from './base-url.js';
+import { fullMatrix } from './base-url';
 
 /** Chromium-only on PRs; full matrix (all engines + mobile) when E2E_FULL=1. */
 export function browserProjects(): Project[] {
-  const base: Project[] = [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-  ];
+  const base: Project[] = [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }];
 
   if (!fullMatrix()) return base;
 

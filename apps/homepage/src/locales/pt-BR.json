@@ -5,6 +5,8 @@
   "labs.desc": "Demos e experimentos.",
   "labs.todo.title": "Todo",
   "labs.todo.desc": "Local-first, criptografado de ponta a ponta. Derivação de chave WebAuthn PRF, CRDT Yjs, relay AES-GCM.",
+  "labs.modulith.title": "Frontend Modulith",
+  "labs.modulith.desc": "Um build, um deploy — fronteiras de módulo aplicadas em tempo de compilação. Sem microfrontends, sem federação em tempo de execução.",
   "contact.title": "Contato",
   "contact.desc": "Escreva sua mensagem. Deixe seu endereço de e-mail se quiser que eu responda.",
   "contact.field.email": "Seu e-mail",

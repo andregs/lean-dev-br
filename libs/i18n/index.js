@@ -62,6 +62,45 @@ export function saveLocalePreference(locale) {
   ls()?.setItem(LOCALE_PREF_KEY, locale);
 }
 
+/**
+ * Detect preferred locale for browser SPAs (no URL-prefix routing).
+ * Priority: localStorage 'lean:locale' → navigator.language → 'en-US'.
+ * @returns {Locale}
+ */
+export function detectLocale() {
+  const stored = ls()?.getItem(LOCALE_PREF_KEY);
+  if (stored && /** @type {readonly string[]} */ (SUPPORTED_LOCALES).includes(stored)) {
+    return /** @type {Locale} */ (stored);
+  }
+  if (typeof navigator !== 'undefined' && navigator.language?.startsWith('pt')) return 'pt-BR';
+  return 'en-US';
+}
+
+/**
+ * Build i18next init options shared across React apps.
+ * Merges sharedCatalog with app-specific keys; ensures identical
+ * keySeparator / nsSeparator / fallbackLng across all consumers.
+ *
+ * Usage (SPA): `i18n.init({ lng: detectLocale(), ...createI18nOptions(appCatalog) })`
+ * Usage (SSR): `i18n.init({ lng: locale, ...createI18nOptions(appCatalog) })`
+ *
+ * @param {{ 'en-US': Record<string, string>, 'pt-BR': Record<string, string> }} appCatalog
+ * @returns {import('i18next').InitOptions}
+ */
+export function createI18nOptions(appCatalog) {
+  return {
+    supportedLngs: [...SUPPORTED_LOCALES],
+    fallbackLng: 'en-US',
+    defaultNS: 'common',
+    resources: {
+      'en-US': { common: { ...sharedCatalog['en-US'], ...appCatalog['en-US'] } },
+      'pt-BR': { common: { ...sharedCatalog['pt-BR'], ...appCatalog['pt-BR'] } },
+    },
+    keySeparator: false,
+    nsSeparator: ':',
+    interpolation: { escapeValue: false },
+  };
+}
 
 // ---------------------------------------------------------------------------
 // createI18n
@@ -99,28 +138,34 @@ export function createI18n({ locale, catalog }) {
   };
 
   if (locale) {
-    instance.init({ ...baseOpts, lng: locale }, () => { /* sync init */ });
+    instance.init({ ...baseOpts, lng: locale }, () => {
+      /* sync init */
+    });
   } else {
     // Path detection: reads first segment (e.g. /pt-BR/contact → 'pt-BR').
     // Non-locale segments like 'contact' are not in supportedLngs, so i18next
     // discards them and falls through to the next detector (localStorage, then
     // navigator). convertDetectedLanguage maps pt/* → pt-BR.
-    instance.use(LanguageDetector).init({
-      ...baseOpts,
-      supportedLngs: ['en-US', 'pt-BR'],
-      detection: {
-        order: ['path', 'localStorage', 'navigator'],
-        lookupFromPathIndex: 0,
-        lookupLocalStorage: LOCALE_PREF_KEY,
-        convertDetectedLanguage: (/** @type {string} */ l) =>
-          l.startsWith('pt') ? 'pt-BR' : l,
-        caches: ['localStorage'],
+    instance.use(LanguageDetector).init(
+      {
+        ...baseOpts,
+        supportedLngs: ['en-US', 'pt-BR'],
+        detection: {
+          order: ['path', 'localStorage', 'navigator'],
+          lookupFromPathIndex: 0,
+          lookupLocalStorage: LOCALE_PREF_KEY,
+          convertDetectedLanguage: (/** @type {string} */ l) => (l.startsWith('pt') ? 'pt-BR' : l),
+          caches: ['localStorage'],
+        },
       },
-    }, () => { /* sync init */ });
+      () => {
+        /* sync init */
+      },
+    );
   }
 
   const detectedLocale = /** @type {Locale} */ (
-    (SUPPORTED_LOCALES).includes(/** @type {Locale} */ (instance.language))
+    SUPPORTED_LOCALES.includes(/** @type {Locale} */ (instance.language))
       ? instance.language
       : 'en-US'
   );

@@ -4,6 +4,7 @@
     "dbaeumer.vscode-eslint",
     "editorconfig.editorconfig",
     "pulumi.pulumi-vscode-tools",
-    "nrwl.angular-console"
+    "nrwl.angular-console",
+    "ms-playwright.playwright"
   ]
 }

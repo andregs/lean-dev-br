@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "allowJs": true,
-    "checkJs": false
+    "checkJs": false,
+    "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"]
   },
-  "include": ["index.js", "index.d.ts"]
+  "include": ["index.js", "index.d.ts", "react/**/*.ts", "react/**/*.tsx"]
 }
