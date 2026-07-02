@@ -29,7 +29,7 @@
 	<properties>
 		<java.version>25</java.version>
 		<!-- Pinned so Renovate can track it and Trivy can scan it. -->
-		<paketo.builder>paketobuildpacks/builder-jammy-tiny:0.0.502</paketo.builder>
+		<paketo.builder>paketobuildpacks/builder-jammy-tiny:0.0.503</paketo.builder>
 	</properties>
 	<dependencies>
 		<dependency>
