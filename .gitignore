@@ -34,3 +34,6 @@ test-results/
 **/.last-run.json
 
 .nx/migrate-runs
+
+# Module Federation diagnostics cache
+.mf/

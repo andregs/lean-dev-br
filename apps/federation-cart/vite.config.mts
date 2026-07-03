@@ -1,6 +1,8 @@
 /// <reference types='vitest' />
+import { federation } from '@module-federation/vite';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { dependencies } from '../../package.json';
 
 export default defineConfig(() => ({
   root: import.meta.dirname,
@@ -14,8 +16,25 @@ export default defineConfig(() => ({
     port: 4205,
     host: 'localhost',
   },
-  plugins: [react()],
+  plugins: [
+    federation({
+      dts: false,
+      name: 'cart',
+      filename: 'remoteEntry.js',
+      exposes: {
+        './Routes': './src/routes.tsx',
+      },
+      shared: {
+        '@lean-dev-br/federation-kernel': { singleton: true },
+        react: { requiredVersion: dependencies.react, singleton: true },
+        'react-dom': { requiredVersion: dependencies['react-dom'], singleton: true },
+        'react-router-dom': { requiredVersion: dependencies['react-router-dom'], singleton: true },
+      },
+    }),
+    react(),
+  ],
   build: {
+    target: 'chrome89',
     outDir: '../../dist/apps/federation-cart',
     emptyOutDir: true,
     reportCompressedSize: true,
