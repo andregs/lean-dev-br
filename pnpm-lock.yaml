@@ -335,6 +335,8 @@ importers:
 
   libs/e2e-support: {}
 
+  libs/federation/kernel: {}
+
   libs/flags: {}
 
   libs/i18n: {}

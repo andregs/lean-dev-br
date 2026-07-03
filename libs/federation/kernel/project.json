@@ -1,0 +1,20 @@
+{
+  "name": "federation-kernel",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/federation/kernel/src",
+  "projectType": "library",
+  "tags": ["scope:federation", "type:kernel"],
+  "// targets": "to see all targets run: nx show project federation-kernel --web",
+  "targets": {
+    "openapi-types": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["{projectRoot}/src/api/openapi.yaml"],
+      "outputs": ["{projectRoot}/src/api/schema.d.ts"],
+      "options": {
+        "command": "openapi-typescript {projectRoot}/src/api/openapi.yaml -o {projectRoot}/src/api/schema.d.ts",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  }
+}

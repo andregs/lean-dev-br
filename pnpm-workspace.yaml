@@ -2,6 +2,7 @@ packages:
   - 'apps/*'
   - 'libs/*'
   - 'libs/ui-modulith/*'
+  - 'libs/federation/*'
   - 'infra/*'
 
 dedupePeers: true
