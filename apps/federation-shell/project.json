@@ -1,0 +1,9 @@
+{
+  "name": "federation-shell",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/federation-shell/src",
+  "projectType": "application",
+  "tags": ["scope:federation", "type:shell"],
+  "// targets": "to see all targets run: nx show project federation-shell --web",
+  "targets": {}
+}
