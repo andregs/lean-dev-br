@@ -1,0 +1,9 @@
+{
+  "name": "federation-cart",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/federation-cart/src",
+  "projectType": "application",
+  "tags": ["scope:federation", "type:feature", "domain:cart"],
+  "// targets": "to see all targets run: nx show project federation-cart --web",
+  "targets": {}
+}
