@@ -18,7 +18,10 @@ export default defineConfig(() => ({
   },
   plugins: [
     federation({
-      dts: true,
+      // dts.tsConfigPath defaults to tsconfig.json (no include), not
+      // tsconfig.app.json — its isolated compile can't resolve CSS-module
+      // ambient types (@nx/react/typings/cssmodule.d.ts).
+      dts: { tsConfigPath: './tsconfig.app.json' },
       name: 'cart',
       filename: 'remoteEntry.js',
       exposes: {
@@ -29,6 +32,8 @@ export default defineConfig(() => ({
         react: { requiredVersion: dependencies.react, singleton: true },
         'react-dom': { requiredVersion: dependencies['react-dom'], singleton: true },
         'react-router-dom': { requiredVersion: dependencies['react-router-dom'], singleton: true },
+        i18next: { requiredVersion: dependencies.i18next, singleton: true },
+        'react-i18next': { requiredVersion: dependencies['react-i18next'], singleton: true },
       },
     }),
     react(),

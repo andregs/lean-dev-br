@@ -1,13 +1,10 @@
 import { Route, Routes } from 'react-router-dom';
-
-function CartPlaceholder() {
-  return <p data-testid="cart-placeholder">cart remote loaded</p>;
-}
+import { CartPage } from './components/CartPage';
 
 export function CartRoutes() {
   return (
     <Routes>
-      <Route path="/*" element={<CartPlaceholder />} />
+      <Route index element={<CartPage />} />
     </Routes>
   );
 }

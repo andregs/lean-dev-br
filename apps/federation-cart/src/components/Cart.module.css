@@ -1,0 +1,121 @@
+.section {
+  /* inherits page-content padding from shell */
+}
+
+.moduleLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--muted);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  padding: 0.15em 0.5em;
+  margin-bottom: 1.5rem;
+  display: inline-block;
+}
+
+.heading {
+  font-size: var(--text-heading);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg);
+  margin-bottom: 1.75rem;
+  line-height: var(--leading-tight);
+}
+
+/* ── Empty state ──────────────────────────────────────────── */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  color: var(--muted);
+}
+
+.browseLink {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: var(--weight-semibold);
+}
+
+.browseLink:hover {
+  text-decoration: underline;
+}
+
+/* ── Line items ───────────────────────────────────────────── */
+
+.lines {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+@media (max-width: 480px) {
+  .line {
+    grid-template-columns: 1fr auto;
+    row-gap: 0.35rem;
+  }
+}
+
+.lineInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.lineName {
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+}
+
+.lineSku {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.lineQty {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.linePrice {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  white-space: nowrap;
+}
+
+/* ── Summary ──────────────────────────────────────────────── */
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+
+.total {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  font-size: var(--text-body);
+}
