@@ -32,7 +32,14 @@
     "**/.velite": true,
     "apps/blog/out": true,
     "**/*.tsbuildinfo": true,
-    "apps/**/dist": true
+    "apps/**/dist": true,
+    "**/dummy-non-existing-folder": true,
+    "**/@mf-types": true
+  },
+
+  "files.exclude": {
+    "**/dummy-non-existing-folder": true,
+    "**/@mf-types": true
   },
 
   "[javascript]": {

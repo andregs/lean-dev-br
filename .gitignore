@@ -37,3 +37,10 @@ test-results/
 
 # Module Federation diagnostics cache
 .mf/
+
+# Module Federation dts-consume output (host consuming remote types)
+**/@mf-types/
+
+# Vitest 4 + Vite 8 regression: sentinel outDir gets physically created.
+# https://github.com/vitest-dev/vitest/issues/10617
+**/dummy-non-existing-folder/

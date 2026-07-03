@@ -5,5 +5,7 @@
   "projectType": "application",
   "tags": ["scope:federation", "type:shell"],
   "// targets": "to see all targets run: nx show project federation-shell --web",
+  "// implicitDependencies": "federation-catalog/-cart are only referenced by string + URL in the MF2 config, invisible to Nx's project graph — declare the real edge so `nx affected` correctly marks this shell as affected when either remote changes",
+  "implicitDependencies": ["federation-catalog", "federation-cart"],
   "targets": {}
 }

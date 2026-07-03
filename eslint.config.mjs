@@ -17,6 +17,13 @@ export default defineConfig([
     '**/*.timestamp-*',
     '**/playwright-report/**',
     '**/test-results/**',
+    // Vitest 4 + Vite 8 regression: Vitest sets build.outDir to this sentinel
+    // expecting it to stay virtual (emptyOutDir: false), but Vite 8/Rolldown
+    // creates it on disk anyway. https://github.com/vitest-dev/vitest/issues/10617
+    '**/dummy-non-existing-folder/**',
+    // Module Federation dts-consume output: generated .d.ts for federated
+    // remote modules, written by the build, outside any tsconfig include.
+    '**/@mf-types/**',
     // CloudFront Function scripts run in a restricted CF runtime — not workspace JS
     'infra/homepage/cloudfront-edge.js',
   ]),

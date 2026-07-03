@@ -31,7 +31,11 @@ export default defineConfig(() => ({
   },
   plugins: [
     federation({
-      dts: false,
+      // Cross-remote type generation only works with a live remote dev server
+      // (consumeTypes always fetches over HTTP, no local-file fallback — see
+      // apps/federation-shell/src/federation-remotes.d.ts for the CI/cold-build
+      // fallback). Real types kick in automatically under `nx serve`.
+      dts: true,
       name: 'shell',
       filename: 'remoteEntry.js',
       remotes: {

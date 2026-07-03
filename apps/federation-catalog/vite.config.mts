@@ -18,7 +18,7 @@ export default defineConfig(() => ({
   },
   plugins: [
     federation({
-      dts: false,
+      dts: true,
       name: 'catalog',
       filename: 'remoteEntry.js',
       exposes: {
