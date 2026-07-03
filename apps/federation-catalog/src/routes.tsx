@@ -1,13 +1,12 @@
 import { Route, Routes } from 'react-router-dom';
-
-function CatalogPlaceholder() {
-  return <p data-testid="catalog-placeholder">catalog remote loaded</p>;
-}
+import { CatalogPage } from './components/CatalogPage';
+import { ProductDetail } from './components/ProductDetail';
 
 export function CatalogRoutes() {
   return (
     <Routes>
-      <Route path="/*" element={<CatalogPlaceholder />} />
+      <Route index element={<CatalogPage />} />
+      <Route path=":sku" element={<ProductDetail />} />
     </Routes>
   );
 }

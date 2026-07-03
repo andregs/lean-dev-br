@@ -1,13 +1,8 @@
-// Uncomment this line to use CSS modules
-// import styles from './app.module.css';
-import NxWelcome from './nx-welcome';
-
+// Standalone dev entry only (`nx serve federation-catalog` in isolation) — not
+// used when the shell loads this remote's ./Routes export. Real providers
+// (i18n, BusProvider) come from the shell's React tree in that path.
 export function App() {
-  return (
-    <div>
-      <NxWelcome title="federation-catalog" />
-    </div>
-  );
+  return <p>federation-catalog remote — view it through the shell at /labs/federation/catalog/</p>;
 }
 
 export default App;
