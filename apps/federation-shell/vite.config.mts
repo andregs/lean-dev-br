@@ -47,6 +47,8 @@ export default defineConfig(() => ({
         react: { requiredVersion: dependencies.react, singleton: true },
         'react-dom': { requiredVersion: dependencies['react-dom'], singleton: true },
         'react-router-dom': { requiredVersion: dependencies['react-router-dom'], singleton: true },
+        i18next: { requiredVersion: dependencies.i18next, singleton: true },
+        'react-i18next': { requiredVersion: dependencies['react-i18next'], singleton: true },
       },
     }),
     react(),

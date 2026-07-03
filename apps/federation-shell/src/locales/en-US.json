@@ -1,0 +1,16 @@
+{
+  "demo.title": "Module Federation",
+  "demo.tagline": "Independently built and deployed. Module boundaries enforced at runtime.",
+  "catalog.heading": "Catalog",
+  "catalog.add-to-cart": "Add to cart",
+  "catalog.back": "← Back to catalog",
+  "catalog.not-found": "Product not found.",
+  "cart.heading": "Cart",
+  "cart.empty": "Your cart is empty.",
+  "cart.browse": "Browse catalog →",
+  "cart.total": "Total",
+  "cart.item-count_one": "{{count}} item",
+  "cart.item-count_other": "{{count}} items",
+  "cart.qty": "Qty",
+  "cart.added": "Added to cart"
+}
