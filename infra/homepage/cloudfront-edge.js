@@ -63,6 +63,42 @@ function handler(event) {
     return req;
   }
 
+  // /labs/federation(/catalog|/cart) (no trailing slash) only reach the default
+  // behavior — redirect each to its trailing-slash form.
+  if (
+    req.uri === '/labs/federation' ||
+    req.uri === '/labs/federation/catalog' ||
+    req.uri === '/labs/federation/cart'
+  ) {
+    return {
+      statusCode: 301,
+      statusDescription: 'Moved Permanently',
+      headers: { location: { value: req.uri + '/' } },
+    };
+  }
+
+  // Module Federation routing: catalog and cart are checked before the shell's
+  // broader /labs/federation/ prefix below, since both their paths also start
+  // with it — the more specific pattern must strip first, matching the order of
+  // the CloudFront distribution's own orderedCacheBehaviors. remoteEntry.js and
+  // shared chunks are plain content URLs (have an extension), so only
+  // extensionless paths fall back to index.html, same as /labs/ui-modulith/*.
+  if (req.uri.startsWith('/labs/federation/catalog/')) {
+    req.uri = req.uri.slice('/labs/federation/catalog'.length);
+    if (!req.uri.match(/\.[^/]+$/)) req.uri = '/index.html';
+    return req;
+  }
+  if (req.uri.startsWith('/labs/federation/cart/')) {
+    req.uri = req.uri.slice('/labs/federation/cart'.length);
+    if (!req.uri.match(/\.[^/]+$/)) req.uri = '/index.html';
+    return req;
+  }
+  if (req.uri.startsWith('/labs/federation/')) {
+    req.uri = req.uri.slice('/labs/federation'.length);
+    if (!req.uri.match(/\.[^/]+$/)) req.uri = '/index.html';
+    return req;
+  }
+
   // Apex SPA fallback: rewrite extensionless paths to /index.html so History API routes work.
   if (!req.uri.match(/\.[^/]+$/)) req.uri = '/index.html';
   return req;
