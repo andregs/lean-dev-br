@@ -1,9 +1,9 @@
 {
   "flags": {
     "labs-modulith": {
-      "state": "DISABLED",
+      "state": "ENABLED",
       "variants": { "on": true, "off": false },
-      "defaultVariant": "off"
+      "defaultVariant": "on"
     }
   }
 }
