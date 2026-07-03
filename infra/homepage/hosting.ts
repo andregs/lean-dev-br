@@ -319,13 +319,9 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
   createSyncedFolder('', '../../apps/homepage/dist', apex.bucket, [apex.bucketOwnership]);
   createSyncedFolder('blog-', '../../apps/blog/out', blog.bucket, [blog.bucketOwnership]);
   createSyncedFolder('todo-', '../../apps/todo/dist', todo.bucket, [todo.bucketOwnership]);
-  createSyncedFolder(
-    'ui-modulith-',
-    // Vite's outDir here is workspace-level dist/, unlike the other apps' in-app dist/.
-    '../../dist/apps/ui-modulith',
-    uiModulith.bucket,
-    [uiModulith.bucketOwnership],
-  );
+  createSyncedFolder('ui-modulith-', '../../apps/ui-modulith/dist', uiModulith.bucket, [
+    uiModulith.bucketOwnership,
+  ]);
 
   return {
     bucketName: apex.bucket.bucket,

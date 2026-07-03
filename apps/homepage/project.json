@@ -17,7 +17,8 @@
       "dependsOn": [
         "build",
         { "projects": ["blog"], "target": "postbuild" },
-        { "projects": ["todo"], "target": "build" }
+        { "projects": ["todo"], "target": "build" },
+        { "projects": ["ui-modulith"], "target": "build" }
       ],
       "options": {
         "cwd": "apps/homepage",

@@ -6,6 +6,12 @@ const devHeaders = {
   'Content-Security-Policy': cspHeader({ mode: 'dev', app: 'ui-modulith' }),
 };
 
+// preview serves the real production build, so it must send the prod CSP —
+// otherwise Trusted Types violations only ever show up after a real deploy.
+const previewHeaders = {
+  'Content-Security-Policy': cspHeader({ mode: 'prod', app: 'ui-modulith' }),
+};
+
 export default defineConfig({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/ui-modulith',
@@ -18,11 +24,11 @@ export default defineConfig({
   preview: {
     port: 4202,
     host: 'localhost',
-    headers: devHeaders,
+    headers: previewHeaders,
   },
   plugins: [react()],
   build: {
-    outDir: '../../dist/apps/ui-modulith',
+    outDir: 'dist',
     emptyOutDir: true,
     reportCompressedSize: true,
     commonjsOptions: {

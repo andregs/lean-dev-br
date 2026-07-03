@@ -1,7 +1,7 @@
 // @ts-check
-// Unified prod preview: serves apex (dist/), blog (apps/blog/out/), and
-// todo (apps/todo/dist/) from one origin with production CSP headers,
-// emulating the CloudFront edge routing.
+// Unified prod preview: serves apex (dist/), blog (apps/blog/out/), todo
+// (apps/todo/dist/), and ui-modulith (apps/ui-modulith/dist/) from one origin
+// with production CSP headers, emulating the CloudFront edge routing.
 // Validates CSP/TT enforcement across all apps before deploying.
 // Run: `pnpm nx run homepage:preview-all`
 import { readFile } from 'node:fs/promises';
@@ -14,9 +14,11 @@ const dir = path.dirname(fileURLToPath(import.meta.url));
 const APEX = path.resolve(dir, '..', 'dist');
 const BLOG = path.resolve(dir, '..', '..', 'blog', 'out');
 const TODO = path.resolve(dir, '..', '..', 'todo', 'dist');
+const UI_MODULITH = path.resolve(dir, '..', '..', 'ui-modulith', 'dist');
 const CSP_APEX = cspHeader({ mode: 'prod' });
 const CSP_BLOG = cspHeader({ mode: 'prod', app: 'blog' });
 const CSP_TODO = cspHeader({ mode: 'prod', app: 'todo', signalUrl: 'http://localhost:8080' });
+const CSP_UI_MODULITH = cspHeader({ mode: 'prod', app: 'ui-modulith' });
 const PORT = 4173;
 
 /** @type {Record<string, string>} */
@@ -42,6 +44,7 @@ const TYPES = {
 function route(uri) {
   if (uri === '/blog') return { redirect: '/blog/' };
   if (uri === '/todo') return { redirect: '/todo/' };
+  if (uri === '/labs/ui-modulith') return { redirect: '/labs/ui-modulith/' };
 
   if (uri.startsWith('/blog/')) {
     let stripped = uri.slice('/blog'.length);
@@ -54,6 +57,12 @@ function route(uri) {
     const stripped = uri.slice('/todo'.length); // '/todo/assets/x.js' → '/assets/x.js'
     const localPath = stripped.match(/\.[^/]+$/) ? stripped : '/index.html';
     return { root: TODO, filePath: path.join(TODO, localPath), csp: CSP_TODO };
+  }
+
+  if (uri.startsWith('/labs/ui-modulith/')) {
+    const stripped = uri.slice('/labs/ui-modulith'.length);
+    const localPath = stripped.match(/\.[^/]+$/) ? stripped : '/index.html';
+    return { root: UI_MODULITH, filePath: path.join(UI_MODULITH, localPath), csp: CSP_UI_MODULITH };
   }
 
   // Apex SPA fallback: extensionless paths → index.html.
@@ -96,4 +105,5 @@ http
     console.log(`prod preview → http://localhost:${PORT}/`);
     console.log(`             → http://localhost:${PORT}/blog/`);
     console.log(`             → http://localhost:${PORT}/todo/`);
+    console.log(`             → http://localhost:${PORT}/labs/ui-modulith/`);
   });
