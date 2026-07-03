@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import App from './app/app';
+import './trusted-types';
 
 // MSW is the permanent mock backend for this demo — there's no real API to
 // deploy behind it, so this runs in every environment, dev, preview, and the

@@ -2,7 +2,18 @@
 import { federation } from '@module-federation/vite';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { cspHeader } from '@lean-dev-br/csp';
 import { dependencies } from '../../package.json';
+
+const devHeaders = {
+  'Content-Security-Policy': cspHeader({ mode: 'dev', app: 'federation' }),
+};
+
+// preview serves the real production build, so it must send the prod CSP —
+// otherwise Trusted Types violations only ever show up after a real deploy.
+const previewHeaders = {
+  'Content-Security-Policy': cspHeader({ mode: 'prod', app: 'federation' }),
+};
 
 export default defineConfig(() => ({
   root: import.meta.dirname,
@@ -11,16 +22,18 @@ export default defineConfig(() => ({
   server: {
     port: 4205,
     host: 'localhost',
+    headers: devHeaders,
   },
   preview: {
     port: 4205,
     host: 'localhost',
+    headers: previewHeaders,
   },
   plugins: [
     federation({
-      // dts.tsConfigPath defaults to tsconfig.json (no include), not
-      // tsconfig.app.json — its isolated compile can't resolve CSS-module
-      // ambient types (@nx/react/typings/cssmodule.d.ts).
+      // dts.tsConfigPath defaults to ./tsconfig.json (the project-root config,
+      // which has no `include`), not tsconfig.app.json — so its isolated compile
+      // can't resolve CSS-module ambient types (@nx/react/typings/cssmodule.d.ts).
       dts: { tsConfigPath: './tsconfig.app.json' },
       name: 'cart',
       filename: 'remoteEntry.js',
