@@ -1,6 +1,21 @@
 /// <reference types='vitest' />
+import { federation } from '@module-federation/vite';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { dependencies } from '../../package.json';
+
+// Dev: each remote runs its own Vite dev server on its own port. Prod: all three
+// apps are same-origin behind one CloudFront distribution under /labs/federation/,
+// so a relative path resolves to the right bucket via the edge routing.
+const remoteEntry = (name: string, devPort: string) => ({
+  type: 'module' as const,
+  name,
+  entry: process.env.NODE_ENV === 'production'
+    ? `/labs/federation/${name}/remoteEntry.js`
+    : `http://localhost:${devPort}/labs/federation/${name}/remoteEntry.js`,
+  entryGlobalName: name,
+  shareScope: 'default',
+});
 
 export default defineConfig(() => ({
   root: import.meta.dirname,
@@ -14,8 +29,26 @@ export default defineConfig(() => ({
     port: 4203,
     host: 'localhost',
   },
-  plugins: [react()],
+  plugins: [
+    federation({
+      dts: false,
+      name: 'shell',
+      filename: 'remoteEntry.js',
+      remotes: {
+        catalog: remoteEntry('catalog', '4204'),
+        cart: remoteEntry('cart', '4205'),
+      },
+      shared: {
+        '@lean-dev-br/federation-kernel': { singleton: true },
+        react: { requiredVersion: dependencies.react, singleton: true },
+        'react-dom': { requiredVersion: dependencies['react-dom'], singleton: true },
+        'react-router-dom': { requiredVersion: dependencies['react-router-dom'], singleton: true },
+      },
+    }),
+    react(),
+  ],
   build: {
+    target: 'chrome89',
     outDir: '../../dist/apps/federation-shell',
     emptyOutDir: true,
     reportCompressedSize: true,
@@ -28,6 +61,10 @@ export default defineConfig(() => ({
     watch: false,
     globals: true,
     environment: 'jsdom',
+    // No unit tests here by design: app.tsx lazy-loads federated remotes over the
+    // network (mirrors ui-modulith, which likewise only unit-tests components with
+    // real logic like DemoBar, not its own thin app.tsx/routes.tsx). Covered by e2e.
+    passWithNoTests: true,
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],
     coverage: {

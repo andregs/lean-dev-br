@@ -1,12 +1,14 @@
-// Uncomment this line to use CSS modules
-// import styles from './app.module.css';
-import NxWelcome from './nx-welcome';
+import { BrowserRouter } from 'react-router-dom';
+import { BusProvider } from '@lean-dev-br/federation-kernel';
+import { AppRoutes } from '../routes';
 
 export function App() {
   return (
-    <div>
-      <NxWelcome title="federation-shell" />
-    </div>
+    <BusProvider>
+      <BrowserRouter basename="/labs/federation">
+        <AppRoutes />
+      </BrowserRouter>
+    </BusProvider>
   );
 }
 
