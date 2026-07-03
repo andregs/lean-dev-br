@@ -7,6 +7,8 @@
   "labs.todo.desc": "Local-first, E2E-encrypted. WebAuthn PRF key derivation, Yjs CRDT, AES-GCM relay sync.",
   "labs.modulith.title": "Frontend Modulith",
   "labs.modulith.desc": "One build, one deploy — module boundaries enforced at compile time. No microfrontends, no runtime federation.",
+  "labs.federation.title": "Module Federation",
+  "labs.federation.desc": "The same demo, rebuilt as independently deployed microfrontends — module boundaries enforced at runtime instead of compile time.",
   "contact.title": "Contact",
   "contact.desc": "Drop me a message. Leave your email if you want a reply.",
   "contact.field.email": "Your email",

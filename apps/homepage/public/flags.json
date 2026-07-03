@@ -4,6 +4,11 @@
       "state": "ENABLED",
       "variants": { "on": true, "off": false },
       "defaultVariant": "on"
+    },
+    "labs-federation": {
+      "state": "ENABLED",
+      "variants": { "on": true, "off": false },
+      "defaultVariant": "on"
     }
   }
 }

@@ -10,6 +10,7 @@ import { setHTML } from '../trusted-types.js';
 export function renderLabs(root, { i18n, flags }) {
   root.className = 'labs';
   const showModulith = flags.getBooleanValue('labs-modulith', false);
+  const showFederation = flags.getBooleanValue('labs-federation', false);
   setHTML(
     root,
     `<div class="labs-inner">
@@ -33,6 +34,18 @@ export function renderLabs(root, { i18n, flags }) {
               <h2 class="lab-card-title">${i18n.t('labs.modulith.title')}</h2>
             </div>
             <p class="lab-card-desc">${i18n.t('labs.modulith.desc')}</p>
+          </a>
+        </li>`
+            : ''
+        }
+        ${
+          showFederation
+            ? `<li class="lab-card">
+          <a href="/labs/federation/" class="lab-card-link">
+            <div class="lab-card-header">
+              <h2 class="lab-card-title">${i18n.t('labs.federation.title')}</h2>
+            </div>
+            <p class="lab-card-desc">${i18n.t('labs.federation.desc')}</p>
           </a>
         </li>`
             : ''
