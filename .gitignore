@@ -34,3 +34,19 @@ test-results/
 **/.last-run.json
 
 .nx/migrate-runs
+
+# Module Federation diagnostics cache
+.mf/
+
+# Module Federation dts-consume output (host consuming remote types)
+**/@mf-types/
+
+# Module Federation dts extractThirdParty writes sibling .d.ts declaration
+# files directly into a shared lib's src/ when it's pulled in as a `shared`
+# dependency — not our own committed api/schema.d.ts codegen output.
+libs/federation/kernel/src/**/*.d.ts
+!libs/federation/kernel/src/api/schema.d.ts
+
+# Vitest 4 + Vite 8 regression: sentinel outDir gets physically created.
+# https://github.com/vitest-dev/vitest/issues/10617
+**/dummy-non-existing-folder/

@@ -63,6 +63,47 @@ function handler(event) {
     return req;
   }
 
+  // /labs/federation (no trailing slash) only reaches the default behavior —
+  // redirect to /labs/federation/. Unlike ui-modulith, catalog and cart are NOT
+  // separate apps here — they're the shell's own internal SPA routes (just
+  // backed by separate remote bundles), so /labs/federation/catalog and
+  // /labs/federation/cart are real deep-linkable shell routes and must NOT
+  // redirect, same as ui-modulith's own /catalog and /cart don't.
+  if (req.uri === '/labs/federation') {
+    return {
+      statusCode: 301,
+      statusDescription: 'Moved Permanently',
+      headers: { location: { value: '/labs/federation/' } },
+    };
+  }
+
+  // Module Federation routing: only requests CloudFront already routed to a
+  // remote's own bucket reach these two branches — its assets/* and its exact
+  // remoteEntry.js (see the distribution's orderedCacheBehaviors; there is no
+  // broad /labs/federation/catalog/* or /cart/* behavior). Everything else,
+  // including a bare /labs/federation/catalog navigation/refresh, falls
+  // through to the shell's own catch-all below, which owns all real page
+  // routing — the remote's bucket has no full app of its own to serve there.
+  if (
+    req.uri.startsWith('/labs/federation/catalog/assets/') ||
+    req.uri === '/labs/federation/catalog/remoteEntry.js'
+  ) {
+    req.uri = req.uri.slice('/labs/federation/catalog'.length);
+    return req;
+  }
+  if (
+    req.uri.startsWith('/labs/federation/cart/assets/') ||
+    req.uri === '/labs/federation/cart/remoteEntry.js'
+  ) {
+    req.uri = req.uri.slice('/labs/federation/cart'.length);
+    return req;
+  }
+  if (req.uri.startsWith('/labs/federation/')) {
+    req.uri = req.uri.slice('/labs/federation'.length);
+    if (!req.uri.match(/\.[^/]+$/)) req.uri = '/index.html';
+    return req;
+  }
+
   // Apex SPA fallback: rewrite extensionless paths to /index.html so History API routes work.
   if (!req.uri.match(/\.[^/]+$/)) req.uri = '/index.html';
   return req;

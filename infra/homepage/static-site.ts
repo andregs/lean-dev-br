@@ -27,7 +27,7 @@ export interface StaticSiteArgs {
   bucketName: string;
   oacName: string;
   headersPolicyName: string;
-  cspApp?: 'blog' | 'todo' | 'ui-modulith';
+  cspApp?: 'blog' | 'todo' | 'ui-modulith' | 'federation';
   signalUrl?: string;
 }
 

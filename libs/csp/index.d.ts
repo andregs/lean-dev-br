@@ -1,5 +1,5 @@
 export type CspMode = 'prod' | 'dev';
-export type CspApp = 'apex' | 'blog' | 'todo' | 'ui-modulith';
+export type CspApp = 'apex' | 'blog' | 'todo' | 'ui-modulith' | 'federation';
 
 export function cspDirectives(opts: {
   mode: CspMode;

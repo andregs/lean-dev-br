@@ -1,0 +1,92 @@
+openapi: 3.0.3
+info:
+  title: Federation Catalog API
+  # Real-world evolution: generate this from a Spring backend via springdoc-openapi.
+  # Here it is hand-authored as the single source of truth for the demo.
+  version: 1.0.0
+paths:
+  /products:
+    get:
+      operationId: listProducts
+      summary: List all products
+      responses:
+        '200':
+          description: Product list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        default:
+          description: Unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /products/{sku}:
+    get:
+      operationId: getProduct
+      summary: Get a single product by SKU
+      parameters:
+        - name: sku
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  schemas:
+    Product:
+      type: object
+      required:
+        - sku
+        - name
+        - price
+        - description
+        - imageUrl
+      properties:
+        sku:
+          type: string
+          example: WIDGET-001
+        name:
+          type: string
+          example: Super Widget
+        price:
+          type: number
+          format: float
+          example: 29.99
+        description:
+          type: string
+          example: A very fine widget.
+        imageUrl:
+          type: string
+          example: /images/widget-001.jpg
+    Problem:
+      type: object
+      required:
+        - type
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string

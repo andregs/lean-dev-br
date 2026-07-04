@@ -15,21 +15,29 @@ const TRUSTED_TYPES_POLICIES = ['app', 'dompurify', 'default', 'goog#html', 'nex
  * guards DOM script sinks; the apex app (no inline scripts) stays strict.
  * `app: 'todo'` drops reCAPTCHA/RUM/Cognito domains; adds `signalUrl` to
  * connect-src for the encrypted Yjs blob relay (Cloud Run relay-service).
+ * `app: 'federation'` is the ui-modulith lab's runtime-microfrontend twin —
+ * same MSW/no-reCAPTCHA profile, plus a dev-only script-src relaxation: the
+ * shell loads catalog/cart's remoteEntry.js and shared chunks from their own
+ * cross-origin dev servers (same-origin in prod, behind one CloudFront dist).
  *
- * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' | 'todo' | 'ui-modulith', signalUrl?: string }} opts
+ * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' | 'todo' | 'ui-modulith' | 'federation', signalUrl?: string }} opts
  * @returns {Record<string, string[]>}
  */
 function cspDirectives({ mode, app = 'apex', signalUrl = '' }) {
   const isTodo = app === 'todo';
   const isModulith = app === 'ui-modulith';
+  const isFederation = app === 'federation';
+  // Modulith and federation share the same demo profile: no reCAPTCHA/RUM/Cognito,
+  // MSW as the permanent mock backend.
+  const isLabsDemo = isModulith || isFederation;
 
   const connectSrc = ["'self'"];
-  if (!isTodo && !isModulith) {
-    // reCAPTCHA uses google.com — modulith has no reCAPTCHA
+  if (!isTodo && !isLabsDemo) {
+    // reCAPTCHA uses google.com — the labs demos have no reCAPTCHA
     connectSrc.push('https://www.google.com');
   }
-  if (!isModulith) {
-    // RUM and Cognito not used by the modulith lab
+  if (!isLabsDemo) {
+    // RUM and Cognito not used by the labs demos
     connectSrc.push(
       'https://dataplane.rum.us-east-1.amazonaws.com',
       'https://cognito-identity.us-east-1.amazonaws.com',
@@ -43,14 +51,21 @@ function cspDirectives({ mode, app = 'apex', signalUrl = '' }) {
   }
 
   const scriptSrc = ["'self'"];
-  if (!isTodo && !isModulith) {
-    // reCAPTCHA scripts — todo and modulith have no reCAPTCHA
+  if (!isTodo && !isLabsDemo) {
+    // reCAPTCHA scripts — todo and the labs demos have no reCAPTCHA
     scriptSrc.push('https://www.google.com', 'https://www.gstatic.com');
   }
-  // Blog (Next.js static export) and ui-modulith dev (Vite React Fast Refresh preamble)
-  // both require unsafe-inline in script-src.
-  if (app === 'blog' || (isModulith && mode === 'dev')) {
+  // Blog (Next.js static export) and the labs demos' dev mode (Vite React Fast
+  // Refresh preamble) both require unsafe-inline in script-src.
+  if (app === 'blog' || (isLabsDemo && mode === 'dev')) {
     scriptSrc.push("'unsafe-inline'");
+  }
+  if (isFederation && mode === 'dev') {
+    // Each remote (catalog, cart) runs its own Vite dev server on its own
+    // origin; the shell's MF2 runtime injects <script> tags to fetch their
+    // remoteEntry.js and shared chunks directly. Same-origin in prod, so
+    // this relaxation is dev-only.
+    scriptSrc.push('http://localhost:*');
   }
 
   /** @type {Record<string, string[]>} */
@@ -62,11 +77,11 @@ function cspDirectives({ mode, app = 'apex', signalUrl = '' }) {
     'style-src': ["'self'", "'unsafe-inline'"],
     'font-src': ["'self'"],
   };
-  if (!isTodo && !isModulith) {
-    // reCAPTCHA uses a Google iframe — todo and modulith have no reCAPTCHA iframe
+  if (!isTodo && !isLabsDemo) {
+    // reCAPTCHA uses a Google iframe — todo and the labs demos have no reCAPTCHA iframe
     directives['frame-src'] = ['https://www.google.com'];
   }
-  if (isModulith) {
+  if (isLabsDemo) {
     // MSW service worker requires an explicit worker-src; same-origin only
     directives['worker-src'] = ["'self'"];
   }
@@ -96,7 +111,7 @@ function serialize(directives) {
  * Trusted Types directive; dev omits it here — ship `trustedTypesDirective()` as
  * a separate report-only header instead so dev tooling isn't blocked.
  *
- * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' | 'todo' | 'ui-modulith', signalUrl?: string }} opts
+ * @param {{ mode: 'prod' | 'dev', app?: 'apex' | 'blog' | 'todo' | 'ui-modulith' | 'federation', signalUrl?: string }} opts
  * @returns {string}
  */
 function cspHeader({ mode, app = 'apex', signalUrl = '' }) {

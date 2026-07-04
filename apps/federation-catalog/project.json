@@ -1,0 +1,9 @@
+{
+  "name": "federation-catalog",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/federation-catalog/src",
+  "projectType": "application",
+  "tags": ["scope:federation", "type:feature", "domain:catalog"],
+  "// targets": "to see all targets run: nx show project federation-catalog --web",
+  "targets": {}
+}
