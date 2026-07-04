@@ -1,0 +1,25 @@
+server {
+  listen 8443 ssl;
+  http2 on;
+  http2_max_concurrent_streams ${MAX_STREAMS};
+
+  ssl_certificate     /etc/nginx/certs/cert.pem;
+  ssl_certificate_key /etc/nginx/certs/key.pem;
+
+  location = /labs/federation/catalog/remoteEntry.js {
+    alias /srv/catalog/remoteEntry.js;
+  }
+  location ^~ /labs/federation/catalog/assets/ {
+    alias /srv/catalog/assets/;
+  }
+  location = /labs/federation/cart/remoteEntry.js {
+    alias /srv/cart/remoteEntry.js;
+  }
+  location ^~ /labs/federation/cart/assets/ {
+    alias /srv/cart/assets/;
+  }
+  location ^~ /labs/federation/ {
+    alias /srv/shell/;
+    try_files $uri /labs/federation/index.html;
+  }
+}

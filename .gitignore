@@ -50,3 +50,9 @@ libs/federation/kernel/src/**/*.d.ts
 # Vitest 4 + Vite 8 regression: sentinel outDir gets physically created.
 # https://github.com/vitest-dev/vitest/issues/10617
 **/dummy-non-existing-folder/
+
+# Throwaway self-signed cert for the local stream-limit lab
+apps/federation-shell/docs/stream-limit-lab/certs/*.pem
+
+# HAR captures from the stream-limit lab (large, reader-generated, not source)
+apps/federation-shell/docs/stream-limit-lab/*.har

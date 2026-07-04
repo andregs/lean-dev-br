@@ -1,0 +1,14 @@
+services:
+  nginx:
+    image: nginx:1.31-alpine
+    ports:
+      - '8443:8443'
+    environment:
+      MAX_STREAMS: ${MAX_STREAMS:-128}
+      NGINX_ENVSUBST_FILTER: MAX_STREAMS
+    volumes:
+      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./certs:/etc/nginx/certs:ro
+      - ../../../federation-shell/dist:/srv/shell:ro
+      - ../../../federation-catalog/dist:/srv/catalog:ro
+      - ../../../federation-cart/dist:/srv/cart:ro
