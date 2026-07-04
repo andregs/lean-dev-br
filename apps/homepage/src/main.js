@@ -41,13 +41,22 @@ fetch('/flags.json')
   .then((flagsJson) => createFlagClient(flagsJson))
   .then((client) => {
     flags = client;
-    render();
+    // Re-rendering rebuilds #app's innerHTML, which would tear down the
+    // contact form mid-submit and strand submit()'s DOM references on
+    // detached nodes — its success/error status would then update elements
+    // no longer on screen. `flags` is still updated above for the next
+    // natural render (nav click, popstate).
+    if (!isFormSubmitting()) render();
   })
   .catch(() => {
     /* keep the empty-flags fallback — gated features just stay hidden */
   });
 
 // --- Helpers ---
+
+function isFormSubmitting() {
+  return document.querySelector('#app button[type="submit"]:disabled') !== null;
+}
 
 /** Strip the /pt-BR locale prefix for canonical route matching.
  * @param {string} pathname
