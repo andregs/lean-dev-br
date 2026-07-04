@@ -328,8 +328,13 @@ h1 .name {
 }
 
 @keyframes badge-pulse {
-  0%, 100% { opacity: 1; }
-  40% { opacity: 0.3; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.3;
+  }
 }
 
 .lab-card-badge--pulse {

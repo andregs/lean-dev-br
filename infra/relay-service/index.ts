@@ -124,11 +124,18 @@ new gcp.monitoring.AlertPolicy('relay-firestore-read-quota', {
     {
       displayName: 'Daily document reads > 40k (80% of 50k free tier)',
       conditionThreshold: {
-        filter: 'metric.type="firestore.googleapis.com/document/read_count" AND resource.type="firestore_instance"',
+        filter:
+          'metric.type="firestore.googleapis.com/document/read_count" AND resource.type="firestore_instance"',
         duration: '0s',
         comparison: 'COMPARISON_GT',
         thresholdValue: 40000,
-        aggregations: [{ alignmentPeriod: '86400s', perSeriesAligner: 'ALIGN_SUM', crossSeriesReducer: 'REDUCE_SUM' }],
+        aggregations: [
+          {
+            alignmentPeriod: '86400s',
+            perSeriesAligner: 'ALIGN_SUM',
+            crossSeriesReducer: 'REDUCE_SUM',
+          },
+        ],
       },
     },
   ],
@@ -143,11 +150,18 @@ new gcp.monitoring.AlertPolicy('relay-firestore-write-quota', {
     {
       displayName: 'Daily document writes > 16k (80% of 20k free tier)',
       conditionThreshold: {
-        filter: 'metric.type="firestore.googleapis.com/document/write_count" AND resource.type="firestore_instance"',
+        filter:
+          'metric.type="firestore.googleapis.com/document/write_count" AND resource.type="firestore_instance"',
         duration: '0s',
         comparison: 'COMPARISON_GT',
         thresholdValue: 16000,
-        aggregations: [{ alignmentPeriod: '86400s', perSeriesAligner: 'ALIGN_SUM', crossSeriesReducer: 'REDUCE_SUM' }],
+        aggregations: [
+          {
+            alignmentPeriod: '86400s',
+            perSeriesAligner: 'ALIGN_SUM',
+            crossSeriesReducer: 'REDUCE_SUM',
+          },
+        ],
       },
     },
   ],

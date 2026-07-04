@@ -111,6 +111,7 @@ pnpm exec pulumi up --stack prod
 ```
 
 This creates:
+
 - Artifact Registry repository `relay-service` in `us-central1`
 - Firestore database `(default)` (Native mode, `us-central1`) — **location is permanent**; pick the same region as Cloud Run and never change it
 - Runtime service account `relay-runtime` with `roles/datastore.user`, attached to the Cloud Run service

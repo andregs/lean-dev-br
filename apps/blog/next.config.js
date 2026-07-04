@@ -23,7 +23,9 @@ const nextConfig = {
     return [
       {
         source: '/:path*',
-        headers: [{ key: 'Content-Security-Policy', value: cspHeader({ mode: 'dev', app: 'blog' }) }],
+        headers: [
+          { key: 'Content-Security-Policy', value: cspHeader({ mode: 'dev', app: 'blog' }) },
+        ],
       },
     ];
   },

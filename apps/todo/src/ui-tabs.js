@@ -32,7 +32,8 @@ export function renderTabs(rail, lists, activeListId, { onSwitch, onAdd }, i18n)
   const addLabel = i18n.t('tabs.add.aria');
   setHTML(
     rail,
-    tabsHtml + `<button class="tab tab--add" aria-label="${addLabel}" title="${addLabel}">+</button>`,
+    tabsHtml +
+      `<button class="tab tab--add" aria-label="${addLabel}" title="${addLabel}">+</button>`,
   );
 
   for (const [i, name] of lists.entries()) {

@@ -35,9 +35,8 @@ export function PostDevControls({ slug, locale = 'en' }: Props) {
     }
   }
 
-  const editHref = locale === 'pt-BR'
-    ? `/editor?slug=${slug}&locale=pt-BR`
-    : `/editor?slug=${slug}`;
+  const editHref =
+    locale === 'pt-BR' ? `/editor?slug=${slug}&locale=pt-BR` : `/editor?slug=${slug}`;
 
   return (
     <div className={styles.fabStack}>

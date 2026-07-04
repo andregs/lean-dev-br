@@ -13,4 +13,4 @@ relay:
 
 logging:
   level:
-    "[br.dev.lean.relay]": DEBUG
+    '[br.dev.lean.relay]': DEBUG

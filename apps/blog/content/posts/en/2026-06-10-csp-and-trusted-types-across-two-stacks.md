@@ -1,8 +1,8 @@
 ---
-title: "CSP and Trusted Types across two stacks"
+title: 'CSP and Trusted Types across two stacks'
 date: 2026-06-10T09:00:00.000Z
-description: "How we enforced a strict Content-Security-Policy with Trusted Types on a vanilla-JS site, then adapted that policy for a Next.js static-export blog — and what we had to give up."
-tags: ["security", "csp", "trusted-types", "nextjs"]
+description: 'How we enforced a strict Content-Security-Policy with Trusted Types on a vanilla-JS site, then adapted that policy for a Next.js static-export blog — and what we had to give up.'
+tags: ['security', 'csp', 'trusted-types', 'nextjs']
 ---
 
 The apex homepage runs a strict Content-Security-Policy with Trusted Types enforced. Every DOM

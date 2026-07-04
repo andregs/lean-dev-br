@@ -41,7 +41,9 @@ describe('@lean-dev-br/trusted-types', () => {
 
   it('app.createScriptURL allows allowlisted prefixes, blocks others', () => {
     const app = installPolicies({ scriptUrlAllowlist: ALLOW });
-    expect(app.createScriptURL('https://cdn.example.com/x.js')).toBe('https://cdn.example.com/x.js');
+    expect(app.createScriptURL('https://cdn.example.com/x.js')).toBe(
+      'https://cdn.example.com/x.js',
+    );
     expect(() => app.createScriptURL('https://evil.com/x.js')).toThrow(TypeError);
   });
 
@@ -79,7 +81,9 @@ describe('@lean-dev-br/trusted-types', () => {
       expect(def?.createHTML?.('<script></script>')).toBe('<script></script>');
       expect(def?.createScript?.('x=1')).toBe('x=1');
       // script URLs stay gated.
-      expect(def?.createScriptURL?.('https://cdn.example.com/x.js')).toBe('https://cdn.example.com/x.js');
+      expect(def?.createScriptURL?.('https://cdn.example.com/x.js')).toBe(
+        'https://cdn.example.com/x.js',
+      );
       expect(() => def?.createScriptURL?.('https://evil.com/x.js')).toThrow(TypeError);
     });
   });

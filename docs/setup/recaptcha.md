@@ -13,10 +13,10 @@ Go to https://www.google.com/recaptcha/admin/create (Google account required).
 
 You will see two keys:
 
-| Key | Visibility | Used where |
-|---|---|---|
-| **Site key** | Public — safe to expose in JS | Vite build, embedded in the bundle |
-| **Secret key** | Private — never expose | Lambda env var, verified server-side |
+| Key            | Visibility                    | Used where                           |
+| -------------- | ----------------------------- | ------------------------------------ |
+| **Site key**   | Public — safe to expose in JS | Vite build, embedded in the bundle   |
+| **Secret key** | Private — never expose        | Lambda env var, verified server-side |
 
 ## 2. Store the secret key in Pulumi
 
@@ -31,8 +31,8 @@ This encrypts the value and stores it in Pulumi Cloud state. `pulumi up` injects
 
 In the GitHub repository → **Settings → Secrets and variables → Actions → Variables → New repository variable**:
 
-| Variable name | Value |
-|---|---|
+| Variable name             | Value         |
+| ------------------------- | ------------- |
 | `VITE_RECAPTCHA_SITE_KEY` | Your site key |
 
 Variables (not secrets) are appropriate here — the site key is public and embedded in the JS bundle.

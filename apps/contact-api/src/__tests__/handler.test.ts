@@ -32,7 +32,10 @@ describe('POST /api/csp-report', () => {
 
   it('returns 204 and logs the body', async () => {
     const spy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
-    const payload = JSON.stringify({ type: 'csp-violation', body: { blockedURL: 'https://evil.com' } });
+    const payload = JSON.stringify({
+      type: 'csp-violation',
+      body: { blockedURL: 'https://evil.com' },
+    });
     const res = await handler(makeEvent(payload, '/api/csp-report'));
     expect(res).toMatchObject({ statusCode: 204 });
     expect(spy).toHaveBeenCalledWith('csp-report:', payload);
@@ -82,13 +85,19 @@ describe('handler', () => {
 
   it('returns 400 with problem+json when body is not valid JSON', async () => {
     const res = await handler(makeEvent('not-json'));
-    expect(res).toMatchObject({ statusCode: 400, headers: { 'content-type': 'application/problem+json' } });
+    expect(res).toMatchObject({
+      statusCode: 400,
+      headers: { 'content-type': 'application/problem+json' },
+    });
     expect(mockVerify).not.toHaveBeenCalled();
   });
 
   it('returns 400 when body is not an object', async () => {
     const res = await handler(makeEvent(null));
-    expect(res).toMatchObject({ statusCode: 400, headers: { 'content-type': 'application/problem+json' } });
+    expect(res).toMatchObject({
+      statusCode: 400,
+      headers: { 'content-type': 'application/problem+json' },
+    });
     expect(mockVerify).not.toHaveBeenCalled();
   });
 
@@ -107,14 +116,20 @@ describe('handler', () => {
   it('returns 403 when reCAPTCHA rejects', async () => {
     mockVerify.mockRejectedValueOnce(new Error('low score'));
     const res = await handler(makeEvent({ message: 'Hello', token: 'bad' }));
-    expect(res).toMatchObject({ statusCode: 403, headers: { 'content-type': 'application/problem+json' } });
+    expect(res).toMatchObject({
+      statusCode: 403,
+      headers: { 'content-type': 'application/problem+json' },
+    });
     expect(mockSend).not.toHaveBeenCalled();
   });
 
   it('returns 502 when notify SES call fails', async () => {
     mockSend.mockRejectedValueOnce(new Error('SES error'));
     const res = await handler(makeEvent({ message: 'Hello', token: 'tok' }));
-    expect(res).toMatchObject({ statusCode: 502, headers: { 'content-type': 'application/problem+json' } });
+    expect(res).toMatchObject({
+      statusCode: 502,
+      headers: { 'content-type': 'application/problem+json' },
+    });
   });
 
   it('returns 200 with application/json and sends notify when valid (no visitor email)', async () => {
@@ -131,7 +146,9 @@ describe('handler', () => {
       makeEvent({ message: 'Hello', token: 'tok', email: 'visitor@example.com' }),
     );
     expect(res).toMatchObject({ statusCode: 200 });
-    await vi.waitFor(() => { expect(mockSend).toHaveBeenCalledTimes(2); });
+    await vi.waitFor(() => {
+      expect(mockSend).toHaveBeenCalledTimes(2);
+    });
     const [notify, ack] = mockSend.mock.calls;
     expect(notify[0]).toMatchObject({ to: 'andre@example.com', replyTo: 'visitor@example.com' });
     expect(ack[0]).toMatchObject({ to: 'visitor@example.com', subject: 'Got your message' });
@@ -141,7 +158,9 @@ describe('handler', () => {
     await handler(
       makeEvent({ message: 'Olá', token: 'tok', email: 'visitor@example.com', locale: 'pt-BR' }),
     );
-    await vi.waitFor(() => { expect(mockSend).toHaveBeenCalledTimes(2); });
+    await vi.waitFor(() => {
+      expect(mockSend).toHaveBeenCalledTimes(2);
+    });
     const [, ack] = mockSend.mock.calls;
     expect(ack[0]).toMatchObject({ to: 'visitor@example.com', subject: 'Mensagem recebida' });
   });
@@ -150,7 +169,9 @@ describe('handler', () => {
     await handler(
       makeEvent({ message: 'Hi', token: 'tok', email: 'visitor@example.com', locale: 'fr-FR' }),
     );
-    await vi.waitFor(() => { expect(mockSend).toHaveBeenCalledTimes(2); });
+    await vi.waitFor(() => {
+      expect(mockSend).toHaveBeenCalledTimes(2);
+    });
     const [, ack] = mockSend.mock.calls;
     expect(ack[0]).toMatchObject({ subject: 'Got your message' });
   });
@@ -163,6 +184,8 @@ describe('handler', () => {
       makeEvent({ message: 'Hello', token: 'tok', email: 'visitor@example.com' }),
     );
     expect(res).toMatchObject({ statusCode: 200 });
-    await vi.waitFor(() => { expect(mockSend).toHaveBeenCalledTimes(2); });
+    await vi.waitFor(() => {
+      expect(mockSend).toHaveBeenCalledTimes(2);
+    });
   });
 });

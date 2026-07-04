@@ -1,8 +1,8 @@
 ---
-title: "SES sandbox, a rejected production request, and a config toggle"
+title: 'SES sandbox, a rejected production request, and a config toggle'
 date: 2026-06-10T19:07:00.000Z
 description: "Why the contact form's visitor acknowledgement email is currently disabled, and the path to enabling it."
-tags: ["aws", "ses", "infrastructure", "decisions"]
+tags: ['aws', 'ses', 'infrastructure', 'decisions']
 ---
 
 The contact form on this site sends me an email every time someone submits a message. That part works.

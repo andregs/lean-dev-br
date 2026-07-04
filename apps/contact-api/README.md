@@ -14,15 +14,15 @@ André's address is never included in the ACK email sent to visitors.
 
 ## Environment variables
 
-| Variable | Required | Description |
-|---|---|---|
-| `RECAPTCHA_SECRET` | Yes | reCAPTCHA v3 secret key (from Pulumi secret) |
-| `RECAPTCHA_VERIFY_URL` | Yes | `https://www.google.com/recaptcha/api/siteverify` |
-| `RECAPTCHA_ACTION` | Yes | `contact` — submissions with a different action are rejected |
-| `NOTIFY_EMAIL` | Yes | Address that receives contact form submissions (from Pulumi secret) |
-| `FROM_EMAIL` | Yes | `do-not-reply@lean.dev.br` |
-| `SUBJECT_PREFIX` | Yes | `[Contact]` |
-| `MIN_SCORE` | Yes | Minimum reCAPTCHA score to accept (default `0.5`) |
+| Variable               | Required | Description                                                         |
+| ---------------------- | -------- | ------------------------------------------------------------------- |
+| `RECAPTCHA_SECRET`     | Yes      | reCAPTCHA v3 secret key (from Pulumi secret)                        |
+| `RECAPTCHA_VERIFY_URL` | Yes      | `https://www.google.com/recaptcha/api/siteverify`                   |
+| `RECAPTCHA_ACTION`     | Yes      | `contact` — submissions with a different action are rejected        |
+| `NOTIFY_EMAIL`         | Yes      | Address that receives contact form submissions (from Pulumi secret) |
+| `FROM_EMAIL`           | Yes      | `do-not-reply@lean.dev.br`                                          |
+| `SUBJECT_PREFIX`       | Yes      | `[Contact]`                                                         |
+| `MIN_SCORE`            | Yes      | Minimum reCAPTCHA score to accept (default `0.5`)                   |
 
 All variables are set by Pulumi at deploy time. See [docs/setup/recaptcha.md](../../docs/setup/recaptcha.md) and [docs/setup/ses.md](../../docs/setup/ses.md).
 

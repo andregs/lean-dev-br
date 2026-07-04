@@ -22,6 +22,8 @@ import { flagdToInMemory } from './_adapter.js';
 export async function createFlagClient(flagsJson) {
   // flagdToInMemory returns the right shape at runtime; cast needed because
   // FlagVariants is a discriminated union that Record<string,unknown> can't satisfy statically.
-  await OpenFeature.setProviderAndWait(new TypedInMemoryProvider(/** @type {any} */ (flagdToInMemory(flagsJson))));
+  await OpenFeature.setProviderAndWait(
+    new TypedInMemoryProvider(/** @type {any} */ (flagdToInMemory(flagsJson))),
+  );
   return OpenFeature.getClient();
 }

@@ -165,9 +165,9 @@ export function createSync(signalUrl, roomId, aesKey, yjsDoc, onStatus) {
     // Yjs empty-delta sentinel: [0, 0] — nothing to push
     if (delta.byteLength <= 2) return;
 
-    const innerB64 = toB64(delta);              // binary → base64 (binary-safe)
+    const innerB64 = toB64(delta); // binary → base64 (binary-safe)
     const ciphertext = await encrypt(aesKey, innerB64);
-    const outerB64 = toB64(ciphertext);         // ciphertext → base64 (for JSON)
+    const outerB64 = toB64(ciphertext); // ciphertext → base64 (for JSON)
 
     const res = await fetch(`${roomUrl}/updates`, {
       method: 'POST',
@@ -208,7 +208,10 @@ export function createSync(signalUrl, roomId, aesKey, yjsDoc, onStatus) {
 
   async function syncNow() {
     if (stopped) return;
-    if (_syncing) { _pendingSync = true; return; }
+    if (_syncing) {
+      _pendingSync = true;
+      return;
+    }
     _syncing = true;
     await metaReady;
     onStatus('syncing');
@@ -223,7 +226,10 @@ export function createSync(signalUrl, roomId, aesKey, yjsDoc, onStatus) {
       onStatus('error');
     } finally {
       _syncing = false;
-      if (_pendingSync) { _pendingSync = false; syncNow(); }
+      if (_pendingSync) {
+        _pendingSync = false;
+        syncNow();
+      }
     }
   }
 

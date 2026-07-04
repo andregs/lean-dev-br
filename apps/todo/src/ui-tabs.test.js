@@ -70,7 +70,9 @@ describe('renderTabs', () => {
     const onAdd = vi.fn();
     renderTabs(rail, LISTS, '📋 Tasks', { onSwitch: vi.fn(), onAdd }, testI18n);
 
-    await userEvent.setup().click(/** @type {Element} */ (rail.querySelector('[aria-label="New list"]')));
+    await userEvent
+      .setup()
+      .click(/** @type {Element} */ (rail.querySelector('[aria-label="New list"]')));
 
     expect(onAdd).toHaveBeenCalledTimes(1);
   });

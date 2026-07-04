@@ -92,9 +92,7 @@ describe('SyncedPasskeyKeyProvider.load', () => {
 describe('SyncedPasskeyKeyProvider.register', () => {
   it('calls credentials.create and persists credId', async () => {
     const rawId = makeCredId();
-    const createMock = vi.fn().mockResolvedValue(
-      fakeCredential(rawId, { prf: { enabled: true } }),
-    );
+    const createMock = vi.fn().mockResolvedValue(fakeCredential(rawId, { prf: { enabled: true } }));
     vi.stubGlobal('navigator', { credentials: { create: createMock } });
 
     const provider = await SyncedPasskeyKeyProvider.register();
@@ -121,9 +119,11 @@ describe('SyncedPasskeyKeyProvider.restoreSession', () => {
     const hex = toHex(rawId);
     lsStore.set('todo-passkey-credId', hex);
 
-    const getMock = vi.fn().mockResolvedValue(
-      fakeCredential(rawId, { prf: { results: { first: FAKE_PRF_BYTES.buffer } } }),
-    );
+    const getMock = vi
+      .fn()
+      .mockResolvedValue(
+        fakeCredential(rawId, { prf: { results: { first: FAKE_PRF_BYTES.buffer } } }),
+      );
     vi.stubGlobal('navigator', { credentials: { get: getMock } });
 
     await /** @type {SyncedPasskeyKeyProvider} */ (SyncedPasskeyKeyProvider.load()).resolve();
@@ -136,9 +136,11 @@ describe('SyncedPasskeyKeyProvider.restoreSession', () => {
     const hex = toHex(rawId);
     lsStore.set('todo-passkey-credId', hex);
 
-    const getMock = vi.fn().mockResolvedValue(
-      fakeCredential(rawId, { prf: { results: { first: FAKE_PRF_BYTES.buffer } } }),
-    );
+    const getMock = vi
+      .fn()
+      .mockResolvedValue(
+        fakeCredential(rawId, { prf: { results: { first: FAKE_PRF_BYTES.buffer } } }),
+      );
     vi.stubGlobal('navigator', { credentials: { get: getMock } });
 
     const provider = /** @type {SyncedPasskeyKeyProvider} */ (SyncedPasskeyKeyProvider.load());
@@ -151,7 +153,11 @@ describe('SyncedPasskeyKeyProvider.restoreSession', () => {
     const enc = new TextEncoder();
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k1, enc.encode('hello'));
-    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, /** @type {CryptoKey} */ (restored?.aesKey), ct);
+    const pt = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      /** @type {CryptoKey} */ (restored?.aesKey),
+      ct,
+    );
     expect(new TextDecoder().decode(pt)).toBe('hello');
   });
 });
@@ -164,9 +170,11 @@ describe('SyncedPasskeyKeyProvider.resolve', () => {
     const hex = toHex(rawId);
     lsStore.set('todo-passkey-credId', hex);
 
-    const getMock = vi.fn().mockResolvedValue(
-      fakeCredential(rawId, { prf: { results: { first: FAKE_PRF_BYTES.buffer } } }),
-    );
+    const getMock = vi
+      .fn()
+      .mockResolvedValue(
+        fakeCredential(rawId, { prf: { results: { first: FAKE_PRF_BYTES.buffer } } }),
+      );
     vi.stubGlobal('navigator', { credentials: { get: getMock } });
 
     const provider = SyncedPasskeyKeyProvider.load();
@@ -184,9 +192,11 @@ describe('SyncedPasskeyKeyProvider.resolve', () => {
     const hex = toHex(rawId);
     lsStore.set('todo-passkey-credId', hex);
 
-    const getMock = vi.fn().mockResolvedValue(
-      fakeCredential(rawId, { prf: { results: { first: FAKE_PRF_BYTES.buffer } } }),
-    );
+    const getMock = vi
+      .fn()
+      .mockResolvedValue(
+        fakeCredential(rawId, { prf: { results: { first: FAKE_PRF_BYTES.buffer } } }),
+      );
     vi.stubGlobal('navigator', { credentials: { get: getMock } });
 
     await /** @type {SyncedPasskeyKeyProvider} */ (SyncedPasskeyKeyProvider.load()).resolve();
@@ -201,9 +211,11 @@ describe('SyncedPasskeyKeyProvider.resolve', () => {
     const hex = toHex(rawId);
     lsStore.set('todo-passkey-credId', hex);
 
-    const getMock = vi.fn().mockResolvedValue(
-      fakeCredential(rawId, { prf: { results: { first: FAKE_PRF_BYTES.buffer } } }),
-    );
+    const getMock = vi
+      .fn()
+      .mockResolvedValue(
+        fakeCredential(rawId, { prf: { results: { first: FAKE_PRF_BYTES.buffer } } }),
+      );
     vi.stubGlobal('navigator', { credentials: { get: getMock } });
 
     const provider = /** @type {SyncedPasskeyKeyProvider} */ (SyncedPasskeyKeyProvider.load());

@@ -7,7 +7,12 @@ import styles from './DevControls.module.scss';
 export function NewPostLink() {
   return (
     <div className={styles.fabStack}>
-      <Link className={`${styles.fab} ${styles.primary}`} href="/editor" aria-label="New post" title="New post">
+      <Link
+        className={`${styles.fab} ${styles.primary}`}
+        href="/editor"
+        aria-label="New post"
+        title="New post"
+      >
         +
       </Link>
     </div>

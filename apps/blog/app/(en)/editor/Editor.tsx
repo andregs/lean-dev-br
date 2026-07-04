@@ -159,12 +159,11 @@ export function Editor() {
     }
   }
 
-  const viewHref =
-    savedFilename
-      ? locale === 'pt-BR'
-        ? `/pt-BR/${slugFromFilename(savedFilename)}/`
-        : `/${slugFromFilename(savedFilename)}/`
-      : null;
+  const viewHref = savedFilename
+    ? locale === 'pt-BR'
+      ? `/pt-BR/${slugFromFilename(savedFilename)}/`
+      : `/${slugFromFilename(savedFilename)}/`
+    : null;
 
   return (
     <div className={styles.admin}>

@@ -90,10 +90,22 @@
     transform var(--duration-fast);
 }
 
-.setup-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
-.setup-btn:hover { opacity: 0.88; }
-.setup-btn:active { transform: scale(0.97); }
-.setup-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.setup-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.setup-btn:hover {
+  opacity: 0.88;
+}
+.setup-btn:active {
+  transform: scale(0.97);
+}
+.setup-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .setup-btn--secondary {
   background: none;
@@ -142,7 +154,9 @@
   scrollbar-width: none;
 }
 
-.tab-rail::-webkit-scrollbar { display: none; }
+.tab-rail::-webkit-scrollbar {
+  display: none;
+}
 
 /* ── tab button ──────────────────────────────────────────────────────────── */
 
@@ -166,12 +180,24 @@
   background: transparent;
 }
 
-[data-color="0"] { --tc: var(--tc-0); }
-[data-color="1"] { --tc: var(--tc-1); }
-[data-color="2"] { --tc: var(--tc-2); }
-[data-color="3"] { --tc: var(--tc-3); }
-[data-color="4"] { --tc: var(--tc-4); }
-[data-color="5"] { --tc: var(--tc-5); }
+[data-color='0'] {
+  --tc: var(--tc-0);
+}
+[data-color='1'] {
+  --tc: var(--tc-1);
+}
+[data-color='2'] {
+  --tc: var(--tc-2);
+}
+[data-color='3'] {
+  --tc: var(--tc-3);
+}
+[data-color='4'] {
+  --tc: var(--tc-4);
+}
+[data-color='5'] {
+  --tc: var(--tc-5);
+}
 
 .tab:not(.tab--add) {
   background: color-mix(in srgb, var(--tc, var(--accent)) 10%, transparent);
@@ -220,7 +246,9 @@
     transition: opacity var(--duration-fast);
   }
 
-  .tab:not(.tab--add):hover::before { opacity: 1; }
+  .tab:not(.tab--add):hover::before {
+    opacity: 1;
+  }
 }
 
 .tab--add {
@@ -348,10 +376,14 @@
 }
 
 @keyframes sync-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--sync-yellow) 0%, transparent); }
-  50%       { box-shadow: 0 0 0 3px color-mix(in srgb, var(--sync-yellow) 30%, transparent); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--sync-yellow) 0%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--sync-yellow) 30%, transparent);
+  }
 }
-
 
 /* ── todo list — ruled lines live here so they align with items ──────────── */
 
@@ -382,7 +414,9 @@
   background: color-mix(in srgb, var(--fg) 4%, transparent);
 }
 
-.todo-item:hover .todo-delete { opacity: 1; }
+.todo-item:hover .todo-delete {
+  opacity: 1;
+}
 
 /* ── check button ────────────────────────────────────────────────────────── */
 
@@ -405,9 +439,15 @@
   justify-self: center;
 }
 
-.todo-check:hover { color: var(--active-tab-color); }
-.todo-check:active { transform: scale(0.88); }
-.todo-item--done .todo-check { color: var(--active-tab-color); }
+.todo-check:hover {
+  color: var(--active-tab-color);
+}
+.todo-check:active {
+  transform: scale(0.88);
+}
+.todo-item--done .todo-check {
+  color: var(--active-tab-color);
+}
 
 .todo-check svg {
   width: 17px;
@@ -415,8 +455,12 @@
   overflow: visible;
 }
 
-.todo-item { --check-dashoffset: 14; }
-.todo-item--done { --check-dashoffset: 0; }
+.todo-item {
+  --check-dashoffset: 14;
+}
+.todo-item--done {
+  --check-dashoffset: 0;
+}
 
 /* ── todo text ───────────────────────────────────────────────────────────── */
 
@@ -471,13 +515,21 @@
   justify-self: center;
 }
 
-.todo-delete svg { width: 13px; height: 13px; }
-
-@media (hover: none) {
-  .todo-delete { opacity: 0.35; }
+.todo-delete svg {
+  width: 13px;
+  height: 13px;
 }
 
-.todo-delete:hover { color: var(--danger); opacity: 1 !important; }
+@media (hover: none) {
+  .todo-delete {
+    opacity: 0.35;
+  }
+}
+
+.todo-delete:hover {
+  color: var(--danger);
+  opacity: 1 !important;
+}
 
 /* ── add form ────────────────────────────────────────────────────────────── */
 
@@ -518,7 +570,9 @@
   color: color-mix(in srgb, var(--muted) 45%, transparent);
 }
 
-.todo-input:focus { color: var(--fg); }
+.todo-input:focus {
+  color: var(--fg);
+}
 
 /* ── native <dialog> for new list ────────────────────────────────────────── */
 
@@ -597,8 +651,12 @@ dialog.closing {
   transition: border-color var(--duration-fast);
 }
 
-.list-field-input:focus { border-color: var(--accent); }
-.list-field-input.invalid { border-color: var(--danger); }
+.list-field-input:focus {
+  border-color: var(--accent);
+}
+.list-field-input.invalid {
+  border-color: var(--danger);
+}
 
 .list-field-input--emoji {
   width: 3.2rem;
@@ -630,7 +688,9 @@ dialog.closing {
   transition: opacity var(--duration-fast);
 }
 
-.btn-create:hover { opacity: 0.85; }
+.btn-create:hover {
+  opacity: 0.85;
+}
 
 .btn-cancel {
   padding: 0.4rem 0.9rem;
@@ -644,18 +704,34 @@ dialog.closing {
   transition: color var(--duration-fast);
 }
 
-.btn-cancel:hover { color: var(--fg); }
+.btn-cancel:hover {
+  color: var(--fg);
+}
 
 /* ── animations ──────────────────────────────────────────────────────────── */
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes todo-leave {
-  from { opacity: 1; transform: translateX(0);    max-height: 2.2rem; }
-  to   { opacity: 0; transform: translateX(-12px); max-height: 0; }
+  from {
+    opacity: 1;
+    transform: translateX(0);
+    max-height: 2.2rem;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-12px);
+    max-height: 0;
+  }
 }
 
 .todo-item--leaving {
@@ -665,18 +741,34 @@ dialog.closing {
 }
 
 @keyframes dialog-pop {
-  from { opacity: 0; transform: scale(0.9) translateY(10px); }
-  to   { opacity: 1; transform: scale(1)   translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 @keyframes dialog-out {
-  from { opacity: 1; transform: scale(1)    translateY(0); }
-  to   { opacity: 0; transform: scale(0.92) translateY(6px); }
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92) translateY(6px);
+  }
 }
 
 @keyframes overlay-fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ── mobile (tab rail becomes horizontal strip) ──────────────────────────── */
@@ -707,7 +799,9 @@ dialog.closing {
     -webkit-backdrop-filter: blur(14px);
   }
 
-  .tab:not(.tab--add)::before { display: none; }
+  .tab:not(.tab--add)::before {
+    display: none;
+  }
 
   .tab--active::after {
     right: unset;

@@ -33,7 +33,9 @@ beforeEach(() => {
   window.history.replaceState(null, '', '/');
   vi.stubGlobal(
     'matchMedia',
-    vi.fn().mockReturnValue({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }),
+    vi
+      .fn()
+      .mockReturnValue({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }),
   );
   fetchMock = vi.fn();
   vi.stubGlobal('fetch', fetchMock);
@@ -96,7 +98,9 @@ describe('Editor form (new post)', () => {
     await user.type(input('Title'), 'My Post');
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
-    expect(await screen.findByText(/Saved content\/posts\/en\/2026-06-08-my-post\.md/)).toBeDefined();
+    expect(
+      await screen.findByText(/Saved content\/posts\/en\/2026-06-08-my-post\.md/),
+    ).toBeDefined();
     const viewLink = await screen.findByText('View post →');
     expect(viewLink.getAttribute('href')).toContain('my-post');
     expect(viewLink.getAttribute('href')).not.toContain('/pt-BR/');

@@ -4,7 +4,10 @@ import userEvent from '@testing-library/user-event';
 import { showListDialog } from './ui-dialog.js';
 
 /** @type {import('@lean-dev-br/i18n').I18nInstance} */
-const testI18n = { locale: 'en-US', t: (k) => ({ 'dialog.duplicate': 'A list with this name already exists.' })[k] ?? k };
+const testI18n = {
+  locale: 'en-US',
+  t: (k) => ({ 'dialog.duplicate': 'A list with this name already exists.' })[k] ?? k,
+};
 
 // jsdom doesn't implement HTMLDialogElement.showModal — add a minimal shim
 beforeAll(() => {

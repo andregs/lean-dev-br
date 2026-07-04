@@ -27,7 +27,7 @@ const testI18n: I18nInstance = {
   t: (key: string) => {
     const map: Record<string, string> = {
       'contact.status.pending': 'Sending…',
-      'contact.status.ok': "Thanks! Your message is on its way.",
+      'contact.status.ok': 'Thanks! Your message is on its way.',
       'contact.status.error.generic': 'Something went wrong. Please try again later.',
       'contact.status.error.validation': 'Please fill in the required fields correctly.',
     };
@@ -109,7 +109,9 @@ describe('contact form', () => {
     vi.stubGlobal('fetch', mockFetch);
     form.querySelector<HTMLTextAreaElement>('[name="message"]')!.value = 'Hello!';
     form.dispatchEvent(new SubmitEvent('submit', { bubbles: true, cancelable: true }));
-    await vi.waitFor(() => { expect(status.dataset.state).toBe('ok'); });
+    await vi.waitFor(() => {
+      expect(status.dataset.state).toBe('ok');
+    });
     const callArg = mockFetch.mock.calls[0][1] as { body: string };
     const body = JSON.parse(callArg.body) as Record<string, unknown>;
     expect(body.locale).toBe('en-US');
@@ -130,11 +132,15 @@ describe('contact form — reCAPTCHA loader failures', () => {
     const { initContactForm } = await import('../contact-form.js');
     const { form, status } = makeForm();
     initContactForm(form, { i18n: testI18n });
-    await new Promise<void>((r) => { queueMicrotask(r); });
+    await new Promise<void>((r) => {
+      queueMicrotask(r);
+    });
 
     form.querySelector<HTMLTextAreaElement>('[name="message"]')!.value = 'Hello!';
     form.dispatchEvent(new SubmitEvent('submit', { bubbles: true, cancelable: true }));
-    await vi.waitFor(() => { expect(status.dataset.state).toBe('error'); });
+    await vi.waitFor(() => {
+      expect(status.dataset.state).toBe('error');
+    });
   });
 
   it('shows error when the reCAPTCHA script fails to load', async () => {
@@ -150,11 +156,15 @@ describe('contact form — reCAPTCHA loader failures', () => {
     const { form, status } = makeForm();
     initContactForm(form, { i18n: testI18n });
     // Let the script error event fire and the rejection propagate.
-    await new Promise<void>((r) => { queueMicrotask(r); });
+    await new Promise<void>((r) => {
+      queueMicrotask(r);
+    });
     await Promise.resolve();
 
     form.querySelector<HTMLTextAreaElement>('[name="message"]')!.value = 'Hello!';
     form.dispatchEvent(new SubmitEvent('submit', { bubbles: true, cancelable: true }));
-    await vi.waitFor(() => { expect(status.dataset.state).toBe('error'); });
+    await vi.waitFor(() => {
+      expect(status.dataset.state).toBe('error');
+    });
   });
 });

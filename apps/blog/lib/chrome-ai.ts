@@ -41,9 +41,7 @@ declare global {
         }
       >
     | undefined;
-  var Proofreader:
-    | AiFactory<ProofreaderSession, { expectedInputLanguages?: string[] }>
-    | undefined;
+  var Proofreader: AiFactory<ProofreaderSession, { expectedInputLanguages?: string[] }> | undefined;
 }
 
 async function open<S, O>(

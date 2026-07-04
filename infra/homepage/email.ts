@@ -1,4 +1,4 @@
-import * as aws from "@pulumi/aws";
+import * as aws from '@pulumi/aws';
 
 interface EmailArgs {
   zone: aws.route53.Zone;
@@ -6,9 +6,9 @@ interface EmailArgs {
 }
 
 export function createEmail({ zone, domain }: EmailArgs) {
-  const identity = new aws.ses.DomainIdentity("ses-domain-identity", { domain });
+  const identity = new aws.ses.DomainIdentity('ses-domain-identity', { domain });
 
-  const dkim = new aws.ses.DomainDkim("ses-domain-dkim", {
+  const dkim = new aws.ses.DomainDkim('ses-domain-dkim', {
     domain: identity.domain,
   });
 
@@ -18,41 +18,41 @@ export function createEmail({ zone, domain }: EmailArgs) {
       (token, i) =>
         new aws.route53.Record(`ses-dkim-${String(i)}`, {
           name: `${token}._domainkey.${domain}`,
-          type: "CNAME",
+          type: 'CNAME',
           zoneId: zone.zoneId,
           records: [`${token}.dkim.amazonses.com`],
           ttl: 1800,
-        })
-    )
+        }),
+    ),
   );
 
   // Custom MAIL FROM — lets SPF and DKIM align on the same domain
-  new aws.ses.MailFrom("ses-mail-from", {
+  new aws.ses.MailFrom('ses-mail-from', {
     domain: identity.domain,
     mailFromDomain: `mail.${domain}`,
   });
 
-  new aws.route53.Record("ses-mail-from-mx", {
+  new aws.route53.Record('ses-mail-from-mx', {
     name: `mail.${domain}`,
-    type: "MX",
+    type: 'MX',
     zoneId: zone.zoneId,
-    records: ["10 feedback-smtp.us-east-1.amazonses.com"],
+    records: ['10 feedback-smtp.us-east-1.amazonses.com'],
     ttl: 600,
   });
 
-  new aws.route53.Record("ses-mail-from-spf", {
+  new aws.route53.Record('ses-mail-from-spf', {
     name: `mail.${domain}`,
-    type: "TXT",
+    type: 'TXT',
     zoneId: zone.zoneId,
-    records: ["v=spf1 include:amazonses.com ~all"],
+    records: ['v=spf1 include:amazonses.com ~all'],
     ttl: 600,
   });
 
-  new aws.route53.Record("ses-dmarc", {
+  new aws.route53.Record('ses-dmarc', {
     name: `_dmarc.${domain}`,
-    type: "TXT",
+    type: 'TXT',
     zoneId: zone.zoneId,
-    records: ["v=DMARC1; p=none"],
+    records: ['v=DMARC1; p=none'],
     ttl: 600,
   });
 

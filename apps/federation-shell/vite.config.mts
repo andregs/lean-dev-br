@@ -21,9 +21,10 @@ const previewHeaders = {
 const remoteEntry = (name: string, devPort: string) => ({
   type: 'module' as const,
   name,
-  entry: process.env.NODE_ENV === 'production'
-    ? `/labs/federation/${name}/remoteEntry.js`
-    : `http://localhost:${devPort}/labs/federation/${name}/remoteEntry.js`,
+  entry:
+    process.env.NODE_ENV === 'production'
+      ? `/labs/federation/${name}/remoteEntry.js`
+      : `http://localhost:${devPort}/labs/federation/${name}/remoteEntry.js`,
   entryGlobalName: name,
   shareScope: 'default',
 });

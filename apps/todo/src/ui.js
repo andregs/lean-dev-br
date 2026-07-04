@@ -277,7 +277,9 @@ export async function renderNotebook(root, session, i18n) {
   });
   window.addEventListener('focus', () => sync.syncNow());
   // pageshow covers bfcache restore where visibilitychange is not guaranteed
-  window.addEventListener('pageshow', (e) => { if (e.persisted) sync.syncNow(); });
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) sync.syncNow();
+  });
 
   // ── mutations ──────────────────────────────────────────────────────────────────
 
@@ -292,7 +294,10 @@ export async function renderNotebook(root, session, i18n) {
       const checkBtn = li.querySelector('.todo-check');
       if (checkBtn) {
         checkBtn.setAttribute('aria-pressed', String(nowDone));
-        checkBtn.setAttribute('aria-label', nowDone ? i18n.t('todo.check.incomplete') : i18n.t('todo.check.complete'));
+        checkBtn.setAttribute(
+          'aria-label',
+          nowDone ? i18n.t('todo.check.incomplete') : i18n.t('todo.check.complete'),
+        );
       }
     }
     clearBtn.hidden = todoList.querySelectorAll('.todo-item--done').length === 0;

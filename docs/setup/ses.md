@@ -4,14 +4,14 @@ AWS SES handles outbound email for the contact form. All DNS records (DKIM, MAIL
 
 ## What Pulumi provisions
 
-| Resource | Purpose |
-|---|---|
-| `SES DomainIdentity` for `lean.dev.br` | Proves domain ownership to SES |
-| 3 DKIM CNAME records in Route53 | Enables DKIM signing — proves mail comes from you |
-| Custom MAIL FROM: `mail.lean.dev.br` | Aligns envelope sender with signing domain (improves deliverability) |
-| MX record for `mail.lean.dev.br` | Routes SES bounce/complaint feedback |
-| SPF TXT record for `mail.lean.dev.br` | Authorises SES to send on behalf of `mail.lean.dev.br` |
-| DMARC TXT record `_dmarc.lean.dev.br` | Policy: `p=none` (monitoring mode — see below) |
+| Resource                               | Purpose                                                              |
+| -------------------------------------- | -------------------------------------------------------------------- |
+| `SES DomainIdentity` for `lean.dev.br` | Proves domain ownership to SES                                       |
+| 3 DKIM CNAME records in Route53        | Enables DKIM signing — proves mail comes from you                    |
+| Custom MAIL FROM: `mail.lean.dev.br`   | Aligns envelope sender with signing domain (improves deliverability) |
+| MX record for `mail.lean.dev.br`       | Routes SES bounce/complaint feedback                                 |
+| SPF TXT record for `mail.lean.dev.br`  | Authorises SES to send on behalf of `mail.lean.dev.br`               |
+| DMARC TXT record `_dmarc.lean.dev.br`  | Policy: `p=none` (monitoring mode — see below)                       |
 
 ## 1. Run `pulumi up` first
 

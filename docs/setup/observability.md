@@ -11,11 +11,11 @@ All values are externalized: server-side limits live in Pulumi config, client-si
 
 Set in `infra/homepage/Pulumi.<stack>.yaml` (committed) or via CLI. These are **required** — the stack fails to preview if absent.
 
-| Config key | Meaning | Suggested value |
-|---|---|---|
-| `cspReportRateLimit` | API Gateway steady-state req/s on `/api/csp-report` | `10` |
-| `cspReportBurstLimit` | API Gateway burst ceiling on `/api/csp-report` | `20` |
-| `cspReportMaxBytes` | Max report body length the Lambda logs (cost guard) | `2048` |
+| Config key            | Meaning                                             | Suggested value |
+| --------------------- | --------------------------------------------------- | --------------- |
+| `cspReportRateLimit`  | API Gateway steady-state req/s on `/api/csp-report` | `10`            |
+| `cspReportBurstLimit` | API Gateway burst ceiling on `/api/csp-report`      | `20`            |
+| `cspReportMaxBytes`   | Max report body length the Lambda logs (cost guard) | `2048`          |
 
 ```zsh
 cd infra/homepage
@@ -40,10 +40,10 @@ The SDK uses Cognito's enhanced (simplified) flow, so no guest role ARN is neede
 
 The frontend embeds these at build time. Add under **Settings → Secrets and variables → Actions → Variables**. They are public identifiers, so variables (not secrets) are correct.
 
-| Variable name | Source | Used by |
-|---|---|---|
-| `VITE_RUM_APP_MONITOR_ID` | `pulumi stack output appMonitorId` | apex homepage |
-| `VITE_RUM_IDENTITY_POOL_ID` | `pulumi stack output identityPoolId` | apex homepage |
+| Variable name                  | Source                                         | Used by       |
+| ------------------------------ | ---------------------------------------------- | ------------- |
+| `VITE_RUM_APP_MONITOR_ID`      | `pulumi stack output appMonitorId`             | apex homepage |
+| `VITE_RUM_IDENTITY_POOL_ID`    | `pulumi stack output identityPoolId`           | apex homepage |
 | `VITE_RUM_SESSION_SAMPLE_RATE` | Sampling fraction `0.0`–`1.0` (start at `0.1`) | apex homepage |
 
 The blog (`apps/blog`) uses the same RUM monitor under `NEXT_PUBLIC_RUM_*` names (Next.js

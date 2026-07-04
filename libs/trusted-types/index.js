@@ -84,7 +84,10 @@ export function installPolicies({ scriptUrlAllowlist = [], defaultPolicy = 'stri
     // warns so first-party callers relying on the implicit default get migrated.
     tt.createPolicy('default', {
       createHTML: (/** @type {string} */ s) => {
-        console.warn('TT default createHTML used — migrate caller to an explicit policy. value:', s);
+        console.warn(
+          'TT default createHTML used — migrate caller to an explicit policy. value:',
+          s,
+        );
         return /** @type {any} */ (DOMPurify.sanitize(s, { RETURN_TRUSTED_TYPE: true }));
       },
       createScriptURL: (/** @type {string} */ s) => {

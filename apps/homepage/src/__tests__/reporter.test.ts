@@ -37,7 +37,10 @@ describe('reportViolation', () => {
   });
 
   it('sends beacon on first violation and returns true', () => {
-    const result = reportViolation(makeReport('csp-violation', 'script-src', 'https://evil.com'), sent);
+    const result = reportViolation(
+      makeReport('csp-violation', 'script-src', 'https://evil.com'),
+      sent,
+    );
     expect(result).toBe(true);
     expect(beacon).toHaveBeenCalledOnce();
   });

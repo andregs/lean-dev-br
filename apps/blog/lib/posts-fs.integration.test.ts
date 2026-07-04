@@ -44,7 +44,10 @@ describe('posts-fs — real content tree binding', () => {
     // If this fails, either the file was removed or postsDir() no longer
     // points at content/posts/{locale}/ — update both that file and posts-fs.ts.
     const filename = await filenameForSlug('hello-world', 'en');
-    expect(filename, 'Known EN post not found — check content/posts/en/ and postsDir()').toBeDefined();
+    expect(
+      filename,
+      'Known EN post not found — check content/posts/en/ and postsDir()',
+    ).toBeDefined();
     expect(filename).toMatch(/hello-world\.md$/);
   });
 

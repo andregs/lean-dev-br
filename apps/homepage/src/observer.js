@@ -14,9 +14,7 @@ let observer = null;
 export function violationKey(type, body) {
   // effectiveDirective / blockedURL live on CSPViolationReportBody, which this
   // TS lib doesn't model; read them through a loose view.
-  const b = /** @type {Record<string, string | undefined>} */ (
-    /** @type {unknown} */ (body ?? {})
-  );
+  const b = /** @type {Record<string, string | undefined>} */ (/** @type {unknown} */ (body ?? {}));
   return `${type ?? ''}|${b.effectiveDirective ?? ''}|${b.blockedURL ?? ''}`;
 }
 

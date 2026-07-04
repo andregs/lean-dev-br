@@ -29,7 +29,16 @@ interface Props {
   header?: React.ReactNode;
 }
 
-export function PostDetail({ post, locale, prev, next, makeHref, makeTagHref, tagDisplay, header }: Props) {
+export function PostDetail({
+  post,
+  locale,
+  prev,
+  next,
+  makeHref,
+  makeTagHref,
+  tagDisplay,
+  header,
+}: Props) {
   const t = getT(locale);
   return (
     <article className="post">

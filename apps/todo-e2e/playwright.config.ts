@@ -9,10 +9,7 @@ export const todoPath = (route: string) => `/todo${route === '/' ? '/' : route}`
 export default defineConfig({
   testDir: './e2e',
   outputDir: 'test-results',
-  reporter: [
-    ['list'],
-    ['html', { outputFolder: 'playwright-report', open: 'never' }],
-  ],
+  reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   use: {
     baseURL: baseUrl(LOCAL_PORT),
     trace: 'on-first-retry',

@@ -16,12 +16,7 @@ import { describe, expect, it } from 'vitest';
 const appDir = path.dirname(fileURLToPath(import.meta.url));
 
 // Non-page special files that coexist with page.tsx naming but aren't RSC pages.
-const EXCLUDED_NAMES = new Set([
-  'route.ts',
-  'route.tsx',
-  'sitemap.ts',
-  'opengraph-image.tsx',
-]);
+const EXCLUDED_NAMES = new Set(['route.ts', 'route.tsx', 'sitemap.ts', 'opengraph-image.tsx']);
 
 function walkPages(dir: string): string[] {
   const results: string[] = [];

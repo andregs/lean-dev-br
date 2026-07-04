@@ -36,9 +36,9 @@ Flags are defined in [flagd schema](https://flagd.dev/reference/flag-definitions
 
 ## Where flags.json lives
 
-| Env | Location |
-|-----|----------|
-| Dev | `apps/homepage/public/flags.json` — served at `/flags.json` by `pnpm nx serve homepage`. |
+| Env  | Location                                                                                                                                                              |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dev  | `apps/homepage/public/flags.json` — served at `/flags.json` by `pnpm nx serve homepage`.                                                                              |
 | Prod | Same file, uploaded to S3 with the homepage static assets (`infra/homepage/hosting.ts` → `synced-folder`). Served via CloudFront at `https://lean.dev.br/flags.json`. |
 
 Frontends receive the URL at build time via `VITE_FLAGS_URL` (CI injects it from the `VITE_FLAGS_URL` GitHub Actions variable). When absent, they fall back to `/flags.json`.

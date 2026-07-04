@@ -38,7 +38,13 @@ function save(fields: Record<string, unknown>) {
 
 describe('POST /api/draft (save)', () => {
   it('writes EN markdown file with escaped frontmatter + trimmed body', async () => {
-    const res = await save({ title: 'Hello, World', tags: ['a', 'b'], description: 'd', draft: true, body: '  hi  ' });
+    const res = await save({
+      title: 'Hello, World',
+      tags: ['a', 'b'],
+      description: 'd',
+      draft: true,
+      body: '  hi  ',
+    });
     const data = (await res.json()) as { filename: string };
     expect(res.status).toBe(200);
     expect(data.filename).toBe('2026-06-08-hello-world.md');
@@ -64,7 +70,13 @@ describe('POST /api/draft (save)', () => {
   it('slugOverride pins the slug regardless of the translated title', async () => {
     // Simulates: editor seeds from EN "Hello World" → user translates title to
     // "Olá Mundo" but passes slugOverride='hello-world' so slugs stay in sync.
-    const res = await save({ locale: 'pt-BR', title: 'Olá Mundo', tags: [], body: 'corpo', slugOverride: 'hello-world' });
+    const res = await save({
+      locale: 'pt-BR',
+      title: 'Olá Mundo',
+      tags: [],
+      body: 'corpo',
+      slugOverride: 'hello-world',
+    });
     const data = (await res.json()) as { filename: string };
     expect(res.status).toBe(200);
     expect(data.filename).toBe('2026-06-08-hello-world.md');
@@ -74,16 +86,24 @@ describe('POST /api/draft (save)', () => {
 
   it('saving pt-BR syncs tags + date back to the EN source', async () => {
     // EN post starts with different tags.
-    await save({ locale: 'en', title: 'My Post', tags: ['old'], body: 'en body', description: 'desc' });
+    await save({
+      locale: 'en',
+      title: 'My Post',
+      tags: ['old'],
+      body: 'en body',
+      description: 'desc',
+    });
     const newDate = '2026-06-10T12:00:00.000Z';
-    await POST(jsonReq('http://t/blog/api/draft/', {
-      date: newDate,
-      locale: 'pt-BR',
-      title: 'Meu Post',
-      tags: ['new', 'tags'],
-      body: 'corpo',
-      slugOverride: 'my-post',
-    }));
+    await POST(
+      jsonReq('http://t/blog/api/draft/', {
+        date: newDate,
+        locale: 'pt-BR',
+        title: 'Meu Post',
+        tags: ['new', 'tags'],
+        body: 'corpo',
+        slugOverride: 'my-post',
+      }),
+    );
     const enContent = await readFile(path.join(postsBase, 'en', '2026-06-08-my-post.md'), 'utf8');
     expect(enContent).toContain('tags: ["new", "tags"]'); // tags synced
     expect(enContent).toContain(newDate); // date synced
@@ -93,7 +113,9 @@ describe('POST /api/draft (save)', () => {
   });
 
   it('renames in place on re-save when the title changes (no duplicate)', async () => {
-    const first = (await save({ title: 'First', tags: [], draft: true, body: 'x' })).json() as Promise<{
+    const first = (
+      await save({ title: 'First', tags: [], draft: true, body: 'x' })
+    ).json() as Promise<{
       filename: string;
     }>;
     const { filename } = await first;
@@ -121,15 +143,25 @@ describe('POST /api/draft (save)', () => {
     );
     expect(traversal.status).toBe(400);
     expect(traversal.headers.get('Content-Type')).toBe('application/problem+json');
-    expect((await traversal.json() as { detail: string }).detail).toMatch(/invalid previousFilename/);
+    expect(((await traversal.json()) as { detail: string }).detail).toMatch(
+      /invalid previousFilename/,
+    );
     expect((await save({ title: 'only-title' })).status).toBe(400);
   });
 });
 
 describe('POST /api/draft/load', () => {
   it('reads a saved EN post back into editor fields', async () => {
-    await save({ title: 'Round Trip', tags: ['meta'], description: 'desc', draft: true, body: 'body text' });
-    const res = await loadPost(jsonReq('http://t/blog/api/draft/load/', { slug: 'round-trip', locale: 'en' }));
+    await save({
+      title: 'Round Trip',
+      tags: ['meta'],
+      description: 'desc',
+      draft: true,
+      body: 'body text',
+    });
+    const res = await loadPost(
+      jsonReq('http://t/blog/api/draft/load/', { slug: 'round-trip', locale: 'en' }),
+    );
     const data = (await res.json()) as Record<string, unknown>;
     expect(data.title).toBe('Round Trip');
     expect(data.tags).toEqual(['meta']);
@@ -141,7 +173,9 @@ describe('POST /api/draft/load', () => {
 
   it('reads a saved pt-BR post', async () => {
     await save({ locale: 'pt-BR', title: 'Meu Post', tags: [], body: 'conteudo' });
-    const res = await loadPost(jsonReq('http://t/blog/api/draft/load/', { slug: 'meu-post', locale: 'pt-BR' }));
+    const res = await loadPost(
+      jsonReq('http://t/blog/api/draft/load/', { slug: 'meu-post', locale: 'pt-BR' }),
+    );
     const data = (await res.json()) as Record<string, unknown>;
     expect(data.title).toBe('Meu Post');
     expect(data.seededFromEn).toBe(false);
@@ -149,7 +183,9 @@ describe('POST /api/draft/load', () => {
 
   it('seeds from EN when no pt-BR file exists yet', async () => {
     await save({ locale: 'en', title: 'My Post', tags: ['t'], body: 'english body' });
-    const res = await loadPost(jsonReq('http://t/blog/api/draft/load/', { slug: 'my-post', locale: 'pt-BR' }));
+    const res = await loadPost(
+      jsonReq('http://t/blog/api/draft/load/', { slug: 'my-post', locale: 'pt-BR' }),
+    );
     const data = (await res.json()) as Record<string, unknown>;
     expect(data.title).toBe('My Post');
     expect(data.body).toBe('english body');
@@ -168,7 +204,9 @@ describe('POST /api/draft/load', () => {
 describe('DELETE /api/draft', () => {
   it('removes the EN file for a slug', async () => {
     await save({ title: 'Bye', tags: [], draft: true, body: 'x' });
-    const res = await DELETE(new Request('http://t/blog/api/draft/?slug=bye&locale=en', { method: 'DELETE' }));
+    const res = await DELETE(
+      new Request('http://t/blog/api/draft/?slug=bye&locale=en', { method: 'DELETE' }),
+    );
     expect(((await res.json()) as { ok: boolean }).ok).toBe(true);
     expect(await readdir(path.join(postsBase, 'en'))).toEqual([]);
   });
@@ -176,7 +214,9 @@ describe('DELETE /api/draft', () => {
   it('removes the pt-BR file, leaving EN untouched', async () => {
     await save({ locale: 'en', title: 'Keep', tags: [], body: 'x' });
     await save({ locale: 'pt-BR', title: 'Keep', tags: [], body: 'y' });
-    const res = await DELETE(new Request('http://t/blog/api/draft/?slug=keep&locale=pt-BR', { method: 'DELETE' }));
+    const res = await DELETE(
+      new Request('http://t/blog/api/draft/?slug=keep&locale=pt-BR', { method: 'DELETE' }),
+    );
     expect(((await res.json()) as { ok: boolean }).ok).toBe(true);
     expect(await readdir(path.join(postsBase, 'pt-BR'))).toEqual([]);
     expect(await readdir(path.join(postsBase, 'en'))).toHaveLength(1); // EN untouched
@@ -185,7 +225,9 @@ describe('DELETE /api/draft', () => {
   it('deleting EN cascades to the pt-BR counterpart', async () => {
     await save({ locale: 'en', title: 'Cascade', tags: [], body: 'x' });
     await save({ locale: 'pt-BR', title: 'Cascade', tags: [], body: 'y' });
-    const res = await DELETE(new Request('http://t/blog/api/draft/?slug=cascade&locale=en', { method: 'DELETE' }));
+    const res = await DELETE(
+      new Request('http://t/blog/api/draft/?slug=cascade&locale=en', { method: 'DELETE' }),
+    );
     expect(((await res.json()) as { ok: boolean }).ok).toBe(true);
     expect(await readdir(path.join(postsBase, 'en'))).toEqual([]);
     expect(await readdir(path.join(postsBase, 'pt-BR'))).toEqual([]);
@@ -193,7 +235,9 @@ describe('DELETE /api/draft', () => {
 
   it('deleting EN succeeds when no pt-BR counterpart exists', async () => {
     await save({ locale: 'en', title: 'Solo', tags: [], body: 'x' });
-    const res = await DELETE(new Request('http://t/blog/api/draft/?slug=solo&locale=en', { method: 'DELETE' }));
+    const res = await DELETE(
+      new Request('http://t/blog/api/draft/?slug=solo&locale=en', { method: 'DELETE' }),
+    );
     expect(res.status).toBe(200);
     expect(await readdir(path.join(postsBase, 'en'))).toEqual([]);
   });
@@ -230,7 +274,9 @@ describe('seeded pt-BR load guard', () => {
       'utf8',
     );
 
-    const res = await loadPost(jsonReq('http://t/blog/api/draft/load/', { slug: 'source', locale: 'pt-BR' }));
+    const res = await loadPost(
+      jsonReq('http://t/blog/api/draft/load/', { slug: 'source', locale: 'pt-BR' }),
+    );
     const data = (await res.json()) as Record<string, unknown>;
     expect(data.seededFromEn).toBe(true);
     expect(data.filename).toBeUndefined();

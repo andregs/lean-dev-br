@@ -38,30 +38,31 @@ async function installCredentialsMock(context: BrowserContext) {
   );
 }
 
-test('register passkey, add todo, reload — todo persists', { tag: ['@dev-only'] }, async ({
-  page,
-  context,
-}) => {
-  await installCredentialsMock(context);
-  await page.goto(todoPath('/'));
+test(
+  'register passkey, add todo, reload — todo persists',
+  { tag: ['@dev-only'] },
+  async ({ page, context }) => {
+    await installCredentialsMock(context);
+    await page.goto(todoPath('/'));
 
-  // Setup screen: click "Create" to register a new passkey.
-  await page.click('#setup-btn');
+    // Setup screen: click "Create" to register a new passkey.
+    await page.click('#setup-btn');
 
-  // Wait for notebook to render after successful auth.
-  await expect(page.locator('.notebook')).toBeVisible({ timeout: 15_000 });
+    // Wait for notebook to render after successful auth.
+    await expect(page.locator('.notebook')).toBeVisible({ timeout: 15_000 });
 
-  // Add a todo via the form.
-  const todoText = 'e2e passkey test task';
-  await page.fill('#todo-input', todoText);
-  await page.press('#todo-input', 'Enter');
+    // Add a todo via the form.
+    const todoText = 'e2e passkey test task';
+    await page.fill('#todo-input', todoText);
+    await page.press('#todo-input', 'Enter');
 
-  await expect(page.locator('.todo-list')).toContainText(todoText);
+    await expect(page.locator('.todo-list')).toContainText(todoText);
 
-  // Reload — restoreSession() reads from IndexedDB, skips WebAuthn entirely.
-  await page.reload();
-  await expect(page.locator('.notebook')).toBeVisible({ timeout: 10_000 });
+    // Reload — restoreSession() reads from IndexedDB, skips WebAuthn entirely.
+    await page.reload();
+    await expect(page.locator('.notebook')).toBeVisible({ timeout: 10_000 });
 
-  // Todo must survive the reload (Yjs persistence via IndexedDB).
-  await expect(page.locator('.todo-list')).toContainText(todoText);
-});
+    // Todo must survive the reload (Yjs persistence via IndexedDB).
+    await expect(page.locator('.todo-list')).toContainText(todoText);
+  },
+);

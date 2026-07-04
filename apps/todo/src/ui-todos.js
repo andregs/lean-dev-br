@@ -50,13 +50,18 @@ export function buildTodoItem(item, handlers, i18n) {
   delBtn.append(svgIcon('icon-x'));
   textSpan.setAttribute('contenteditable', 'plaintext-only');
 
-  checkBtn.setAttribute('aria-label', item.completed ? i18n.t('todo.check.incomplete') : i18n.t('todo.check.complete'));
+  checkBtn.setAttribute(
+    'aria-label',
+    item.completed ? i18n.t('todo.check.incomplete') : i18n.t('todo.check.complete'),
+  );
   checkBtn.setAttribute('aria-pressed', String(item.completed));
   delBtn.setAttribute('aria-label', i18n.t('todo.delete'));
   textSpan.textContent = item.title;
 
   // Read live DOM state — item.completed is stale after in-place toggle
-  checkBtn.addEventListener('click', () => handlers.onToggle(item.id, li.classList.contains('todo-item--done')));
+  checkBtn.addEventListener('click', () =>
+    handlers.onToggle(item.id, li.classList.contains('todo-item--done')),
+  );
 
   // Mutable title — stays current across edits without re-render
   let liveTitle = item.title;

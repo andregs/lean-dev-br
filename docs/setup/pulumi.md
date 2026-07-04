@@ -38,8 +38,8 @@ PULUMI_ACCESS_TOKEN=$(pass-cli item view --vault-name lean-dev-br --item-title=p
 
 In the GitHub repository → **Settings → Secrets and variables → Actions → New repository secret**:
 
-| Secret name | Value |
-|---|---|
+| Secret name           | Value             |
+| --------------------- | ----------------- |
 | `PULUMI_ACCESS_TOKEN` | Token from step 2 |
 
 See [aws.md](aws.md) for the AWS secrets also required by CI.

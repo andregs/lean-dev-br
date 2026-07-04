@@ -6,11 +6,12 @@ import { buildTodoItem, renderTodos } from './ui-todos.js';
 /** @type {import('@lean-dev-br/i18n').I18nInstance} */
 const testI18n = {
   locale: 'en-US',
-  t: (k) => ({
-    'todo.check.complete': 'Mark complete',
-    'todo.check.incomplete': 'Mark incomplete',
-    'todo.delete': 'Delete',
-  })[k] ?? k,
+  t: (k) =>
+    ({
+      'todo.check.complete': 'Mark complete',
+      'todo.check.incomplete': 'Mark incomplete',
+      'todo.delete': 'Delete',
+    })[k] ?? k,
 };
 
 /** @returns {import('./types').TodoItem} */
@@ -40,7 +41,9 @@ afterEach(() => {
 
 describe('todo item — rendering', () => {
   it('shows the title', () => {
-    document.body.append(buildTodoItem(makeTodo({ title: 'Write tests' }), makeHandlers(), testI18n));
+    document.body.append(
+      buildTodoItem(makeTodo({ title: 'Write tests' }), makeHandlers(), testI18n),
+    );
     expect(document.querySelector('.todo-text')?.textContent).toBe('Write tests');
   });
 
@@ -59,7 +62,9 @@ describe('todo item — rendering', () => {
     expect(document.querySelector('.todo-check')?.getAttribute('aria-label')).toBe('Mark complete');
     document.body.innerHTML = '';
     document.body.append(buildTodoItem(makeTodo({ completed: true }), makeHandlers(), testI18n));
-    expect(document.querySelector('.todo-check')?.getAttribute('aria-label')).toBe('Mark incomplete');
+    expect(document.querySelector('.todo-check')?.getAttribute('aria-label')).toBe(
+      'Mark incomplete',
+    );
   });
 });
 

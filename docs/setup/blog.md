@@ -13,12 +13,13 @@ CloudFront distribution. Posts are markdown files in `content/posts/` — no CMS
 
 ```yaml
 ---
-title: My post title        # required
-date: 2026-01-15            # required ISO date; authoritative for ordering
-description: One sentence.  # optional, used in OG + post index
-tags: [nextjs, aws]         # optional array; each tag gets a /blog/tags/<tag> page
-draft: true                 # optional; default false. Draft posts render in dev,
-                            # are excluded from production builds.
+title: My post title # required
+date: 2026-01-15 # required ISO date; authoritative for ordering
+description: One sentence. # optional, used in OG + post index
+tags: [nextjs, aws] # optional array; each tag gets a /blog/tags/<tag> page
+draft:
+  true # optional; default false. Draft posts render in dev,
+  # are excluded from production builds.
 ---
 ```
 
@@ -29,9 +30,9 @@ The `locale` field is derived automatically from the parent directory (`en/` →
 
 The blog is bilingual. URLs are:
 
-| Locale | Index | Post | Tag |
-|--------|-------|------|-----|
-| English | `/blog/` | `/blog/[slug]/` | `/blog/tags/[tag]/` |
+| Locale     | Index          | Post                  | Tag                       |
+| ---------- | -------------- | --------------------- | ------------------------- |
+| English    | `/blog/`       | `/blog/[slug]/`       | `/blog/tags/[tag]/`       |
 | Portuguese | `/blog/pt-BR/` | `/blog/pt-BR/[slug]/` | `/blog/pt-BR/tags/[tag]/` |
 
 ### Writing a translation
@@ -51,7 +52,7 @@ render the pill.
 
 ### Locale default redirect
 
-First-time pt-* visitors (no stored `lean:locale`) are redirected from `/blog/…` to
+First-time pt-\* visitors (no stored `lean:locale`) are redirected from `/blog/…` to
 `/blog/pt-BR/…` by `app/LocaleDefaultBoot.tsx` (client-side, EN tree only). An explicit
 stored preference always wins.
 
@@ -82,6 +83,7 @@ editor without AI features.
 5. Save — the editor writes directly to `content/posts/en/`.
 
 **Chrome flags required for built-in AI** (one-time setup):
+
 - `chrome://flags/#prompt-api-for-gemini-nano` → Enabled
 - `chrome://flags/#optimization-guide-on-device-model` → Enabled BypassPerfRequirement
 - Then: `chrome://components` → "Optimization Guide On Device Model" → Check for update

@@ -1,7 +1,14 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import matter from 'gray-matter';
-import { draftFilename, draftFilenameFor, isDraftFilename, renderDraft, slugify, type DraftInput } from '../../../lib/draft';
+import {
+  draftFilename,
+  draftFilenameFor,
+  isDraftFilename,
+  renderDraft,
+  slugify,
+  type DraftInput,
+} from '../../../lib/draft';
 import { filenameForSlug, postsDir, type PostLocale } from '../../../lib/posts-fs';
 import { problem } from '../../../lib/problem';
 
@@ -36,7 +43,11 @@ export async function POST(request: Request): Promise<Response> {
 
   const input = (await request.json()) as DraftRequest;
   if (!input.title || !input.date || !input.body) {
-    return problem({ title: 'Bad request', status: 400, detail: 'title, date and body are required' });
+    return problem({
+      title: 'Bad request',
+      status: 400,
+      detail: 'title, date and body are required',
+    });
   }
 
   const locale = parseLocale(input.locale);
@@ -105,7 +116,11 @@ export async function DELETE(request: Request): Promise<Response> {
 
   const filename = await filenameForSlug(slug, locale);
   if (!filename || !isDraftFilename(filename)) {
-    return problem({ title: 'Not found', status: 404, detail: `No ${locale} post with slug "${slug}"` });
+    return problem({
+      title: 'Not found',
+      status: 404,
+      detail: `No ${locale} post with slug "${slug}"`,
+    });
   }
   await rm(path.join(postsDir(locale), filename), { force: true });
 

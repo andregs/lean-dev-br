@@ -296,7 +296,9 @@ describe('createSync', () => {
     const doc = new Y.Doc();
     const { sync, status, fetchStub } = makeClient(relay, doc, key, roomId);
 
-    const passthrough = /** @type {(url: string, opts: any) => Promise<any>} */ (fetchStub.getMockImplementation());
+    const passthrough = /** @type {(url: string, opts: any) => Promise<any>} */ (
+      fetchStub.getMockImplementation()
+    );
     fetchStub.mockImplementation(async (/** @type {string} */ url, /** @type {any} */ opts) => {
       if (opts?.method === 'POST' && url.endsWith('/compact')) {
         return { ok: false, status: 409, json: async () => ({}) };

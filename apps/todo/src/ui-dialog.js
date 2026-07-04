@@ -85,6 +85,8 @@ export function showListDialog(dialog, existingNames = [], i18n) {
     form.addEventListener('submit', onSubmit);
     dialog.addEventListener('cancel', onCancel);
 
-    dialog.querySelector('.btn-cancel')?.addEventListener('click', () => settle(null), { once: true });
+    dialog
+      .querySelector('.btn-cancel')
+      ?.addEventListener('click', () => settle(null), { once: true });
   });
 }
