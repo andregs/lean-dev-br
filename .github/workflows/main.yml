@@ -83,6 +83,8 @@ jobs:
             fi
           fi
 
+      - run: pnpm nx format:check
+
       - run: pnpm nx affected -t lint typecheck test build e2e
 
       - name: Upload Playwright report

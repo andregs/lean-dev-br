@@ -7,7 +7,7 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{js,mjs,cjs,ts,tsx,jsx}": [
+    "*.{js,mjs,cjs,mts,cts,ts,tsx,jsx}": [
       "prettier --write",
       "eslint --fix --no-warn-ignored"
     ],
