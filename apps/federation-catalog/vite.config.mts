@@ -53,7 +53,7 @@ export default defineConfig(() => ({
   ],
   build: {
     target: 'chrome89',
-    outDir: '../../dist/apps/federation-catalog',
+    outDir: 'dist',
     emptyOutDir: true,
     reportCompressedSize: true,
     commonjsOptions: {
