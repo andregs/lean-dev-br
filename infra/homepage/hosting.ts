@@ -293,8 +293,11 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
       },
       {
         // Vite assets are content-addressed — cache forever. Listed before the
-        // catalog/cart catch-alls below (and before the shell's own catch-all
-        // further down) since CloudFront matches orderedCacheBehaviors in order.
+        // shell's own catch-all further down since CloudFront matches
+        // orderedCacheBehaviors in order. No broad /labs/federation/catalog/*
+        // catch-all: a direct navigation/refresh at that bare path must fall
+        // through to the shell (which owns all real page routing) rather than
+        // hit this remote's bucket, which only has its own standalone entry.
         pathPattern: '/labs/federation/catalog/assets/*',
         targetOriginId: 'federation-catalog-s3',
         viewerProtocolPolicy: 'redirect-to-https',
@@ -312,8 +315,9 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
       },
       {
         // remoteEntry.js must never be cached stale — it's the manifest the shell
-        // fetches to resolve this remote's exposed modules and shared deps.
-        pathPattern: '/labs/federation/catalog/*',
+        // fetches to resolve this remote's exposed modules and shared deps. Exact
+        // path (no wildcard) — CloudFront matches it literally, not as a prefix.
+        pathPattern: '/labs/federation/catalog/remoteEntry.js',
         targetOriginId: 'federation-catalog-s3',
         viewerProtocolPolicy: 'redirect-to-https',
         allowedMethods: ['GET', 'HEAD'],
@@ -345,7 +349,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         ],
       },
       {
-        pathPattern: '/labs/federation/cart/*',
+        pathPattern: '/labs/federation/cart/remoteEntry.js',
         targetOriginId: 'federation-cart-s3',
         viewerProtocolPolicy: 'redirect-to-https',
         allowedMethods: ['GET', 'HEAD'],

@@ -63,34 +63,39 @@ function handler(event) {
     return req;
   }
 
-  // /labs/federation(/catalog|/cart) (no trailing slash) only reach the default
-  // behavior — redirect each to its trailing-slash form.
-  if (
-    req.uri === '/labs/federation' ||
-    req.uri === '/labs/federation/catalog' ||
-    req.uri === '/labs/federation/cart'
-  ) {
+  // /labs/federation (no trailing slash) only reaches the default behavior —
+  // redirect to /labs/federation/. Unlike ui-modulith, catalog and cart are NOT
+  // separate apps here — they're the shell's own internal SPA routes (just
+  // backed by separate remote bundles), so /labs/federation/catalog and
+  // /labs/federation/cart are real deep-linkable shell routes and must NOT
+  // redirect, same as ui-modulith's own /catalog and /cart don't.
+  if (req.uri === '/labs/federation') {
     return {
       statusCode: 301,
       statusDescription: 'Moved Permanently',
-      headers: { location: { value: req.uri + '/' } },
+      headers: { location: { value: '/labs/federation/' } },
     };
   }
 
-  // Module Federation routing: catalog and cart are checked before the shell's
-  // broader /labs/federation/ prefix below, since both their paths also start
-  // with it — the more specific pattern must strip first, matching the order of
-  // the CloudFront distribution's own orderedCacheBehaviors. remoteEntry.js and
-  // shared chunks are plain content URLs (have an extension), so only
-  // extensionless paths fall back to index.html, same as /labs/ui-modulith/*.
-  if (req.uri.startsWith('/labs/federation/catalog/')) {
+  // Module Federation routing: only requests CloudFront already routed to a
+  // remote's own bucket reach these two branches — its assets/* and its exact
+  // remoteEntry.js (see the distribution's orderedCacheBehaviors; there is no
+  // broad /labs/federation/catalog/* or /cart/* behavior). Everything else,
+  // including a bare /labs/federation/catalog navigation/refresh, falls
+  // through to the shell's own catch-all below, which owns all real page
+  // routing — the remote's bucket has no full app of its own to serve there.
+  if (
+    req.uri.startsWith('/labs/federation/catalog/assets/') ||
+    req.uri === '/labs/federation/catalog/remoteEntry.js'
+  ) {
     req.uri = req.uri.slice('/labs/federation/catalog'.length);
-    if (!req.uri.match(/\.[^/]+$/)) req.uri = '/index.html';
     return req;
   }
-  if (req.uri.startsWith('/labs/federation/cart/')) {
+  if (
+    req.uri.startsWith('/labs/federation/cart/assets/') ||
+    req.uri === '/labs/federation/cart/remoteEntry.js'
+  ) {
     req.uri = req.uri.slice('/labs/federation/cart'.length);
-    if (!req.uri.match(/\.[^/]+$/)) req.uri = '/index.html';
     return req;
   }
   if (req.uri.startsWith('/labs/federation/')) {

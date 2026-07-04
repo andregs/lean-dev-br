@@ -41,6 +41,26 @@ export default defineConfig(() => ({
     port: 4203,
     host: 'localhost',
     headers: previewHeaders,
+    // Production is same-origin behind one CloudFront distribution — this proxy
+    // reproduces that locally so `nx preview federation-shell` (with catalog and
+    // cart also running their own preview servers) can be tested and e2e'd
+    // under the real same-origin topology instead of three separate ports.
+    // Scoped to each remote's actual asset files (assets/*, remoteEntry.js) only
+    // — NOT the bare /labs/federation/catalog or /cart path, which must fall
+    // through to the shell so a direct navigation/refresh there still renders
+    // the shell's own routed page instead of that remote's standalone entry.
+    proxy: {
+      '/labs/federation/catalog/assets': { target: 'http://localhost:4204', changeOrigin: true },
+      '/labs/federation/catalog/remoteEntry.js': {
+        target: 'http://localhost:4204',
+        changeOrigin: true,
+      },
+      '/labs/federation/cart/assets': { target: 'http://localhost:4205', changeOrigin: true },
+      '/labs/federation/cart/remoteEntry.js': {
+        target: 'http://localhost:4205',
+        changeOrigin: true,
+      },
+    },
   },
   plugins: [
     federation({
