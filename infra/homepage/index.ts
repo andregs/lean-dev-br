@@ -3,7 +3,6 @@ import * as pulumi from '@pulumi/pulumi';
 import { createApi } from './api';
 import { createEmail } from './email';
 import { createHosting } from './hosting';
-import { createObservability } from './observability';
 
 const config = new pulumi.Config();
 const domain = config.require('domain');
@@ -58,15 +57,6 @@ const { bucketName, distributionId, distributionDomain } = createHosting({
   faroCollectorPath,
 });
 
-const { identityPoolId, appMonitorId } = createObservability({ domain });
-
-export {
-  apiEndpoint,
-  appMonitorId,
-  bucketName,
-  distributionDomain,
-  distributionId,
-  identityPoolId,
-};
+export { apiEndpoint, bucketName, distributionDomain, distributionId };
 export const nameservers = zone.nameServers;
 export const sesDomainIdentity = domain;

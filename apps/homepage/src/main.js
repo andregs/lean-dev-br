@@ -8,7 +8,6 @@ import enUS from './locales/en-US.json';
 import ptBR from './locales/pt-BR.json';
 import { initObservability } from '@lean-dev-br/faro';
 import './observer.js';
-import './rum.js';
 import { renderContact } from './views/contact.js';
 import { renderHome } from './views/home.js';
 import { renderLabs } from './views/labs.js';

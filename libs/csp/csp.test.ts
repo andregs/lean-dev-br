@@ -28,8 +28,7 @@ describe('cspDirectives', () => {
     expect(prod['default-src']).toEqual(["'self'"]);
     expect(prod['script-src']).toContain("'self'");
     expect(prod['script-src']).toContain('https://www.gstatic.com');
-    expect(prod['connect-src']).toContain('https://cognito-identity.us-east-1.amazonaws.com');
-    expect(prod['connect-src']).toContain('https://dataplane.rum.us-east-1.amazonaws.com');
+    expect(prod['connect-src']).toContain('https://www.google.com');
     // No localhost leaks into prod.
     expect(prod['connect-src'].some((s) => s.includes('localhost'))).toBe(false);
   });
@@ -49,7 +48,7 @@ describe('cspDirectives', () => {
 });
 
 describe('todo CSP', () => {
-  it('no reCAPTCHA domains in script-src or connect-src; RUM + Cognito still present', () => {
+  it('no reCAPTCHA domains in script-src or connect-src', () => {
     const prod = cspDirectives({
       mode: 'prod',
       app: 'todo',
@@ -57,19 +56,13 @@ describe('todo CSP', () => {
     });
     expect(prod['script-src']).toEqual(["'self'"]);
     expect(prod['connect-src']).not.toContain('https://www.google.com');
-    expect(prod['connect-src']).toContain('https://dataplane.rum.us-east-1.amazonaws.com');
-    expect(prod['connect-src']).toContain('https://cognito-identity.us-east-1.amazonaws.com');
     expect(prod['connect-src']).toContain('https://signal.example.com');
     expect(prod['frame-src']).toBeUndefined();
   });
 
-  it('signalUrl omitted → connect-src has RUM + Cognito but no signal URL', () => {
+  it('signalUrl omitted → connect-src has just self', () => {
     const prod = cspDirectives({ mode: 'prod', app: 'todo' });
-    expect(prod['connect-src']).toEqual([
-      "'self'",
-      'https://dataplane.rum.us-east-1.amazonaws.com',
-      'https://cognito-identity.us-east-1.amazonaws.com',
-    ]);
+    expect(prod['connect-src']).toEqual(["'self'"]);
   });
 
   it('dev mode appends localhost entries after signalUrl', () => {
@@ -99,7 +92,7 @@ describe('todo CSP', () => {
 });
 
 describe('federation CSP', () => {
-  it('no reCAPTCHA/RUM/Cognito; worker-src for MSW, same as ui-modulith', () => {
+  it('no reCAPTCHA; worker-src for MSW, same as ui-modulith', () => {
     const prod = cspDirectives({ mode: 'prod', app: 'federation' });
     expect(prod['script-src']).toEqual(["'self'"]);
     expect(prod['connect-src']).toEqual(["'self'"]);

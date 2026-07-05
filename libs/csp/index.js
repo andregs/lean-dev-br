@@ -13,7 +13,7 @@ const TRUSTED_TYPES_POLICIES = ['app', 'dompurify', 'default', 'goog#html', 'nex
  * `app: 'blog'` allows inline scripts: the Next.js static export inlines its
  * hydration scripts and there's no server to mint a nonce. Trusted Types still
  * guards DOM script sinks; the apex app (no inline scripts) stays strict.
- * `app: 'todo'` drops reCAPTCHA/RUM/Cognito domains; adds `signalUrl` to
+ * `app: 'todo'` drops the reCAPTCHA domain; adds `signalUrl` to
  * connect-src for the encrypted Yjs blob relay (Cloud Run relay-service).
  * `app: 'federation'` is the ui-modulith lab's runtime-microfrontend twin —
  * same MSW/no-reCAPTCHA profile, plus a dev-only script-src relaxation: the
@@ -27,7 +27,7 @@ function cspDirectives({ mode, app = 'apex', signalUrl = '' }) {
   const isTodo = app === 'todo';
   const isModulith = app === 'ui-modulith';
   const isFederation = app === 'federation';
-  // Modulith and federation share the same demo profile: no reCAPTCHA/RUM/Cognito,
+  // Modulith and federation share the same demo profile: no reCAPTCHA,
   // MSW as the permanent mock backend.
   const isLabsDemo = isModulith || isFederation;
 
@@ -35,13 +35,6 @@ function cspDirectives({ mode, app = 'apex', signalUrl = '' }) {
   if (!isTodo && !isLabsDemo) {
     // reCAPTCHA uses google.com — the labs demos have no reCAPTCHA
     connectSrc.push('https://www.google.com');
-  }
-  if (!isLabsDemo) {
-    // RUM and Cognito not used by the labs demos
-    connectSrc.push(
-      'https://dataplane.rum.us-east-1.amazonaws.com',
-      'https://cognito-identity.us-east-1.amazonaws.com',
-    );
   }
   if (isTodo && signalUrl) {
     connectSrc.push(signalUrl);
