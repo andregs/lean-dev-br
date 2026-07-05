@@ -15,6 +15,9 @@ const nextConfig = {
   basePath: '/blog',
   trailingSlash: true,
   images: { unoptimized: true },
+  // Ship .map files for legible stack traces in devtools + Grafana Faro. Source
+  // is already public on GitHub, so exposure is a non-issue for this portfolio.
+  productionBrowserSourceMaps: true,
   // Dev-server CSP parity: serve the blog CSP so non-TT policy regressions surface
   // locally. No Trusted Types in dev — Next's HMR/overlay script injectors aren't
   // TT-clean (noise); the blog's TT is enforced in prod only (CloudFront), verified

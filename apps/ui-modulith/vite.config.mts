@@ -31,6 +31,7 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     reportCompressedSize: true,
+    sourcemap: true,
     commonjsOptions: {
       transformMixedEsModules: true,
     },
