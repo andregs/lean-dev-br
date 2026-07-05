@@ -131,6 +131,17 @@ See `docs/setup/observability.md` for details.
 
 ## CloudFront invalidation
 
-Blog HTML pages are cached at CloudFront (`CACHING_OPTIMIZED` policy). The deploy workflow
-invalidates `/blog/*` after every `pulumi up`, so new and edited posts go live immediately.
-`/blog/_next/*` assets are content-addressed (hashed filenames) and never invalidated.
+Blog HTML pages use the `CACHING_DISABLED` policy — not edge-cached, always fetched fresh
+from S3, no invalidation needed. `/blog/_next/*` assets are content-addressed (hashed
+filenames) and use `CACHING_OPTIMIZED`; they never invalidate because a new build never
+reuses an old filename.
+
+## Cache-Control headers
+
+CloudFront cache policies (`CACHING_OPTIMIZED`/`CACHING_DISABLED`) only control the edge
+TTL — they don't set what the browser receives. Each app's `ResponseHeadersPolicy`
+(`infra/homepage/static-site.ts`) injects the actual `Cache-Control` header via
+`customHeadersConfig`:
+
+- `/blog/_next/*` (hashed) → `public, max-age=31536000, immutable`
+- `/blog/*` (HTML) → `public, max-age=0, must-revalidate`

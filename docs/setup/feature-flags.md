@@ -71,6 +71,11 @@ aws cloudfront create-invalidation \
 
 CloudFront serves the new value within seconds. No app redeploy needed.
 
+`flags.json` falls through to the default cache behavior (`CACHING_DISABLED` — not
+edge-cached) and its `Cache-Control` header is `public, max-age=0, must-revalidate`, so
+browsers also always revalidate; the invalidation step above only matters for the
+CloudFront edge cache, not the browser.
+
 ## Future: targeting and % rollouts
 
 When the k8s flagd daemon is available:
