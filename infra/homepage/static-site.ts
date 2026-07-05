@@ -20,6 +20,11 @@ const SHARED_SECURITY_HEADERS = {
   },
 };
 
+// Content-addressed filenames (Vite/Next hashed bundles) — safe to cache forever.
+const CACHE_CONTROL_IMMUTABLE = 'public, max-age=31536000, immutable';
+// HTML, MF remoteEntry.js manifests, flags.json — must reflect the latest deploy.
+const CACHE_CONTROL_REVALIDATE = 'public, max-age=0, must-revalidate';
+
 export interface StaticSiteArgs {
   // Pulumi logical-name prefix for every resource below — '' for the apex/homepage
   // site (its resources predate this prefix convention), '<app>-' for the rest.
@@ -35,7 +40,10 @@ export interface StaticSite {
   bucket: aws.s3.Bucket;
   bucketOwnership: aws.s3.BucketOwnershipControls;
   oac: aws.cloudfront.OriginAccessControl;
-  responseHeadersPolicy: aws.cloudfront.ResponseHeadersPolicy;
+  // Attach to CACHING_OPTIMIZED behaviors (content-addressed assets) — immutable, 1yr.
+  assetsResponseHeadersPolicy: aws.cloudfront.ResponseHeadersPolicy;
+  // Attach to CACHING_DISABLED behaviors (HTML, manifests, flags.json) — must-revalidate.
+  documentResponseHeadersPolicy: aws.cloudfront.ResponseHeadersPolicy;
 }
 
 /** Bucket + OAC + response-headers-policy for one static app, ahead of the shared distribution. */
@@ -72,21 +80,43 @@ export function createStaticSite({
     signingProtocol: 'sigv4',
   });
 
-  const responseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(
-    `${namePrefix}response-headers-policy`,
+  const securityHeadersConfig = {
+    ...SHARED_SECURITY_HEADERS,
+    contentSecurityPolicy: {
+      contentSecurityPolicy: cspHeader({ mode: 'prod', app: cspApp, signalUrl }),
+      override: true,
+    },
+  };
+
+  const assetsResponseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(
+    `${namePrefix}assets-response-headers-policy`,
     {
-      name: headersPolicyName,
-      securityHeadersConfig: {
-        ...SHARED_SECURITY_HEADERS,
-        contentSecurityPolicy: {
-          contentSecurityPolicy: cspHeader({ mode: 'prod', app: cspApp, signalUrl }),
-          override: true,
-        },
+      name: `${headersPolicyName}-assets`,
+      securityHeadersConfig,
+      customHeadersConfig: {
+        items: [{ header: 'Cache-Control', value: CACHE_CONTROL_IMMUTABLE, override: true }],
       },
     },
   );
 
-  return { bucket, bucketOwnership, oac, responseHeadersPolicy };
+  const documentResponseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(
+    `${namePrefix}document-response-headers-policy`,
+    {
+      name: `${headersPolicyName}-docs`,
+      securityHeadersConfig,
+      customHeadersConfig: {
+        items: [{ header: 'Cache-Control', value: CACHE_CONTROL_REVALIDATE, override: true }],
+      },
+    },
+  );
+
+  return {
+    bucket,
+    bucketOwnership,
+    oac,
+    assetsResponseHeadersPolicy,
+    documentResponseHeadersPolicy,
+  };
 }
 
 /** Grants the shared CloudFront distribution OAC read access to one app's bucket. */

@@ -189,7 +189,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
-        responseHeadersPolicyId: blog.responseHeadersPolicy.id,
+        responseHeadersPolicyId: blog.assetsResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -209,7 +209,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_DISABLED_POLICY_ID,
-        responseHeadersPolicyId: blog.responseHeadersPolicy.id,
+        responseHeadersPolicyId: blog.documentResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -227,7 +227,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
-        responseHeadersPolicyId: todo.responseHeadersPolicy.id,
+        responseHeadersPolicyId: todo.assetsResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -245,7 +245,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_DISABLED_POLICY_ID,
-        responseHeadersPolicyId: todo.responseHeadersPolicy.id,
+        responseHeadersPolicyId: todo.documentResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -263,7 +263,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
-        responseHeadersPolicyId: uiModulith.responseHeadersPolicy.id,
+        responseHeadersPolicyId: uiModulith.assetsResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -282,7 +282,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_DISABLED_POLICY_ID,
-        responseHeadersPolicyId: uiModulith.responseHeadersPolicy.id,
+        responseHeadersPolicyId: uiModulith.documentResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -304,7 +304,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
-        responseHeadersPolicyId: federationCatalog.responseHeadersPolicy.id,
+        responseHeadersPolicyId: federationCatalog.assetsResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -323,7 +323,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_DISABLED_POLICY_ID,
-        responseHeadersPolicyId: federationCatalog.responseHeadersPolicy.id,
+        responseHeadersPolicyId: federationCatalog.documentResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -339,7 +339,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
-        responseHeadersPolicyId: federationCart.responseHeadersPolicy.id,
+        responseHeadersPolicyId: federationCart.assetsResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -355,7 +355,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_DISABLED_POLICY_ID,
-        responseHeadersPolicyId: federationCart.responseHeadersPolicy.id,
+        responseHeadersPolicyId: federationCart.documentResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -371,7 +371,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
-        responseHeadersPolicyId: federationShell.responseHeadersPolicy.id,
+        responseHeadersPolicyId: federationShell.assetsResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -389,7 +389,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_DISABLED_POLICY_ID,
-        responseHeadersPolicyId: federationShell.responseHeadersPolicy.id,
+        responseHeadersPolicyId: federationShell.documentResponseHeadersPolicy.id,
         compress: true,
         functionAssociations: [
           {
@@ -415,7 +415,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         allowedMethods: ['GET', 'HEAD'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
-        responseHeadersPolicyId: apex.responseHeadersPolicy.id,
+        responseHeadersPolicyId: apex.assetsResponseHeadersPolicy.id,
         compress: true,
       },
     ],
@@ -425,7 +425,7 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
       allowedMethods: ['GET', 'HEAD'],
       cachedMethods: ['GET', 'HEAD'],
       cachePolicyId: CACHING_DISABLED_POLICY_ID,
-      responseHeadersPolicyId: apex.responseHeadersPolicy.id,
+      responseHeadersPolicyId: apex.documentResponseHeadersPolicy.id,
       compress: true,
       functionAssociations: [
         {
