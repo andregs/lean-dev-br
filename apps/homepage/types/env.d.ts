@@ -11,6 +11,8 @@ interface ImportMetaEnv {
   readonly VITE_RUM_IDENTITY_POOL_ID?: string;
   /** RUM session sampling rate 0.0–1.0; defaults to 0.1 if unset. */
   readonly VITE_RUM_SESSION_SAMPLE_RATE?: string;
+  /** Release identifier (git SHA) tagged on Faro events; correlates with uploaded sourcemaps. */
+  readonly VITE_APP_VERSION?: string;
 }
 
 interface ImportMeta {

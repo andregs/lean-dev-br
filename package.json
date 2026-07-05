@@ -85,6 +85,8 @@
   },
   "packageManager": "pnpm@11.9.0",
   "dependencies": {
+    "@grafana/faro-web-sdk": "^2.8.2",
+    "@grafana/faro-web-tracing": "^2.8.2",
     "@lean-dev-br/csp": "workspace:*",
     "@lean-dev-br/design-system": "workspace:*",
     "@lean-dev-br/federation-kernel": "workspace:*",

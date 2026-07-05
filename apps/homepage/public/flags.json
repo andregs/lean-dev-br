@@ -9,6 +9,11 @@
       "state": "ENABLED",
       "variants": { "on": true, "off": false },
       "defaultVariant": "on"
+    },
+    "observability-faro": {
+      "state": "ENABLED",
+      "variants": { "on": true, "off": false },
+      "defaultVariant": "off"
     }
   }
 }
