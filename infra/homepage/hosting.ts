@@ -14,9 +14,18 @@ interface HostingArgs {
   domain: string;
   executeApiDomain: pulumi.Output<string>;
   relayServiceUrl: string;
+  faroCollectorHost: string;
+  faroCollectorPath: string;
 }
 
-export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl }: HostingArgs) {
+export function createHosting({
+  zone,
+  domain,
+  executeApiDomain,
+  relayServiceUrl,
+  faroCollectorHost,
+  faroCollectorPath,
+}: HostingArgs) {
   const wwwDomain = `www.${domain}`;
 
   const usEast1 = new aws.Provider('us-east-1', { region: 'us-east-1' });
@@ -121,10 +130,15 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
     cspApp: 'federation',
   });
 
-  // www → apex redirect + SPA fallback for History API routes
+  // www → apex redirect + SPA fallback for History API routes. The Faro proxy
+  // rewrite's collector path is baked in here (CloudFront Functions have no
+  // runtime config/env access) — never a secret, just not hardcoded in source
+  // so the zone/app-key can be rotated via Pulumi config alone.
   const edgeFn = new aws.cloudfront.Function('edge-fn', {
     runtime: 'cloudfront-js-2.0',
-    code: fs.readFileSync('cloudfront-edge.js', 'utf-8'),
+    code: fs
+      .readFileSync('cloudfront-edge.js', 'utf-8')
+      .replace('%%FARO_COLLECTOR_PATH%%', faroCollectorPath),
     publish: true,
   });
 
@@ -171,6 +185,16 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
       {
         originId: 'api',
         domainName: executeApiDomain,
+        customOriginConfig: {
+          httpPort: 80,
+          httpsPort: 443,
+          originProtocolPolicy: 'https-only',
+          originSslProtocols: ['TLSv1.2'],
+        },
+      },
+      {
+        originId: 'faro',
+        domainName: faroCollectorHost,
         customOriginConfig: {
           httpPort: 80,
           httpsPort: 443,
@@ -407,6 +431,25 @@ export function createHosting({ zone, domain, executeApiDomain, relayServiceUrl 
         cachePolicyId: CACHING_DISABLED_POLICY_ID,
         originRequestPolicyId: ALL_VIEWER_EXCEPT_HOST_HEADER_POLICY_ID,
         compress: true,
+      },
+      {
+        // Same-origin Faro RUM proxy — see cloudfront-edge.js for the path
+        // rewrite. ALL_VIEWER_EXCEPT_HOST forwards the beacon body/headers
+        // without our own Host, which Grafana's origin would otherwise reject.
+        pathPattern: '/o11y/*',
+        targetOriginId: 'faro',
+        viewerProtocolPolicy: 'https-only',
+        allowedMethods: ['GET', 'HEAD', 'OPTIONS', 'POST'],
+        cachedMethods: ['GET', 'HEAD'],
+        cachePolicyId: CACHING_DISABLED_POLICY_ID,
+        originRequestPolicyId: ALL_VIEWER_EXCEPT_HOST_HEADER_POLICY_ID,
+        compress: true,
+        functionAssociations: [
+          {
+            eventType: 'viewer-request',
+            functionArn: edgeFn.arn,
+          },
+        ],
       },
       {
         pathPattern: '/assets/*',

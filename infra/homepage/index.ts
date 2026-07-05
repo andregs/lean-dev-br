@@ -27,6 +27,12 @@ const sendAck = config.requireBoolean('sendAck');
 // Empty string → todo CSP omits the signal URL (sync fails gracefully; local writes still work).
 const relayServiceUrl = config.get('relayServiceUrl') ?? '';
 
+// Grafana Faro collector — not a secret (it ships to browsers via the app-key
+// in the path anyway), externalized so the zone/app can be rotated without a
+// code change. See docs/setup/observability.md.
+const faroCollectorHost = config.require('faroCollectorHost');
+const faroCollectorPath = config.require('faroCollectorPath');
+
 const zone = new aws.route53.Zone('zone', { name: domain });
 
 createEmail({ zone, domain });
@@ -48,6 +54,8 @@ const { bucketName, distributionId, distributionDomain } = createHosting({
   domain,
   executeApiDomain,
   relayServiceUrl,
+  faroCollectorHost,
+  faroCollectorPath,
 });
 
 const { identityPoolId, appMonitorId } = createObservability({ domain });

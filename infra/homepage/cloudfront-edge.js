@@ -104,6 +104,15 @@ function handler(event) {
     return req;
   }
 
+  // Faro RUM proxy: same-origin path so telemetry survives ad blockers/ITP
+  // that target known collector hostnames. CloudFront Functions have no
+  // env/config access, so the real collector path is baked in at deploy
+  // time by hosting.ts (string-replacing this placeholder).
+  if (req.uri === '/o11y/collect') {
+    req.uri = '%%FARO_COLLECTOR_PATH%%';
+    return req;
+  }
+
   // Apex SPA fallback: rewrite extensionless paths to /index.html so History API routes work.
   if (!req.uri.match(/\.[^/]+$/)) req.uri = '/index.html';
   return req;
