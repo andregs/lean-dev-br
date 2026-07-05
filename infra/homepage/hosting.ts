@@ -439,7 +439,9 @@ export function createHosting({
         pathPattern: '/o11y/*',
         targetOriginId: 'faro',
         viewerProtocolPolicy: 'https-only',
-        allowedMethods: ['GET', 'HEAD', 'OPTIONS', 'POST'],
+        // CloudFront only permits 3 exact AllowedMethods combos; POST forces
+        // the full 7-method set (matches /api/* below) — no [..., POST] subset.
+        allowedMethods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'POST', 'PUT'],
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: CACHING_DISABLED_POLICY_ID,
         originRequestPolicyId: ALL_VIEWER_EXCEPT_HOST_HEADER_POLICY_ID,
