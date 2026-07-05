@@ -111,13 +111,19 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Set release version
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
       - run: pnpm nx run-many -t build -p homepage,contact-api,todo,ui-modulith,federation-shell,federation-catalog,federation-cart --skip-nx-cache
         env:
           VITE_RECAPTCHA_SITE_KEY: ${{ vars.VITE_RECAPTCHA_SITE_KEY }}
           VITE_FLAGS_URL: ${{ vars.VITE_FLAGS_URL }}
           VITE_RELAY_URL: ${{ vars.VITE_RELAY_URL }}
+          VITE_APP_VERSION: ${{ env.SHORT_SHA }}
 
       - run: pnpm nx run blog:postbuild --skip-nx-cache
+        env:
+          NEXT_PUBLIC_APP_VERSION: ${{ env.SHORT_SHA }}
 
       - uses: aws-actions/configure-aws-credentials@254c19bd240aabef8777f48595e9d2d7b972184b # v6
         with:
