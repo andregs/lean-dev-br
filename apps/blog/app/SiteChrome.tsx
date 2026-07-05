@@ -1,5 +1,7 @@
 import { SiteFooter } from '@lean-dev-br/design-system/react';
 import { BlogNav } from './BlogNav';
+import { FaroBoot } from './FaroBoot';
+import { FaroRouteTracker } from './FaroRouteTracker';
 import { RumBoot } from './RumBoot';
 import { TrustedTypesBoot } from './TrustedTypesBoot';
 import type { Locale } from '../lib/posts';
@@ -14,6 +16,8 @@ export function SiteChrome({ locale, children }: Props) {
     <body>
       <TrustedTypesBoot />
       <RumBoot />
+      <FaroBoot />
+      <FaroRouteTracker />
       <BlogNav locale={locale} />
       <main className="page-shell">{children}</main>
       <SiteFooter />

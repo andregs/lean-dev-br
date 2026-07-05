@@ -6,9 +6,9 @@ import { initNav } from '@lean-dev-br/design-system';
 import { createI18n, saveLocalePreference, sharedCatalog } from '@lean-dev-br/i18n';
 import enUS from './locales/en-US.json';
 import ptBR from './locales/pt-BR.json';
+import { initObservability } from '@lean-dev-br/faro';
 import './observer.js';
 import './rum.js';
-import { initObservability } from './observability.js';
 import { renderContact } from './views/contact.js';
 import { renderHome } from './views/home.js';
 import { renderLabs } from './views/labs.js';
@@ -20,6 +20,19 @@ const routes = {
   '/contact': renderContact,
   '/labs': renderLabs,
 };
+
+/** No router lib — routing is manual pushState dispatch (see below) — so
+ * trackNavigation makes Faro capture URL changes and navigation timing.
+ * @param {FlagClient} flags
+ */
+function bootObservability(flags) {
+  initObservability(flags, {
+    appName: 'homepage',
+    version: import.meta.env.VITE_APP_VERSION ?? 'dev',
+    environment: import.meta.env.MODE,
+    extraConfig: { experimental: { trackNavigation: true } },
+  });
+}
 
 /** @type {Record<Locale, Record<string, string>>} */
 const catalog = {
@@ -36,14 +49,14 @@ let currentI18n = createI18n({ locale: 'en-US', catalog });
 // default anyway. The real fetch below swaps this in and re-renders once it lands.
 /** @type {FlagClient} */
 let flags = await createFlagClient({ flags: {} });
-initObservability(flags); // no-op until the real flags.json lands (empty client resolves to the off default)
+bootObservability(flags); // no-op until the real flags.json lands (empty client resolves to the off default)
 
 fetch('/flags.json')
   .then((r) => r.json())
   .then((flagsJson) => createFlagClient(flagsJson))
   .then((client) => {
     flags = client;
-    initObservability(flags);
+    bootObservability(flags);
     // Re-rendering rebuilds #app's innerHTML, which would tear down the
     // contact form mid-submit and strand submit()'s DOM references on
     // detached nodes — its success/error status would then update elements
