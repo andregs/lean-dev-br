@@ -1,6 +1,9 @@
 // @ts-check
 /** @import { Locale } from '@lean-dev-br/i18n' */
+/** @import { FlagClient } from '@lean-dev-br/flags' */
 import './styles.css';
+import { createFlagClient } from '@lean-dev-br/flags';
+import { initObservability } from '@lean-dev-br/faro';
 import { initNav } from '@lean-dev-br/design-system';
 import { createI18n, saveLocalePreference, sharedCatalog } from '@lean-dev-br/i18n';
 import { SyncedPasskeyKeyProvider } from './key-provider.js';
@@ -9,6 +12,33 @@ import enUS from './locales/en-US.json';
 import ptBR from './locales/pt-BR.json';
 
 const app = /** @type {HTMLElement} */ (document.getElementById('app'));
+
+// Same value ui.js reads independently for the relay sync client.
+const RELAY_URL = import.meta.env.VITE_RELAY_URL ?? 'http://localhost:8080';
+
+/**
+ * No routing (single static screen, DOM-only re-renders) — nothing to track
+ * via trackNavigation. propagateTraceHeaderCorsUrls carries the W3C trace
+ * context to relay-service, which is cross-origin (Cloud Run's own domain) —
+ * Faro doesn't send it cross-origin by default.
+ * @param {FlagClient} flags
+ */
+function bootObservability(flags) {
+  initObservability(flags, {
+    appName: 'todo',
+    version: import.meta.env.VITE_APP_VERSION ?? 'dev',
+    environment: import.meta.env.MODE,
+    extraConfig: { propagateTraceHeaderCorsUrls: [RELAY_URL] },
+  });
+}
+
+fetch('/flags.json')
+  .then((r) => r.json())
+  .then((flagsJson) => createFlagClient(flagsJson))
+  .then((flags) => bootObservability(flags))
+  .catch(() => {
+    /* stay dark on any failure — no flags signal means no Faro */
+  });
 
 /** @type {Record<Locale, Record<string, string>>} */
 const catalog = {
