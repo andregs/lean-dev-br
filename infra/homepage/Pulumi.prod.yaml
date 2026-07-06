@@ -17,10 +17,16 @@ config:
   # Not a secret (ships to browsers via the app-key in the path anyway).
   lean-dev-br-homepage:faroCollectorHost: 'faro-collector-prod-sa-east-1.grafana.net'
   lean-dev-br-homepage:faroCollectorPath: '/collect/00212937a2c770109209f2c668cdc927'
+  # Grafana OTLP gateway for contact-api traces+logs. Endpoint isn't a secret;
+  # the auth header (below, via --secret) embeds the API token.
+  lean-dev-br-homepage:otelExporterOtlpEndpoint: 'https://otlp-gateway-prod-sa-east-1.grafana.net/otlp'
   # Set secrets via CLI — never commit plaintext values:
   #   pulumi config set --secret notifyEmail <your-email>
   #   pulumi config set --secret recaptchaSecret <secret-key>
+  #   pulumi config set --secret otelExporterOtlpHeaders 'Authorization=Basic <base64 instanceId:token>'
   lean-dev-br-homepage:notifyEmail:
     secure: AAABAGuUMUxT1TPG3teKIzO38YtusrKhXZvDsL4GeQc29LNmg1ISzi1bEQIZsuQAyw==
   lean-dev-br-homepage:recaptchaSecret:
     secure: AAABACBzpG7Q4MvSYlQhO1HHmZy29Cv/BUX64sxYc0MxKtpMUEJrSa46zJOWYwL0q1vOC5mSOJDWJpDAJBA2cgwD5IMVwkNF
+  lean-dev-br-homepage:otelExporterOtlpHeaders:
+    secure: AAABALDw/G1Pl24Qp1epmuQeAKIkKFXrQFBLlDC7LqPCwjYBrCKPxSZB/Sod/qxuT+z+kXZ2PptsDiOzcjZELYiTsBL5iSJRT8/Po5Px0CVFvPR9oK4p6KpQtNhhDMXMmAx/wqWAN2OhAxV22D3aBXOcNDKfRrZD8juDr8Q9+IfQ1nXHWkLLWD/HvKNtQR7TP3YEbYglAyRWk8fyG84soxsKoQ/Z83tOIlHlIrmmAHn1TrdcPUReGUd/T/yypT0x9l8svT1X2sFjb8NfB+waOW1CdcfY49tyPp4QDOMOeocxUOPIbkhiAaPEIurO4PTtNvc1ERRg4Ma2coxfozUf0xBkEk85Z8stkpjCo9dsRmvC8uSkt8Kh9j/SuhqG6/UcdDzlmsAtyo2koUYuI3PlbWWMUi3Id+nd4MDMRQk7V9FuBXSuT3Dc6y8w1xwwPRSje4sr2vuN+A7Y6ZokiyCIH+eYZbgX0Ef/t7jqfIzKch7RHveX4Z8Gk49QgCw=

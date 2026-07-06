@@ -32,6 +32,11 @@ const relayServiceUrl = config.get('relayServiceUrl') ?? '';
 const faroCollectorHost = config.require('faroCollectorHost');
 const faroCollectorPath = config.require('faroCollectorPath');
 
+// Grafana OTLP gateway for contact-api's traces+logs. Endpoint is not a secret
+// (just a URL); the auth header embeds the API token so it is secret.
+const otelExporterOtlpEndpoint = config.require('otelExporterOtlpEndpoint');
+const otelExporterOtlpHeaders = config.requireSecret('otelExporterOtlpHeaders');
+
 const zone = new aws.route53.Zone('zone', { name: domain });
 
 createEmail({ zone, domain });
@@ -46,6 +51,8 @@ const { apiEndpoint, executeApiDomain } = createApi({
   recaptchaMinScore,
   recaptchaAction,
   sendAck,
+  otelExporterOtlpEndpoint,
+  otelExporterOtlpHeaders,
 });
 
 const { bucketName, distributionId, distributionDomain } = createHosting({

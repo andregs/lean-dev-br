@@ -7,6 +7,7 @@ vi.mock('../mailer.js', () => ({ sendMail: vi.fn().mockResolvedValue(undefined) 
 import { verifyToken } from '../recaptcha.js';
 import { sendMail } from '../mailer.js';
 import { handler } from '../handler.js';
+import { log } from '../otel.js';
 
 const mockVerify = vi.mocked(verifyToken);
 const mockSend = vi.mocked(sendMail);
@@ -19,7 +20,9 @@ function makeEvent(body: unknown, rawPath = '/api/contact'): APIGatewayProxyEven
     rawPath,
     rawQueryString: '',
     headers: {},
-    requestContext: {} as APIGatewayProxyEventV2['requestContext'],
+    requestContext: {
+      http: { method: 'POST' },
+    } as APIGatewayProxyEventV2['requestContext'],
     isBase64Encoded: false,
   };
 }
@@ -31,36 +34,36 @@ describe('POST /api/csp-report', () => {
   });
 
   it('returns 204 and logs the body', async () => {
-    const spy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const spy = vi.spyOn(log, 'info').mockImplementation(() => undefined);
     const payload = JSON.stringify({
       type: 'csp-violation',
       body: { blockedURL: 'https://evil.com' },
     });
     const res = await handler(makeEvent(payload, '/api/csp-report'));
     expect(res).toMatchObject({ statusCode: 204 });
-    expect(spy).toHaveBeenCalledWith('csp-report:', payload);
+    expect(spy).toHaveBeenCalledWith('csp-report', { body: payload });
     spy.mockRestore();
   });
 
   it('returns 204 even for malformed body', async () => {
-    vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    vi.spyOn(log, 'info').mockImplementation(() => undefined);
     const res = await handler(makeEvent('not-json', '/api/csp-report'));
     expect(res).toMatchObject({ statusCode: 204 });
   });
 
   it('truncates body to the configured cap before logging', async () => {
     process.env.CSP_REPORT_MAX_BYTES = '2048';
-    const spy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const spy = vi.spyOn(log, 'info').mockImplementation(() => undefined);
     await handler(makeEvent('x'.repeat(4000), '/api/csp-report'));
-    const logged = spy.mock.calls[0][1] as string;
+    const logged = (spy.mock.calls[0][1] as { body: string }).body;
     expect(logged.length).toBe(2048);
     spy.mockRestore();
   });
 
   it('logs the full body when no cap is configured', async () => {
-    const spy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const spy = vi.spyOn(log, 'info').mockImplementation(() => undefined);
     await handler(makeEvent('y'.repeat(3000), '/api/csp-report'));
-    const logged = spy.mock.calls[0][1] as string;
+    const logged = (spy.mock.calls[0][1] as { body: string }).body;
     expect(logged.length).toBe(3000);
     spy.mockRestore();
   });

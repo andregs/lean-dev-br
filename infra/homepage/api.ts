@@ -11,6 +11,8 @@ interface ApiArgs {
   recaptchaMinScore: number;
   recaptchaAction: string;
   sendAck: boolean;
+  otelExporterOtlpEndpoint: string;
+  otelExporterOtlpHeaders: pulumi.Output<string>;
 }
 
 export function createApi({
@@ -23,6 +25,8 @@ export function createApi({
   recaptchaMinScore,
   recaptchaAction,
   sendAck,
+  otelExporterOtlpEndpoint,
+  otelExporterOtlpHeaders,
 }: ApiArgs) {
   const lambdaRole = new aws.iam.Role('lambda-role', {
     assumeRolePolicy: JSON.stringify({
@@ -83,6 +87,9 @@ export function createApi({
         MIN_SCORE: String(recaptchaMinScore),
         CSP_REPORT_MAX_BYTES: String(cspReportMaxBytes),
         SEND_ACK: sendAck ? 'true' : 'false',
+        OTEL_SERVICE_NAME: 'contact-api',
+        OTEL_EXPORTER_OTLP_ENDPOINT: otelExporterOtlpEndpoint,
+        OTEL_EXPORTER_OTLP_HEADERS: otelExporterOtlpHeaders,
       },
     },
   });

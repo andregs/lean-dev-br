@@ -2,6 +2,7 @@ import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda
 import type { Client } from '@openfeature/server-sdk';
 import { createFlagClient } from '@lean-dev-br/flags/server';
 import { sendMail } from './mailer.js';
+import { log, withSpan, withTracing } from './otel.js';
 import { verifyToken } from './recaptcha.js';
 
 // Initialized at module load (cold start). Subsequent warm invocations reuse
@@ -13,9 +14,13 @@ async function getFlags(): Promise<Client> {
   let flagsJson = { flags: {} };
   if (url) {
     try {
-      flagsJson = await fetch(url).then((r) => r.json() as Promise<typeof flagsJson>);
+      flagsJson = await withSpan('flags.fetch', () =>
+        fetch(url).then((r) => r.json() as Promise<typeof flagsJson>),
+      );
     } catch (err) {
-      console.warn('flags fetch failed, defaulting all flags to caller default:', err);
+      log.warn('flags fetch failed, defaulting all flags to caller default', {
+        error: String(err),
+      });
     }
   }
   _flags = await createFlagClient(flagsJson);
@@ -86,7 +91,7 @@ const ACK_TEMPLATES: Record<SupportedLocale, { subject: string; body: string }> 
   },
 };
 
-export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> => {
+const handleRequest = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> => {
   // Flags client available for future use; initialized once per warm instance.
   await getFlags();
 
@@ -94,7 +99,7 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
     // Cap is supplied by infra (CSP_REPORT_MAX_BYTES); if absent, log full body
     const maxBytes = Number(process.env.CSP_REPORT_MAX_BYTES);
     const body = event.body ?? '';
-    console.log('csp-report:', Number.isFinite(maxBytes) ? body.slice(0, maxBytes) : body);
+    log.info('csp-report', { body: Number.isFinite(maxBytes) ? body.slice(0, maxBytes) : body });
     return { statusCode: 204, body: '' };
   }
 
@@ -136,15 +141,11 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
   const visitorEmail = typeof email === 'string' && email.trim().length > 0 ? email.trim() : null;
 
   try {
-    await verifyToken(
-      token,
-      RECAPTCHA_SECRET,
-      RECAPTCHA_ACTION,
-      MIN_SCORE_NUM,
-      RECAPTCHA_VERIFY_URL,
+    await withSpan('recaptcha.verify', () =>
+      verifyToken(token, RECAPTCHA_SECRET, RECAPTCHA_ACTION, MIN_SCORE_NUM, RECAPTCHA_VERIFY_URL),
     );
   } catch (err) {
-    console.warn('reCAPTCHA rejection:', err);
+    log.warn('reCAPTCHA rejection', { error: String(err) });
     return problem(403, 'Bot check failed');
   }
 
@@ -155,15 +156,17 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
   ].join('\n\n');
 
   try {
-    await sendMail({
-      from: FROM_EMAIL,
-      to: NOTIFY_EMAIL,
-      replyTo: visitorEmail ?? undefined,
-      subject,
-      body: notifyBody,
-    });
+    await withSpan('ses.notify', () =>
+      sendMail({
+        from: FROM_EMAIL,
+        to: NOTIFY_EMAIL,
+        replyTo: visitorEmail ?? undefined,
+        subject,
+        body: notifyBody,
+      }),
+    );
   } catch (err) {
-    console.error('SES notify failed:', err);
+    log.error('SES notify failed', { error: String(err) });
     return problem(502, 'Failed to send message');
   }
 
@@ -171,15 +174,19 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
   // Enable via Pulumi config: `pulumi config set sendAck true`
   if (visitorEmail && process.env.SEND_ACK === 'true') {
     const ack = ACK_TEMPLATES[locale];
-    sendMail({
-      from: FROM_EMAIL,
-      to: visitorEmail,
-      subject: ack.subject,
-      body: ack.body,
-    }).catch((err: unknown) => {
-      console.warn('ACK email failed (non-fatal):', err);
+    withSpan('ses.ack', () =>
+      sendMail({
+        from: FROM_EMAIL,
+        to: visitorEmail,
+        subject: ack.subject,
+        body: ack.body,
+      }),
+    ).catch((err: unknown) => {
+      log.warn('ACK email failed (non-fatal)', { error: String(err) });
     });
   }
 
   return json(200, { ok: true });
 };
+
+export const handler = withTracing(handleRequest);
