@@ -1,0 +1,6 @@
+config:
+  gcp:project: lean-dev-br
+  aws:region: us-east-1
+  lean-dev-br-grafana:grafanaUrl: https://coralocelot178.grafana.net
+  lean-dev-br-grafana:grafanaAuth:
+    secure: AAABADVaU3DApJr8YnTULBj5DN0KpyyCfIyFfyushPSbn8H7TvCJe6hcK8g91l1QEa1HQWuIlP9/7P0kaznGpq+E/X1v2ZtbpdhnQkl4

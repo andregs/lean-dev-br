@@ -11,6 +11,7 @@ jobs:
     outputs:
       deploy-frontend: ${{ steps.flags.outputs.deploy-frontend }}
       deploy-relay: ${{ steps.flags.outputs.deploy-relay }}
+      deploy-grafana: ${{ steps.flags.outputs.deploy-grafana }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
@@ -68,6 +69,7 @@ jobs:
             # Manual trigger: always deploy everything that verify passes
             echo "deploy-frontend=true" >> "$GITHUB_OUTPUT"
             echo "deploy-relay=true" >> "$GITHUB_OUTPUT"
+            echo "deploy-grafana=true" >> "$GITHUB_OUTPUT"
           else
             # Some nx plugins (e.g. @module-federation/dts-plugin) print banners to
             # stdout during graph computation, ahead of the actual JSON array —
@@ -83,6 +85,11 @@ jobs:
               echo "deploy-relay=true" >> "$GITHUB_OUTPUT"
             else
               echo "deploy-relay=false" >> "$GITHUB_OUTPUT"
+            fi
+            if echo "$AFFECTED" | jq -e 'any(.[]; . == "@lean-dev-br/infra-grafana")' > /dev/null; then
+              echo "deploy-grafana=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "deploy-grafana=false" >> "$GITHUB_OUTPUT"
             fi
           fi
 
@@ -231,5 +238,39 @@ jobs:
           pnpm exec pulumi up --stack prod --yes \
             --config "lean-dev-br-relay-service:imageTag=${SHORT_SHA}"
         working-directory: infra/relay-service
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+  deploy-grafana:
+    needs: verify
+    if: needs.verify.result == 'success' && needs.verify.outputs.deploy-grafana == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: .tool-versions
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: aws-actions/configure-aws-credentials@254c19bd240aabef8777f48595e9d2d7b972184b # v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - uses: pulumi/actions@8e5e406f4007fca908480587cb9893c07090f58d # v7
+        with:
+          command: up
+          stack-name: prod
+          work-dir: infra/grafana
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

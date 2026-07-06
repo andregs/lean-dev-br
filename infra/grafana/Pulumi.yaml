@@ -1,0 +1,6 @@
+name: lean-dev-br-grafana
+runtime:
+  name: nodejs
+  options:
+    packagemanager: pnpm
+description: Grafana Cloud datasources (CloudWatch, GCP Cloud Monitoring) as code
