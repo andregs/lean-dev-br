@@ -23,14 +23,18 @@ import {
 } from '@opentelemetry/semantic-conventions';
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 
-/** OTEL_EXPORTER_OTLP_HEADERS is "Key=Value,Key2=Value2" (comma-separated pairs). */
-function parseOtlpHeaders(raw: string | undefined): Record<string, string> {
+/**
+ * OTEL_EXPORTER_OTLP_HEADERS is "Key=Value,Key2=Value2" per the W3C Baggage
+ * format the OTel spec points to — values outside baggage-octet (e.g. the
+ * space in "Basic <token>") MUST be percent-encoded, so decode each value.
+ */
+export function parseOtlpHeaders(raw: string | undefined): Record<string, string> {
   const headers: Record<string, string> = {};
   if (!raw) return headers;
   for (const pair of raw.split(',')) {
     const idx = pair.indexOf('=');
     if (idx === -1) continue;
-    headers[pair.slice(0, idx).trim()] = pair.slice(idx + 1).trim();
+    headers[pair.slice(0, idx).trim()] = decodeURIComponent(pair.slice(idx + 1).trim());
   }
   return headers;
 }
