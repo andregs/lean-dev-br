@@ -70,7 +70,7 @@ const service = new gcp.cloudrunv2.Service(
           // Cloud Run v2 defaults to port 8080; Spring Boot also defaults to 8080 — no override needed.
           envs: [
             { name: 'SPRING_PROFILES_ACTIVE', value: 'prod' },
-            { name: 'PRUNE_TOKEN', value: pruneToken },
+            { name: 'RELAY_PRUNETOKEN', value: pruneToken },
             {
               name: 'MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT',
               value: otelOtlpEndpoint,

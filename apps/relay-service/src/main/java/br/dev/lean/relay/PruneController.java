@@ -29,9 +29,9 @@ class PruneController {
   @PostMapping("/internal/prune")
   ResponseEntity<PruneResult> prune(
       @RequestHeader(value = "X-Prune-Token", required = false) String token) {
-    String configured = props.pruneToken();
-    if (configured.isBlank() || !MessageDigest.isEqual(
-        configured.getBytes(StandardCharsets.UTF_8),
+    // pruneToken is @NotBlank-validated at startup — never blank here.
+    if (!MessageDigest.isEqual(
+        props.pruneToken().getBytes(StandardCharsets.UTF_8),
         (token == null ? "" : token).getBytes(StandardCharsets.UTF_8))) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
