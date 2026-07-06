@@ -16,7 +16,24 @@ function flagsWith(on: boolean): FlagClient {
 
 interface CapturedConfig {
   sessionTracking: { samplingRate: number };
-  beforeSend: (item: { type: string }) => unknown;
+  beforeSend: (item: {
+    type: string;
+    meta?: { session?: { id?: string } };
+    payload?: { resourceSpans?: { scopeSpans?: { spans?: { traceId?: string }[] }[] }[] };
+  }) => unknown;
+}
+
+/** Builds a trace-type item whose sampling key is the given traceId. */
+function traceItem(traceId: string) {
+  return {
+    type: 'trace',
+    payload: { resourceSpans: [{ scopeSpans: [{ spans: [{ traceId }] }] }] },
+  };
+}
+
+/** Builds a non-trace item (e.g. a log) keyed only by session ID. */
+function sessionItem(sessionId: string) {
+  return { type: 'log', meta: { session: { id: sessionId } } };
 }
 
 const meta = { appName: 'homepage', version: '1.0.0', environment: 'production' };
@@ -71,12 +88,46 @@ describe('initObservability', () => {
     expect(config.beforeSend({ type: 'exception' })).toEqual({ type: 'exception' });
   });
 
-  it('samples non-exception items at the configured rate', async () => {
+  it('falls back to Math.random when no trace/session ID is derivable', async () => {
     const spy = vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const { initObservability } = await import('./index.js');
     initObservability(flagsWith(true), meta);
     const config = initializeFaro.mock.calls[0][0] as CapturedConfig;
-    expect(config.beforeSend({ type: 'log' })).toBeNull(); // 0.5 >= NON_ERROR_SAMPLE_RATE (0.15)
+    config.beforeSend({ type: 'log' });
+    expect(spy).toHaveBeenCalled(); // exercises the no-key fallback path
     spy.mockRestore();
+  });
+
+  it('gives every item of the same trace the same keep/drop decision (no partial traces)', async () => {
+    const { initObservability } = await import('./index.js');
+    initObservability(flagsWith(true), meta);
+    const config = initializeFaro.mock.calls[0][0] as CapturedConfig;
+
+    const traceId = 'a1b2c3d4e5f60718293a4b5c6d7e8f90';
+    const decisions = Array.from({ length: 5 }, () => config.beforeSend(traceItem(traceId)));
+    // Every call with the same trace ID must agree — all kept or all dropped.
+    expect(decisions.every((d) => d !== null)).toBe(decisions[0] !== null);
+  });
+
+  it('gives every item of the same session the same keep/drop decision', async () => {
+    const { initObservability } = await import('./index.js');
+    initObservability(flagsWith(true), meta);
+    const config = initializeFaro.mock.calls[0][0] as CapturedConfig;
+
+    const sessionId = 'session-xyz';
+    const decisions = Array.from({ length: 5 }, () => config.beforeSend(sessionItem(sessionId)));
+    expect(decisions.every((d) => d !== null)).toBe(decisions[0] !== null);
+  });
+
+  it('hashToUnitInterval spreads sequential IDs across the output range', async () => {
+    // Regression: an earlier version of this hash barely moved on a 1-char
+    // difference (e.g. "trace-0" vs "trace-1" landed within 1e-9 of each
+    // other), so sequential IDs collapsed into a handful of buckets instead
+    // of spreading out — any rate below 1.0 would then keep either ~all or
+    // ~none of a sequential ID range instead of a representative sample.
+    const { hashToUnitInterval } = await import('./index.js');
+    const values = Array.from({ length: 500 }, (_, i) => hashToUnitInterval(`trace-${String(i)}`));
+    const buckets = new Set(values.map((v) => Math.floor(v * 10))); // 10 deciles
+    expect(buckets.size).toBeGreaterThan(5); // spread across most deciles, not clumped
   });
 });

@@ -15,3 +15,6 @@ export interface ObservabilityAppMeta {
  * sampling, and instrumentation set can't drift between them.
  */
 export function initObservability(flags: FlagClient, meta: ObservabilityAppMeta): void;
+
+/** Exported for testing the hash's distribution quality independent of the currently-configured sample rate. */
+export function hashToUnitInterval(str: string): number;
