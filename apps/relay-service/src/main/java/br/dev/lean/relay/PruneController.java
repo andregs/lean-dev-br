@@ -29,7 +29,8 @@ class PruneController {
   @PostMapping("/internal/prune")
   ResponseEntity<PruneResult> prune(
       @RequestHeader(value = "X-Prune-Token", required = false) String token) {
-    // pruneToken is @NotBlank-validated at startup — never blank here.
+    // No default for pruneToken — missing config NPEs here instead of
+    // silently always returning 403.
     if (!MessageDigest.isEqual(
         props.pruneToken().getBytes(StandardCharsets.UTF_8),
         (token == null ? "" : token).getBytes(StandardCharsets.UTF_8))) {

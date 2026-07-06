@@ -1,6 +1,7 @@
 package br.dev.lean.relay;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -56,5 +57,15 @@ class PruneControllerTest {
 
     assertThat(safeController.prune("secret-token").getStatusCode())
         .isEqualTo(HttpStatus.FORBIDDEN);
+  }
+
+  @Test
+  void prune_missingConfiguredToken_throwsInsteadOfSilentlyRejecting() {
+    var props = mock(RelayProperties.class);
+    when(props.pruneToken()).thenReturn(null);
+    var unconfiguredController = new PruneController(store, props);
+
+    assertThatThrownBy(() -> unconfiguredController.prune("anything"))
+        .isInstanceOf(NullPointerException.class);
   }
 }

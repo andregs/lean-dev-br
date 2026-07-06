@@ -3,17 +3,13 @@ package br.dev.lean.relay;
 import java.time.Duration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.validation.annotation.Validated;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 
 /**
- * Configuration properties for the Yjs update relay. No field has a
- * hard-coded default — every value must come from config (base
- * {@code application.yaml} or env), so a missing value fails app startup
- * instead of silently running with a wrong assumption.
+ * Configuration properties for the Yjs update relay. No hard-coded defaults —
+ * missing config should break loudly, not run with a wrong assumption.
+ * {@code maxUpdatesPerRoom} (primitive) fails app startup if unbound;
+ * {@code roomTtl}/{@code pruneToken} bind to {@code null} if unbound and fail
+ * on first use instead.
  *
  * @param cors              CORS settings for {@code /rooms/**} endpoints.
  * @param roomTtl           How long a room stays alive after its last read or
@@ -30,12 +26,11 @@ import jakarta.validation.constraints.Positive;
  *                          "pruneToken").
  */
 @ConfigurationProperties(prefix = "relay")
-@Validated
 record RelayProperties(
     Cors cors,
-    @NotNull Duration roomTtl,
-    @Positive int maxUpdatesPerRoom,
-    @NotBlank String pruneToken) {
+    Duration roomTtl,
+    int maxUpdatesPerRoom,
+    String pruneToken) {
 
   /**
    * @param allowedOrigins Comma-separated CORS allowed origins for
