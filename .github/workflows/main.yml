@@ -180,6 +180,25 @@ jobs:
       - name: Build native image
         run: pnpm nx run relay-service:docker-build
 
+      - name: Smoke test container
+        run: |
+          docker run -d --name relay-smoke -p 8080:8080 \
+            -e RELAY_PRUNETOKEN=smoke-test \
+            -e RELAY_FIRESTORE_PROJECTID=smoke-test \
+            "$RELAY_IMAGE"
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8080/actuator/health; then
+              echo "Container is healthy"
+              docker stop relay-smoke
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Container did not become healthy in time"
+          docker logs relay-smoke
+          docker stop relay-smoke
+          exit 1
+
       - name: Scan image for CVEs
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
