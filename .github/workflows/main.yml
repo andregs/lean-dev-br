@@ -69,7 +69,10 @@ jobs:
             echo "deploy-frontend=true" >> "$GITHUB_OUTPUT"
             echo "deploy-relay=true" >> "$GITHUB_OUTPUT"
           else
-            AFFECTED=$(pnpm nx show projects --affected --json 2>/dev/null || echo "[]")
+            # Some nx plugins (e.g. @module-federation/dts-plugin) print banners to
+            # stdout during graph computation, ahead of the actual JSON array —
+            # grab just the array line so jq below doesn't choke on the noise.
+            AFFECTED=$(pnpm nx show projects --affected --json 2>/dev/null | grep -m1 -E '^\[.*\]$' || echo "[]")
             echo "Affected: $AFFECTED"
             if echo "$AFFECTED" | jq -e 'any(.[]; . == "homepage" or . == "contact-api" or . == "todo" or . == "blog" or . == "ui-modulith" or . == "federation-shell" or . == "federation-catalog" or . == "federation-cart" or . == "@lean-dev-br/infra-homepage")' > /dev/null; then
               echo "deploy-frontend=true" >> "$GITHUB_OUTPUT"
