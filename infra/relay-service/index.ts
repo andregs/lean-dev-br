@@ -10,6 +10,11 @@ const imageTag = config.get('imageTag');
 const pruneToken = config.requireSecret('pruneToken');
 const alertEmail = config.requireSecret('alertEmail');
 
+// Grafana OTLP gateway for traces. Endpoint isn't a secret; the Authorization
+// header value is (it embeds the API token).
+const otelOtlpEndpoint = config.require('otelOtlpEndpoint');
+const otelOtlpAuthorization = config.requireSecret('otelOtlpAuthorization');
+
 // Artifact Registry repository — created on first deploy; used by docker-push target.
 const repo = new gcp.artifactregistry.Repository('relay-service-repo', {
   project: gcpProject,
@@ -66,6 +71,11 @@ const service = new gcp.cloudrunv2.Service(
           envs: [
             { name: 'SPRING_PROFILES_ACTIVE', value: 'prod' },
             { name: 'PRUNE_TOKEN', value: pruneToken },
+            {
+              name: 'MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT',
+              value: otelOtlpEndpoint,
+            },
+            { name: 'OTEL_OTLP_AUTHORIZATION', value: otelOtlpAuthorization },
           ],
           resources: {
             cpuIdle: true,

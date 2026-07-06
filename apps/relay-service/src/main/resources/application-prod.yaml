@@ -8,6 +8,11 @@ logging:
     format:
       console: ecs # elastic common schema
 
+management:
+  tracing:
+    sampling:
+      probability: 1.0 # no sampling — see libs/faro's equivalent decision; traffic is far under free-tier limits either way
+
 relay:
   cors:
     allowed-origins: 'https://lean.dev.br'

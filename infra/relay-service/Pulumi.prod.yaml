@@ -5,6 +5,14 @@ config:
   #   pulumi config set imageTag <tag>
   # Omit to deploy with a placeholder image (creates the Cloud Run service; no traffic served).
 
+  # Grafana OTLP gateway for traces. Full URL including the /v1/traces suffix —
+  # Spring's management.opentelemetry.tracing.export.otlp.endpoint property
+  # expects the complete signal-specific path, unlike a base URL.
+  lean-dev-br-relay-service:otelOtlpEndpoint: 'https://otlp-gateway-prod-sa-east-1.grafana.net/otlp/v1/traces'
+  # Set via CLI — the literal "Authorization" header value (e.g. "Basic <base64>"):
+  #   pulumi config set --secret otelOtlpAuthorization 'Basic <base64 instanceId:token>'
+  lean-dev-br-relay-service:otelOtlpAuthorization:
+    secure: AAABAIeREnSAJCAuw+vpHtkUQhKwUby5XIxvXi5pfm5Q0p91I2pDEkXGRNue7MwHndbX/nLGe6rw/W7kW0ye+pPHmUGg336V4NO/qWrdqRfgSm1DxUGqlt4JSiWuFRvADxX/vjkDByrZ7gNt6H+hfyWina6KqNHaxQlFi6m1RVp5Z0rw+mMjRR959jDRsLsxWDgJc79Lbvk/QL9X6elSKiGyOGaeL9Rhlyt9tMqkMNs+to4uYfvVnqaozJyZMw49xTHvBGoIJl8Z/zABOgI79kW8mk2gJpII0Rlmao9JBqyB+YTu1iQI2JQFzeFVzA==
   lean-dev-br-relay-service:pruneToken:
     secure: AAABAK33kokUvSPce+J4G0OkKjoTkBN2H7rB3+i6qOvXPWzeygVgMxvnnSsl3IfWBgBt3o9Jc/yM6yViQkzldSenL0pInmjZD30uI0cCJWaaAhvmXDoWTJG/vIMzCdAb
   lean-dev-br-relay-service:alertEmail:

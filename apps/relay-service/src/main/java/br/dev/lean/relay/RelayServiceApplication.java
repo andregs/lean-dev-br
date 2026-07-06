@@ -4,7 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@org.springframework.boot.context.properties.EnableConfigurationProperties(RelayProperties.class)
+@org.springframework.boot.context.properties.EnableConfigurationProperties({
+    RelayProperties.class,
+    OtelProperties.class
+})
 public class RelayServiceApplication {
 
 	public static void main(String[] args) {
