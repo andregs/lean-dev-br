@@ -151,7 +151,14 @@ export function withTracing(
       throw err;
     } finally {
       span.end();
-      await Promise.all([tracerProvider?.forceFlush(), loggerProvider?.forceFlush()]);
+      // A rejection here would override whatever the try block already
+      // returned/threw (JS finally-block semantics) — a broken OTLP export
+      // must never turn a successful response into a 500 for real visitors.
+      try {
+        await Promise.all([tracerProvider?.forceFlush(), loggerProvider?.forceFlush()]);
+      } catch (flushErr) {
+        console.warn('OTel flush failed (non-fatal):', flushErr);
+      }
     }
   };
 }
