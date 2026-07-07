@@ -42,6 +42,11 @@ Each project's `playwright.config.ts` starts the relevant dev server if `E2E_BAS
 
 Nightly monitor uses `--grep @prod-safe` so only read-only specs run against production.
 
+`@prod-safe` specs must not depend on stubs (`page.route`) for their pass/fail signal — a
+stubbed reCAPTCHA/backend response tests a fake pipeline against the real site. Interactive
+flows that need mocking to be deterministic belong in `@dev-only` instead; keep a
+non-stubbed structural/interactivity check as the `@prod-safe` companion.
+
 ## Environment variables
 
 | Variable       | Purpose                                              | Default                   |
@@ -50,6 +55,13 @@ Nightly monitor uses `--grep @prod-safe` so only read-only specs run against pro
 | `E2E_FULL`     | Enable full browser matrix (Firefox, WebKit, mobile) | unset (Chromium only)     |
 
 Setting `E2E_BASE_URL=https://lean.dev.br` switches to prod mode: `isProd()` returns true, webServers are not started, and `blogPath()` uses the `/blog` prefix.
+
+Prod mode also raises resilience via `libs/e2e-support`'s `retries()` (2 retries, vs 0
+locally) and `traceMode()` (`retain-on-failure`, vs `on-first-retry` locally) — a nightly
+run against a live site over the internet must tolerate a transient blip without going red,
+and a red run must always leave a trace behind since it can't be reproduced interactively.
+A monitor run that goes green only after a retry is **flaky**, not healthy — check the report
+for retried tests even when the overall run is green.
 
 ## Mocking
 
@@ -63,6 +75,13 @@ Setting `E2E_BASE_URL=https://lean.dev.br` switches to prod mode: `isProd()` ret
 | homepage | 5173     | `/`                           |
 | blog     | 3001     | `/blog/` (Next.js `basePath`) |
 | todo     | 4201     | `/todo/` (Vite `base`)        |
+
+## Copy/structure coupling
+
+`home.spec.ts` and `i18n.spec.ts` assert exact hero copy, nav hrefs, and hreflang tags —
+intentionally, since those are structural smoke checks. This means editing hero copy or
+nav structure requires updating those assertions in the same commit, or the next nightly
+run will (correctly) go red reporting a "broken" site that's actually just reworded.
 
 ## Local dev server topology
 

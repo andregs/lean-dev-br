@@ -1,5 +1,5 @@
 import { defineConfig } from '@playwright/test';
-import { baseUrl, browserProjects, isProd } from '@lean-dev-br/e2e-support';
+import { baseUrl, browserProjects, isProd, retries, traceMode } from '@lean-dev-br/e2e-support';
 
 const LOCAL_PORT = 4201;
 
@@ -10,9 +10,10 @@ export default defineConfig({
   testDir: './e2e',
   outputDir: 'test-results',
   reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
+  retries: retries(),
   use: {
     baseURL: baseUrl(LOCAL_PORT),
-    trace: 'on-first-retry',
+    trace: traceMode(),
     screenshot: 'only-on-failure',
     video: 'off',
   },

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { blogPath } from '../playwright.config';
 
 test('blog index lists posts', { tag: ['@prod-safe'] }, async ({ page }) => {
@@ -16,14 +16,22 @@ test('post page loads from list link', { tag: ['@prod-safe'] }, async ({ page })
   await expect(page.locator('h1')).toBeVisible();
 });
 
-test('hello-world post loads directly', { tag: ['@prod-safe'] }, async ({ page }) => {
-  await page.goto(blogPath('/hello-world/'));
-  await expect(page.locator('h1')).toBeVisible();
-});
+test(
+  'post page loads directly by URL (not just via client nav)',
+  { tag: ['@prod-safe'] },
+  async ({ page }) => {
+    await page.goto(blogPath('/'));
+    const href = await page.locator('a.post-title').first().getAttribute('href');
+    expect(href).toBeTruthy();
+    await page.goto(href ?? blogPath('/'));
+    await expect(page.locator('h1')).toBeVisible();
+  },
+);
 
 test('tags page lists posts', { tag: ['@prod-safe'] }, async ({ page }) => {
   // Navigate from post to its tag page
-  await page.goto(blogPath('/hello-world/'));
+  await page.goto(blogPath('/'));
+  await page.locator('a.post-title').first().click();
   const tagLink = page.locator('a[href*="/tags/"]').first();
   await expect(tagLink).toBeVisible();
   await tagLink.click();

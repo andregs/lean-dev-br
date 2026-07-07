@@ -18,3 +18,20 @@ export function isProd(): boolean {
 export function fullMatrix(): boolean {
   return Boolean(process.env.E2E_FULL);
 }
+
+/**
+ * Retries for the current run. Prod runs a live site over the internet and must
+ * tolerate transient network blips; a lost race there should surface as flaky
+ * (retried, then green), not a hard failure. Local/CI runs against a freshly
+ * started dev server don't need it.
+ */
+export function retries(): number {
+  return isProd() ? 2 : 0;
+}
+
+/** Trace capture mode. Prod always keeps a trace on failure for diagnosis, since
+ * a red nightly run can't be reproduced interactively; locally, only first-retry
+ * traces are worth the disk cost. */
+export function traceMode(): 'retain-on-failure' | 'on-first-retry' {
+  return isProd() ? 'retain-on-failure' : 'on-first-retry';
+}
