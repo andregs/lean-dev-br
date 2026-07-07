@@ -16,6 +16,11 @@ const app = /** @type {HTMLElement} */ (document.getElementById('app'));
 // Same value ui.js reads independently for the relay sync client.
 const RELAY_URL = import.meta.env.VITE_RELAY_URL ?? 'http://localhost:8080';
 
+// OTel's urlMatches() does strict string equality against a plain string
+// entry — the bare origin never equals a real request URL, which always has
+// a path (e.g. /rooms/x/updates). Needs a RegExp to match as a prefix.
+const RELAY_URL_PATTERN = new RegExp(`^${RELAY_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+
 /**
  * No routing (single static screen, DOM-only re-renders) — nothing to track
  * via trackNavigation. propagateTraceHeaderCorsUrls carries the W3C trace
@@ -28,7 +33,7 @@ function bootObservability(flags) {
     appName: 'todo',
     version: import.meta.env.VITE_APP_VERSION ?? 'dev',
     environment: import.meta.env.MODE,
-    propagateTraceHeaderCorsUrls: [RELAY_URL],
+    propagateTraceHeaderCorsUrls: [RELAY_URL_PATTERN],
   });
 }
 
