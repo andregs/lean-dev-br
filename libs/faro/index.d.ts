@@ -4,6 +4,8 @@ export interface ObservabilityAppMeta {
   appName: string;
   version: string;
   environment: string | undefined;
+  /** Cross-origin URLs to attach the W3C traceparent header to (Faro only propagates it same-origin by default). */
+  propagateTraceHeaderCorsUrls?: (string | RegExp)[];
   /** Extra initializeFaro config to merge in — e.g. `{ experimental: { trackNavigation: true } }` for apps with no router. */
   extraConfig?: Record<string, unknown>;
 }

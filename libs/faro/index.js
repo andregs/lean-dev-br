@@ -63,7 +63,10 @@ let initialized = false;
  * @param {FlagClient} flags
  * @param {ObservabilityAppMeta} meta
  */
-export function initObservability(flags, { appName, version, environment, extraConfig = {} }) {
+export function initObservability(
+  flags,
+  { appName, version, environment, propagateTraceHeaderCorsUrls, extraConfig = {} },
+) {
   if (initialized) return;
   if (!flags.getBooleanValue('observability-faro', false)) return;
   initialized = true;
@@ -81,7 +84,17 @@ export function initObservability(flags, { appName, version, environment, extraC
           : Math.random() < NON_ERROR_SAMPLE_RATE;
         return sampled ? item : null;
       },
-      instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],
+      instrumentations: [
+        ...getWebInstrumentations(),
+        // propagateTraceHeaderCorsUrls only takes effect nested under
+        // instrumentationOptions — passing it as a top-level Faro config key
+        // (e.g. via extraConfig) is silently a no-op.
+        new TracingInstrumentation(
+          propagateTraceHeaderCorsUrls
+            ? { instrumentationOptions: { propagateTraceHeaderCorsUrls } }
+            : undefined,
+        ),
+      ],
       ...extraConfig,
     });
   } catch (err) {

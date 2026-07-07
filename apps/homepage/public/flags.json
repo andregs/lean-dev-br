@@ -13,7 +13,7 @@
     "observability-faro": {
       "state": "ENABLED",
       "variants": { "on": true, "off": false },
-      "defaultVariant": "off"
+      "defaultVariant": "on"
     }
   }
 }

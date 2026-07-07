@@ -28,7 +28,7 @@ function bootObservability(flags) {
     appName: 'todo',
     version: import.meta.env.VITE_APP_VERSION ?? 'dev',
     environment: import.meta.env.MODE,
-    extraConfig: { propagateTraceHeaderCorsUrls: [RELAY_URL] },
+    propagateTraceHeaderCorsUrls: [RELAY_URL],
   });
 }
 
