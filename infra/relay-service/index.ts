@@ -75,7 +75,13 @@ const service = new gcp.cloudrunv2.Service(
               name: 'MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT',
               value: otelOtlpEndpoint,
             },
-            { name: 'OTEL_OTLP_AUTHORIZATION', value: otelOtlpAuthorization },
+            // management.opentelemetry.tracing.export.otlp.headers is a real,
+            // documented Spring property (Boot 4.1) — no custom exporter
+            // customizer bean needed.
+            {
+              name: 'MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_HEADERS_AUTHORIZATION',
+              value: otelOtlpAuthorization,
+            },
           ],
           resources: {
             cpuIdle: true,
