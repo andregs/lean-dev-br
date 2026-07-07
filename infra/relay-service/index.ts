@@ -15,6 +15,10 @@ const alertEmail = config.requireSecret('alertEmail');
 const otelOtlpEndpoint = config.require('otelOtlpEndpoint');
 const otelOtlpAuthorization = config.requireSecret('otelOtlpAuthorization');
 
+// Same gateway, same auth — metrics just hit a different OTLP signal path.
+// Derived rather than a second Pulumi config entry so there's one URL to keep in sync.
+const otelOtlpMetricsEndpoint = otelOtlpEndpoint.replace('/v1/traces', '/v1/metrics');
+
 // Artifact Registry repository — created on first deploy; used by docker-push target.
 const repo = new gcp.artifactregistry.Repository('relay-service-repo', {
   project: gcpProject,
@@ -80,6 +84,14 @@ const service = new gcp.cloudrunv2.Service(
             // customizer bean needed.
             {
               name: 'MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_HEADERS_AUTHORIZATION',
+              value: otelOtlpAuthorization,
+            },
+            {
+              name: 'MANAGEMENT_OTLP_METRICS_EXPORT_URL',
+              value: otelOtlpMetricsEndpoint,
+            },
+            {
+              name: 'MANAGEMENT_OTLP_METRICS_EXPORT_HEADERS_AUTHORIZATION',
               value: otelOtlpAuthorization,
             },
           ],
