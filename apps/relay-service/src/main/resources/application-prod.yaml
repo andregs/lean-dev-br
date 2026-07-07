@@ -8,8 +8,12 @@ logging:
     format:
       console: ecs # elastic common schema
   level:
-    '[io.opentelemetry.exporter]': DEBUG
-    '[io.opentelemetry.sdk.trace.export]': DEBUG
+    # WARN surfaces real export failures (BatchSpanProcessor logs exceptions
+    # at WARNING) without DEBUG's routine noise. To re-diagnose OTLP export
+    # issues, raise to DEBUG at runtime (no redeploy, plain property read,
+    # not an AOT-baked conditional): LOGGING_LEVEL_IO_OPENTELEMETRY_EXPORTER=DEBUG
+    '[io.opentelemetry.exporter]': WARN
+    '[io.opentelemetry.sdk.trace.export]': WARN
 
 management:
   tracing:

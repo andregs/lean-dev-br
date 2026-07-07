@@ -9,6 +9,7 @@ import org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.S
 import org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.otlp.OtlpTracingProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import io.opentelemetry.context.Context;
@@ -23,14 +24,23 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
  * Authorization header actually bound to something (length only, never the
  * secret itself) — since "config looks right in Pulumi/infra" and "config
  * actually bound in the running app" turned out to be worth distinguishing.
- *
- * <p>
  * Also registers a second, fully independent SpanProcessor (via the
  * documented SdkTracerProviderBuilderCustomizer hook — purely additive,
- * doesn't touch the real auto-configured exporter) whose only job is to log
- * onStart/onEnd/export details directly via SLF4J. This proves whether real
- * span data reaches the pipeline at all, decoupled from whether the real
- * export to Grafana actually succeeds.
+ * doesn't touch the real exporter) logging onStart/onEnd/export directly via
+ * SLF4J. This proved whether real span data reaches the pipeline at all,
+ * decoupled from whether the real export succeeds — what actually found
+ * today's real bug (see DirectOtlpTracingConfig).
+ *
+ * <p>
+ * Off by default — flip {@code relay.diagnostics.otel-enabled} (env var
+ * {@code RELAY_DIAGNOSTICS_OTELENABLED=true}, no redeploy needed) to
+ * re-diagnose. Deliberately <b>not</b> gated via {@code @ConditionalOnProperty}
+ * — that annotation is evaluated by Spring's AOT engine at native-image
+ * *build* time, and this property is only ever set via a runtime env var, so
+ * a build-time condition would exclude these beans permanently regardless of
+ * what's set at runtime (this exact mistake is what caused today's bug in
+ * the first place). The bean stays unconditionally registered; the flag is
+ * checked live via {@link Environment} instead.
  */
 @Component
 class OtelDiagnostics implements InitializingBean {
@@ -38,13 +48,28 @@ class OtelDiagnostics implements InitializingBean {
   private static final Logger log = LoggerFactory.getLogger(OtelDiagnostics.class);
 
   private final OtlpTracingProperties otlpProperties;
+  private final io.opentelemetry.sdk.trace.SdkTracerProvider tracerProvider;
+  private final java.util.List<SpanExporter> spanExporters;
+  private final Environment env;
 
-  OtelDiagnostics(OtlpTracingProperties otlpProperties) {
+  OtelDiagnostics(
+      OtlpTracingProperties otlpProperties,
+      io.opentelemetry.sdk.trace.SdkTracerProvider tracerProvider,
+      java.util.List<SpanExporter> spanExporters,
+      Environment env) {
     this.otlpProperties = otlpProperties;
+    this.tracerProvider = tracerProvider;
+    this.spanExporters = spanExporters;
+    this.env = env;
+  }
+
+  private static boolean enabled(Environment env) {
+    return env.getProperty("relay.diagnostics.otel-enabled", Boolean.class, false);
   }
 
   @Override
   public void afterPropertiesSet() {
+    if (!enabled(env)) return;
     // Map<String,String> properties bind env var keys lowercased
     // (RELAXED_binding turns ..._AUTHORIZATION into map key "authorization",
     // not "Authorization") — case-insensitive lookup here to not repeat that
@@ -60,14 +85,31 @@ class OtelDiagnostics implements InitializingBean {
         otlpProperties.getEndpoint(),
         otlpProperties.getHeaders().keySet(),
         authorization == null ? "null" : authorization.length());
+    // Injecting SdkTracerProvider as a bean dependency forces Spring to fully
+    // build it (with all its registered span processors) before this runs —
+    // toString() reveals exactly what's registered, including the real
+    // exporter's own toString (endpoint, etc).
+    log.info("SdkTracerProvider: {}", tracerProvider);
+    // CompositeSpanExporter (the real exporter's actual wrapper) doesn't
+    // override toString(), so it hides whether it actually wraps our OTLP
+    // exporter or nothing at all — checking the raw SpanExporter beans
+    // Spring sees cuts through that opacity directly.
+    log.info(
+        "SpanExporter beans ({}): {}",
+        spanExporters.size(),
+        spanExporters.stream().map((e) -> e.getClass().getName()).toList());
   }
 
   @Configuration
   static class DiagnosticSpanProcessorConfig {
 
     @Bean
-    SdkTracerProviderBuilderCustomizer diagnosticSpanProcessorCustomizer() {
-      return (builder) -> builder.addSpanProcessor(new DiagnosticSpanProcessor());
+    SdkTracerProviderBuilderCustomizer diagnosticSpanProcessorCustomizer(Environment env) {
+      return (builder) -> {
+        if (enabled(env)) {
+          builder.addSpanProcessor(new DiagnosticSpanProcessor());
+        }
+      };
     }
   }
 
