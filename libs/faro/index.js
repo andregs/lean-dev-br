@@ -89,11 +89,18 @@ export function initObservability(
         // propagateTraceHeaderCorsUrls only takes effect nested under
         // instrumentationOptions — passing it as a top-level Faro config key
         // (e.g. via extraConfig) is silently a no-op.
-        new TracingInstrumentation(
-          propagateTraceHeaderCorsUrls
+        //
+        // app.name: homepage/blog/todo all share one Grafana Frontend
+        // Observability app-key, so Grafana's ingest stamps service.name (and
+        // Faro's own app.name resource attribute) to that shared app's name,
+        // not ours — this survives as an independent, unclaimed attribute so
+        // traces stay distinguishable per app.
+        new TracingInstrumentation({
+          resourceAttributes: { 'app.name': appName },
+          ...(propagateTraceHeaderCorsUrls
             ? { instrumentationOptions: { propagateTraceHeaderCorsUrls } }
-            : undefined,
-        ),
+            : {}),
+        }),
       ],
       ...extraConfig,
     });
