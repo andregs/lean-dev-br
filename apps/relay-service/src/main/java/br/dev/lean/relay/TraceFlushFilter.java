@@ -40,7 +40,8 @@ class TraceFlushFilter extends OncePerRequestFilter {
       chain.doFilter(request, response);
     } finally {
       try {
-        tracerProvider.forceFlush().join(2, TimeUnit.SECONDS);
+        var result = tracerProvider.forceFlush().join(2, TimeUnit.SECONDS);
+        log.debug("Trace flush: success={} done={}", result.isSuccess(), result.isDone());
       } catch (Exception e) {
         log.warn("Trace flush failed (non-fatal)", e);
       }

@@ -7,6 +7,9 @@ logging:
   structured:
     format:
       console: ecs # elastic common schema
+  level:
+    '[io.opentelemetry.exporter]': DEBUG
+    '[io.opentelemetry.sdk.trace.export]': DEBUG
 
 management:
   tracing:
