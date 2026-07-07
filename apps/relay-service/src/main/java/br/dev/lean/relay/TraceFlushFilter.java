@@ -5,6 +5,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,8 +22,18 @@ import jakarta.servlet.http.HttpServletResponse;
  * a background timer that may never get scheduled between requests, so spans
  * can sit in the queue and never ship. Flush synchronously here instead,
  * still within the request's guaranteed CPU window.
+ *
+ * <p>
+ * Must be more outer than Spring's own {@code ServerHttpObservationFilter},
+ * which ends the request's span and registers at {@code
+ * HIGHEST_PRECEDENCE + 1} (confirmed in spring-boot-webmvc's source). An
+ * unordered filter defaults to innermost, so its {@code finally} — this
+ * flush — would run before that filter's own {@code finally} ends the
+ * current span: we'd only ever flush the previous request's span, one
+ * request late.
  */
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 class TraceFlushFilter extends OncePerRequestFilter {
 
   private static final Logger log = LoggerFactory.getLogger(TraceFlushFilter.class);
