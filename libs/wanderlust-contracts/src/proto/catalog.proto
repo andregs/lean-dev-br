@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package br.dev.lean.wanderlust.catalog;
+
+option java_multiple_files = true;
+option java_package = "br.dev.lean.wanderlust.catalog.grpc";
+
+// Internal BFF <-> catalog contract. Codegen (protobuf-maven-plugin / Spring gRPC
+// stubs) is wired in iteration 2 — this is a stub to reserve the package/shape.
+message Destination {
+  string id = 1;
+  string name = 2;
+  string country = 3;
+  string description = 4;
+  string image_url = 5;
+}
+
+message GetDestinationRequest {
+  string id = 1;
+}
+
+message ListDestinationsRequest {}
+
+message ListDestinationsResponse {
+  repeated Destination destinations = 1;
+}
+
+service CatalogService {
+  rpc ListDestinations(ListDestinationsRequest) returns (ListDestinationsResponse);
+  rpc GetDestination(GetDestinationRequest) returns (Destination);
+}

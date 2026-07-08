@@ -1,0 +1,91 @@
+openapi: 3.0.3
+info:
+  title: Wanderlust Catalog API
+  # BFF REST edge — the contract-first source of truth for the destinations read path.
+  # Iteration 0: skeleton only, no aggregation/N+1 logic yet (that lands in iteration 1).
+  version: 1.0.0
+paths:
+  /destinations:
+    get:
+      operationId: listDestinations
+      summary: List all destinations
+      responses:
+        '200':
+          description: Destination list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Destination'
+        default:
+          description: Unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /destinations/{id}:
+    get:
+      operationId: getDestination
+      summary: Get a single destination by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Destination detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Destination'
+        '404':
+          description: Destination not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  schemas:
+    Destination:
+      type: object
+      required:
+        - id
+        - name
+        - country
+        - description
+        - imageUrl
+      properties:
+        id:
+          type: string
+          example: lisbon-pt
+        name:
+          type: string
+          example: Lisbon
+        country:
+          type: string
+          example: Portugal
+        description:
+          type: string
+          example: Hilly riverside capital known for tiled facades and fado.
+        imageUrl:
+          type: string
+          example: /images/lisbon.jpg
+    Problem:
+      type: object
+      required:
+        - type
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string

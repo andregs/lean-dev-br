@@ -419,6 +419,8 @@ importers:
 
   libs/ui-modulith/kernel: {}
 
+  libs/wanderlust-contracts: {}
+
 packages:
 
   '@angular-devkit/core@21.2.18':
