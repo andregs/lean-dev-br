@@ -1,0 +1,9 @@
+{
+  "name": "wanderlust-contracts",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/wanderlust-contracts/src",
+  "projectType": "library",
+  "tags": ["scope:wanderlust", "type:contracts"],
+  "// targets": "to see all targets run: nx show project wanderlust-contracts --web",
+  "targets": {}
+}
