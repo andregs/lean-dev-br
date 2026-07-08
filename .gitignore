@@ -58,3 +58,5 @@ apps/federation-shell/docs/stream-limit-lab/certs/*.pem
 apps/federation-shell/docs/stream-limit-lab/*.har
 
 .angular
+
+__screenshots__/

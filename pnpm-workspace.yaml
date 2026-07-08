@@ -13,6 +13,8 @@ allowBuilds:
   cpu-features: false
   esbuild: true
   less: false
+  lmdb: true
+  msgpackr-extract: true
   msw: true
   nx: true
   protobufjs: true
