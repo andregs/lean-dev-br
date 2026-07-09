@@ -43,16 +43,39 @@ export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
     Destination: {
-      /** @example lisbon-pt */
+      /** @example fernando-de-noronha-br */
       id: string;
-      /** @example Lisbon */
+      /** @example Fernando de Noronha */
       name: string;
-      /** @example Portugal */
+      /** @example Brazil */
       country: string;
-      /** @example Hilly riverside capital known for tiled facades and fado. */
+      /** @example Volcanic archipelago with turquoise bays and spinner dolphins. */
       description: string;
-      /** @example /images/lisbon.jpg */
+      /** @example /images/fernando-de-noronha.jpg */
       imageUrl: string;
+      /**
+       * Format: double
+       * @example -3.85
+       */
+      latitude?: number;
+      /**
+       * Format: double
+       * @example -32.42
+       */
+      longitude?: number;
+      weather?: components['schemas']['Weather'];
+    };
+    Weather: {
+      /**
+       * Format: double
+       * @example 27.4
+       */
+      temperatureC: number;
+      /**
+       * @description WMO weather interpretation code.
+       * @example 1
+       */
+      weatherCode: number;
     };
     Problem: {
       /** Format: uri */
