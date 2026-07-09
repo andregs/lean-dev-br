@@ -12,6 +12,8 @@
       "default": "./index.js"
     },
     "./react": "./react/index.ts",
+    "./angular": "./angular/index.ts",
+    "./angular/*": "./angular/*.ts",
     "./tokens.css": "./tokens.css",
     "./base.css": "./base.css",
     "./nav.css": "./nav.css",
