@@ -1,0 +1,58 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "wanderlust-catalog",
+  "projectType": "application",
+  "sourceRoot": "apps/wanderlust-catalog/src",
+  "tags": ["scope:wanderlust-catalog", "type:app", "lang:java"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/wanderlust-catalog",
+        "command": "./mvnw clean package -DskipTests --no-transfer-progress"
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/wanderlust-catalog",
+        "command": "./mvnw spring-boot:run --no-transfer-progress"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/wanderlust-catalog",
+        "command": "./mvnw test --no-transfer-progress"
+      }
+    },
+    "native-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/wanderlust-catalog",
+        "command": "./mvnw -Pnative native:compile --no-transfer-progress"
+      }
+    },
+    "docker-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/wanderlust-catalog",
+        "command": "./mvnw -Pnative spring-boot:build-image -DskipTests --no-transfer-progress -Dspring-boot.build-image.imageName=${WANDERLUST_CATALOG_IMAGE:-wanderlust-catalog:local} -Dspring-boot.build-image.env.BP_NATIVE_IMAGE_BUILD_ARGUMENTS=-J-Xmx5g"
+      }
+    },
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/wanderlust-catalog",
+        "command": "./mvnw failsafe:integration-test failsafe:verify --no-transfer-progress"
+      }
+    },
+    "docker-push": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/wanderlust-catalog",
+        "command": "docker push ${WANDERLUST_CATALOG_IMAGE:?set WANDERLUST_CATALOG_IMAGE to the registry image URL}"
+      }
+    }
+  }
+}
