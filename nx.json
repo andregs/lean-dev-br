@@ -30,6 +30,7 @@
     }
   },
   "analytics": true,
+  "parallel": 3,
   "sync": {
     "disabledTaskSyncGenerators": ["@nx/js:typescript-sync"]
   },

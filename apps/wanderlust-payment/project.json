@@ -9,42 +9,43 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/wanderlust-payment",
-        "command": "./mvnw clean package -DskipTests --no-transfer-progress"
+        "command": "./mvnw -B -q clean package -DskipTests --no-transfer-progress"
       }
     },
     "serve": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/wanderlust-payment",
-        "command": "./mvnw spring-boot:run --no-transfer-progress"
+        "command": "./mvnw -B spring-boot:run --no-transfer-progress"
       }
     },
     "test": {
       "executor": "nx:run-commands",
+      "dependsOn": ["build"],
       "options": {
         "cwd": "apps/wanderlust-payment",
-        "command": "./mvnw test --no-transfer-progress"
+        "command": "./mvnw -B test --no-transfer-progress"
       }
     },
     "native-build": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/wanderlust-payment",
-        "command": "./mvnw -Pnative native:compile --no-transfer-progress"
+        "command": "./mvnw -B -Pnative native:compile --no-transfer-progress"
       }
     },
     "docker-build": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/wanderlust-payment",
-        "command": "./mvnw -Pnative spring-boot:build-image -DskipTests --no-transfer-progress -Dspring-boot.build-image.imageName=${WANDERLUST_PAYMENT_IMAGE:-wanderlust-payment:local} -Dspring-boot.build-image.env.BP_NATIVE_IMAGE_BUILD_ARGUMENTS=-J-Xmx5g"
+        "command": "./mvnw -B -Pnative spring-boot:build-image -DskipTests --no-transfer-progress -Dspring-boot.build-image.imageName=${WANDERLUST_PAYMENT_IMAGE:-wanderlust-payment:local} -Dspring-boot.build-image.env.BP_NATIVE_IMAGE_BUILD_ARGUMENTS=-J-Xmx5g"
       }
     },
     "test-integration": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/wanderlust-payment",
-        "command": "./mvnw failsafe:integration-test failsafe:verify --no-transfer-progress"
+        "command": "./mvnw -B failsafe:integration-test failsafe:verify --no-transfer-progress"
       }
     },
     "docker-push": {
