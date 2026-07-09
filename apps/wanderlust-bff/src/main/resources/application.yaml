@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: wanderlust-bff
+  threads:
+    virtual:
+      enabled: true
