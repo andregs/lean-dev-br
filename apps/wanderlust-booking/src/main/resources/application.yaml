@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: wanderlust-booking
+  threads:
+    virtual:
+      enabled: true
