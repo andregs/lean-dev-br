@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: wanderlust-reservation
+  threads:
+    virtual:
+      enabled: true
