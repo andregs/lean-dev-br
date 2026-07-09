@@ -2,7 +2,8 @@ openapi: 3.0.3
 info:
   title: Wanderlust Catalog API
   # BFF REST edge — the contract-first source of truth for the destinations read path.
-  # Iteration 0: skeleton only, no aggregation/N+1 logic yet (that lands in iteration 1).
+  # `weather` is optional so degradation (upstream failure / kill-switch flag) can omit it
+  # without breaking the contract.
   version: 1.0.0
 paths:
   /destinations:
@@ -60,19 +61,43 @@ components:
       properties:
         id:
           type: string
-          example: lisbon-pt
+          example: fernando-de-noronha-br
         name:
           type: string
-          example: Lisbon
+          example: Fernando de Noronha
         country:
           type: string
-          example: Portugal
+          example: Brazil
         description:
           type: string
-          example: Hilly riverside capital known for tiled facades and fado.
+          example: Volcanic archipelago with turquoise bays and spinner dolphins.
         imageUrl:
           type: string
-          example: /images/lisbon.jpg
+          example: /images/fernando-de-noronha.jpg
+        latitude:
+          type: number
+          format: double
+          example: -3.85
+        longitude:
+          type: number
+          format: double
+          example: -32.42
+        weather:
+          $ref: '#/components/schemas/Weather'
+    Weather:
+      type: object
+      required:
+        - temperatureC
+        - weatherCode
+      properties:
+        temperatureC:
+          type: number
+          format: double
+          example: 27.4
+        weatherCode:
+          type: integer
+          description: WMO weather interpretation code.
+          example: 1
     Problem:
       type: object
       required:
