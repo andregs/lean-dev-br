@@ -24,6 +24,9 @@ export default [
           style: 'kebab-case',
         },
       ],
+      // Angular components with no inputs/methods (e.g. Home) are legitimately
+      // decorator-only classes.
+      '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }],
     },
   },
   {
