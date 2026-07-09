@@ -15,6 +15,8 @@ asdf plugin add nodejs
 asdf plugin add pnpm
 asdf plugin add pulumi
 asdf plugin add awscli
+asdf plugin add k3d
+asdf plugin add kubectl
 
 # Install all pinned versions
 asdf install
@@ -30,6 +32,8 @@ node --version    # matches .tool-versions
 pnpm --version
 pulumi version
 aws --version
+k3d version
+kubectl version --client
 ```
 
 ## Configure credentials
