@@ -1,0 +1,13 @@
+{
+  "name": "@lean-dev-br/infra-wanderlust",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@pulumi/kubernetes": "^4.0.0",
+    "@pulumi/pulumi": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "typescript": "^6.0.0"
+  }
+}

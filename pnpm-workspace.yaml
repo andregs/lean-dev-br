@@ -9,6 +9,7 @@ dedupePeers: true
 
 allowBuilds:
   '@parcel/watcher': true
+  '@pulumi/kubernetes': true
   '@swc/core': true
   cpu-features: false
   esbuild: true

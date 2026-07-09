@@ -1,0 +1,6 @@
+name: lean-dev-br-wanderlust
+runtime:
+  name: nodejs
+  options:
+    packagemanager: pnpm
+description: Wanderlust k8s resources (Oracle Cloud k3s) - stub, no resources yet

@@ -4,3 +4,5 @@ java graalvm-community-25.0.2
 pulumi 3.247.0
 awscli 2.35.11
 gcloud 574.0.0
+k3d 5.9.0
+kubectl 1.35.5
