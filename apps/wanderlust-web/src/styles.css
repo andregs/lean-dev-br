@@ -1,1 +1,4 @@
-/* You can add global styles to this file, and also import other style files */
+@import '@lean-dev-br/design-system/tokens.css';
+@import '@lean-dev-br/design-system/base.css';
+@import '@lean-dev-br/design-system/nav.css';
+@import '@lean-dev-br/design-system/footer.css';

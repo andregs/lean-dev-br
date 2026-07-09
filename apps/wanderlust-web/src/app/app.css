@@ -1,0 +1,7 @@
+/* base.css's sticky-footer flex layout targets body's direct children
+   (nav/content/footer) - :host makes <app-root> transparent to layout so
+   its children participate in body's flex column instead of app-root
+   itself becoming one opaque flex item. */
+:host {
+  display: contents;
+}

@@ -41,7 +41,7 @@
         "development": {
           "optimization": false,
           "extractLicenses": false,
-          "sourceMap": true
+          "sourceMap": false
         }
       }
     },
@@ -50,7 +50,10 @@
       "executor": "@angular/build:dev-server",
       "defaultConfiguration": "development",
       "options": {
-        "port": 4206
+        "port": 4206,
+        "prebundle": {
+          "exclude": ["@lean-dev-br/design-system", "@lean-dev-br/i18n"]
+        }
       },
       "configurations": {
         "production": {
