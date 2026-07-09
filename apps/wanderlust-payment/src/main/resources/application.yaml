@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: wanderlust-payment
+  threads:
+    virtual:
+      enabled: true
