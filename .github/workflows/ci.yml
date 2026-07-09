@@ -62,7 +62,28 @@ jobs:
           fi
           echo "NX_HEAD=${HEAD_SHA}" >> "$GITHUB_ENV"
 
-      - run: pnpm nx affected -t lint typecheck test test:bundle build e2e
+      - name: Run affected tasks
+        env:
+          # Auto-retry e2e is opt-in here to detect flakes, not paper over them —
+          # the next step flags a retried-but-passed run instead of silently greening it.
+          E2E_FLAKE_RETRY: '1'
+        run: |
+          set -o pipefail
+          pnpm nx affected -t lint typecheck test test:bundle build e2e 2>&1 | tee ci-run.log
+
+      - name: Flag flaky tests
+        if: always()
+        run: |
+          clean="$(sed -r 's/\x1b\[[0-9;]*m//g' ci-run.log)"
+          if echo "$clean" | grep -qE '^[[:space:]]*[0-9]+ flaky'; then
+            echo "::warning::Flaky test(s) detected — retried, then passed. Not a hard failure, but investigate before it becomes one."
+            {
+              echo "### ⚠️ Flaky tests detected (retried, then passed)"
+              echo '```'
+              echo "$clean" | grep -A20 -E '^[[:space:]]*[0-9]+ flaky'
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload Playwright report
         if: failure()

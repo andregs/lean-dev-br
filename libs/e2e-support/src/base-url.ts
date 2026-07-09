@@ -20,15 +20,13 @@ export function fullMatrix(): boolean {
 }
 
 /**
- * Retries for the current run. Any CI run — including a dev-server-backed one —
- * is on a shared, often slower machine than local dev: a Next.js dev server
- * compiling routes on demand under concurrent workers is *more* flake-prone
- * there than locally, not less. Prod adds a live site over the internet on top
- * of that. A lost race in either case should surface as flaky (retried, then
- * green), not a hard failure. Only pure local iteration (CI unset) gets 0.
+ * Retries for the current run. Auto-retry is opt-in via E2E_FLAKE_RETRY, set only
+ * by ci.yml and synthetic-monitor.yml — it exists to *detect* flakes (retried-then-
+ * passed is flagged, not silently swallowed), not to paper over real failures.
+ * main.yml never sets it: a red main.yml must mean something real.
  */
 export function retries(): number {
-  return isProd() || Boolean(process.env.CI) ? 2 : 0;
+  return process.env.E2E_FLAKE_RETRY ? 2 : 0;
 }
 
 /** Trace capture mode. CI and prod always keep a trace on failure for diagnosis,

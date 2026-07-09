@@ -39,7 +39,26 @@ jobs:
         env:
           E2E_BASE_URL: https://lean.dev.br
           E2E_FULL: '1'
-        run: pnpm nx run-many -t e2e -- --grep @prod-safe
+          # Auto-retry is opt-in to detect flakes, not paper over them — the next
+          # step flags a retried-but-passed run instead of silently greening it.
+          E2E_FLAKE_RETRY: '1'
+        run: |
+          set -o pipefail
+          pnpm nx run-many -t e2e -- --grep @prod-safe 2>&1 | tee ci-run.log
+
+      - name: Flag flaky tests
+        if: always()
+        run: |
+          clean="$(sed -r 's/\x1b\[[0-9;]*m//g' ci-run.log)"
+          if echo "$clean" | grep -qE '^[[:space:]]*[0-9]+ flaky'; then
+            echo "::warning::Flaky test(s) detected — retried, then passed. Not a hard failure, but investigate before it becomes one."
+            {
+              echo "### ⚠️ Flaky tests detected (retried, then passed)"
+              echo '```'
+              echo "$clean" | grep -A20 -E '^[[:space:]]*[0-9]+ flaky'
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload Playwright report
         if: failure()
