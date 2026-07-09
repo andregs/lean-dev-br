@@ -4,7 +4,8 @@
     "allowJs": true,
     "checkJs": false,
     "jsx": "react-jsx",
+    "experimentalDecorators": true,
     "lib": ["ESNext", "DOM", "DOM.Iterable"]
   },
-  "include": ["index.js", "index.d.ts", "react/**/*.ts", "react/**/*.tsx"]
+  "include": ["index.js", "index.d.ts", "react/**/*.ts", "react/**/*.tsx", "angular/**/*.ts"]
 }
