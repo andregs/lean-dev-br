@@ -1,0 +1,18 @@
+# Local dev cluster only - never used in prod. Prod runs on Oracle Cloud's
+# real k3s install (iteration 7), matching that target's single-VM shape:
+# one control-plane node, no separate agents.
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: wanderlust
+servers: 1
+agents: 0
+# Pinned so Renovate can track it - k3d's own bundled default at authoring time.
+image: rancher/k3s:v1.35.5-k3s1
+options:
+  k3d:
+    wait: true
+    timeout: '60s'
+  kubeconfig:
+    updateDefaultKubeconfig: true
+    switchCurrentContext: true
