@@ -92,3 +92,117 @@ jobs:
           name: playwright-report
           path: '**/playwright-report/'
           retention-days: 7
+
+  native-smoke:
+    # Parallel to `verify` (no `needs:`) — this file has no matrix/parallel-job structure yet, so
+    # that's the only way to avoid serializing a slow native compile behind lint/typecheck/test/
+    # build/e2e. Uses `docker-build` (Paketo buildpack), not bare `native:compile` — the plain
+    # native-maven-plugin goal needs an actual GraalVM JDK with `native-image` on the runner, but
+    # this repo's `setup-java` steps use `distribution: temurin`. Paketo's buildpack bundles its
+    # own GraalVM *inside* the Docker build (why `deploy-relay` in main.yml already works on
+    # Temurin today), so reusing it needs zero new JDK setup.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: .tool-versions
+          cache: pnpm
+
+      - uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Derive NX_BASE
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            echo "NX_BASE=${PR_BASE_SHA}" >> "$GITHUB_ENV"
+          elif [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ] \
+            || ! git cat-file -e "${BEFORE_SHA}" 2>/dev/null; then
+            # First push to branch, or force-push that orphaned the previous commit
+            echo "NX_BASE=origin/main" >> "$GITHUB_ENV"
+          else
+            echo "NX_BASE=${BEFORE_SHA}" >> "$GITHUB_ENV"
+          fi
+          echo "NX_HEAD=${HEAD_SHA}" >> "$GITHUB_ENV"
+
+      - uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Native-build + boot/health smoke affected Java services
+        env:
+          # PR-time smoke establishes the artifact trail for the eventual iteration-2 deploy job;
+          # not a "build once, promote" cache lookup — see project_wanderlust_k8s_showcase memory
+          # for why that's deliberately deferred, not solved here.
+          IMAGE_TAG: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -o pipefail
+          # Some nx plugins (e.g. @module-federation/dts-plugin) print banners to stdout during
+          # graph computation, ahead of the actual JSON array — grab just the array line so jq
+          # below doesn't choke on the noise (see project_nx_affected_json_parsing_footgun memory).
+          AFFECTED=$(pnpm nx show projects --affected -t docker-build --json 2>/dev/null | grep -m1 -E '^\[.*\]$' || echo "[]")
+          echo "Affected docker-build projects: $AFFECTED"
+
+          for project in $(echo "$AFFECTED" | jq -r '.[]'); do
+            echo "::group::docker-build $project"
+            pnpm nx run "$project:docker-build"
+            echo "::endgroup::"
+
+            LOCAL_IMAGE="$project:local"
+
+            echo "::group::boot smoke $project"
+            # SERVER_PORT normalizes every service to the same port regardless of its own
+            # application.yaml default (e.g. wanderlust-catalog defaults to 8081) — one health
+            # check, no per-project port table to maintain. RELAY_FIRESTORE_PROJECTID/
+            # RELAY_PRUNETOKEN are relay-service-only (its native image bakes the @Profile("prod")
+            # FirestoreRoomStore bean permanently at AOT build time — profile selection isn't
+            # runtime-switchable for native images, so it unconditionally needs these; confirmed by
+            # a local docker-build smoke crashing without them). Harmless no-ops for every other
+            # service; passed unconditionally rather than building a per-project env-var table.
+            docker run --rm -d --name smoke \
+              -e SERVER_PORT=8080 \
+              -e RELAY_FIRESTORE_PROJECTID=smoke-test \
+              -e RELAY_PRUNETOKEN=smoke-test \
+              -p 8080:8080 "$LOCAL_IMAGE"
+            healthy=false
+            for i in $(seq 1 30); do
+              if curl -sf http://localhost:8080/actuator/health; then
+                echo "$project is healthy"
+                healthy=true
+                break
+              fi
+              sleep 1
+            done
+            if [ "$healthy" != true ]; then
+              echo "$project did not become healthy in time"
+              docker logs smoke
+              docker stop smoke
+              exit 1
+            fi
+            docker stop smoke
+            echo "::endgroup::"
+
+            REMOTE_IMAGE="ghcr.io/andregs/lean-dev-br/$project:$IMAGE_TAG"
+            docker tag "$LOCAL_IMAGE" "$REMOTE_IMAGE"
+            docker push "$REMOTE_IMAGE"
+          done
