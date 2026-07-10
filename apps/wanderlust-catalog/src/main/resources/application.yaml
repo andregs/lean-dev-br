@@ -4,3 +4,18 @@ spring:
   threads:
     virtual:
       enabled: true
+
+server:
+  port: 8081
+
+catalog:
+  weather:
+    base-url: https://api.open-meteo.com/v1/forecast
+    connect-timeout: 2s
+    read-timeout: 4s
+  flags:
+    flags-url: https://lean.dev.br/flags.json
+
+logging:
+  level:
+    '[br.dev.lean.wanderlust.catalog]': DEBUG
