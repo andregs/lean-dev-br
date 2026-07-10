@@ -5,7 +5,7 @@ import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * @param weather Open-Meteo aggregation settings.
+ * @param weather Open-Meteo client settings.
  * @param flags   Feature-flag source — the same flagd-schema {@code flags.json} the JS apps read.
  */
 @ConfigurationProperties(prefix = "catalog")
