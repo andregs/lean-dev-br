@@ -10,12 +10,17 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aot.hint.MemberCategory;
+import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportRuntimeHints;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.ObjectMapper;
 
 import dev.openfeature.sdk.Client;
@@ -30,8 +35,16 @@ import dev.openfeature.sdk.providers.memory.InMemoryProvider;
  * bundled copy if the URL is unreachable (offline local dev) — kept in sync by hand, so treat it
  * as a dev convenience, not a source of truth. A flagd daemon replaces the in-memory provider
  * later with no app-code change, same seam the JS flags lib documents.
+ *
+ * <p>
+ * {@code @ImportRuntimeHints} is required under GraalVM native: {@link FlagsJson} is only ever
+ * deserialized by a manual {@code RestClient} call (never a controller return/parameter type), so
+ * Spring's own AOT processing never discovers it and its record-accessor reflection is stripped
+ * from the native image — confirmed by a native smoke run crashing with
+ * {@code UnsupportedFeatureError: Record components not available for record class FlagsJson}.
  */
 @Configuration
+@ImportRuntimeHints(FeatureFlagsConfig.FlagsJsonRuntimeHints.class)
 class FeatureFlagsConfig {
 
   private static final Logger log = LoggerFactory.getLogger(FeatureFlagsConfig.class);
@@ -94,5 +107,13 @@ class FeatureFlagsConfig {
         .defaultVariant(def.defaultVariant())
         .build();
     return flag;
+  }
+
+  static class FlagsJsonRuntimeHints implements RuntimeHintsRegistrar {
+    @Override
+    public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
+      hints.reflection().registerType(FlagsJson.class, MemberCategory.values());
+      hints.reflection().registerType(FlagsJson.FlagDef.class, MemberCategory.values());
+    }
   }
 }
