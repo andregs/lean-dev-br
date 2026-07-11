@@ -5,6 +5,14 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Queue, don't cancel — this runs `pulumi up` and pushes images; killing a deploy mid-flight
+# risks partial Pulumi state or a half-pushed image, worse than waiting. Two merges landing close
+# together, or a manual workflow_dispatch overlapping a push-triggered run, now run one at a time
+# instead of racing.
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
 jobs:
   verify:
     runs-on: ubuntu-latest
