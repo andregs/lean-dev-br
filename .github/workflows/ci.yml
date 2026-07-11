@@ -184,9 +184,14 @@ jobs:
               -e RELAY_FIRESTORE_PROJECTID=smoke-test \
               -e RELAY_PRUNETOKEN=smoke-test \
               -p 8080:8080 "$LOCAL_IMAGE"
+            # readiness, not the bare default endpoint — mirrors the actual k8s readinessProbe
+            # this is meant to stand in for, and correctly ignores non-critical/degraded-but-
+            # functional dependencies (e.g. wanderlust-catalog's Valkey cache, absent here) that
+            # the app itself already handles gracefully. Confirmed available by default on every
+            # service tried so far, relay-service included, with no extra per-service config.
             healthy=false
             for i in $(seq 1 30); do
-              if curl -sf http://localhost:8080/actuator/health; then
+              if curl -sf http://localhost:8080/actuator/health/readiness; then
                 echo "$project is healthy"
                 healthy=true
                 break
