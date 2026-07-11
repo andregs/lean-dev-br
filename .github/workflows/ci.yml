@@ -6,6 +6,15 @@ on:
   pull_request:
     branches: [main]
 
+# push and pull_request both fire for the same commit once a PR exists (push has no PR-awareness
+# to skip itself) — group by the actual commit, shared across both event types via the same
+# `pull_request.head.sha || sha` pattern the native-smoke job already uses for image tags, so the
+# redundant run gets cancelled instead of both running the full (~7min, native-build-heavy)
+# workflow to completion.
+concurrency:
+  group: ci-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -184,9 +193,14 @@ jobs:
               -e RELAY_FIRESTORE_PROJECTID=smoke-test \
               -e RELAY_PRUNETOKEN=smoke-test \
               -p 8080:8080 "$LOCAL_IMAGE"
+            # readiness, not the bare default endpoint — mirrors the actual k8s readinessProbe
+            # this is meant to stand in for, and correctly ignores non-critical/degraded-but-
+            # functional dependencies (e.g. wanderlust-catalog's Valkey cache, absent here) that
+            # the app itself already handles gracefully. Confirmed available by default on every
+            # service tried so far, relay-service included, with no extra per-service config.
             healthy=false
             for i in $(seq 1 30); do
-              if curl -sf http://localhost:8080/actuator/health; then
+              if curl -sf http://localhost:8080/actuator/health/readiness; then
                 echo "$project is healthy"
                 healthy=true
                 break
