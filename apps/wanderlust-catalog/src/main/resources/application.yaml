@@ -4,6 +4,10 @@ spring:
   threads:
     virtual:
       enabled: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 server:
   port: 8081
@@ -13,6 +17,8 @@ catalog:
     base-url: https://api.open-meteo.com/v1/forecast
     connect-timeout: 2s
     read-timeout: 4s
+    cache-ttl: 15m
+    cache-coord-precision: 2
   flags:
     flags-url: https://lean.dev.br/flags.json
 

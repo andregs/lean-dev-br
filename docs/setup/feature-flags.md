@@ -45,6 +45,23 @@ Frontends receive the URL at build time via `VITE_FLAGS_URL` (CI injects it from
 
 The Lambda (contact-api) receives it via the `FLAGS_URL` env var; when absent the flag client starts with an empty definition (all flags return their caller default).
 
+`wanderlust-catalog` (Java, OpenFeature Java SDK) reads it via `catalog.flags.flags-url`
+(`CATALOG_FLAGS_FLAGSURL` env var), defaulting to `https://lean.dev.br/flags.json` in
+`application.yaml`. Unlike the JS clients, there's no empty-definition fallback — an unreachable
+URL fails the service's startup outright, so the flag source is never silently missing. To exercise
+a flag value locally without touching the deployed file: run `pnpm nx serve homepage` (Vite serves
+`apps/homepage/public/flags.json` at `http://localhost:5173/flags.json` by default — Vite falls
+back to the next free port if 5173 is taken, so double-check its terminal output), edit that local
+file, and point the Java service at it —
+`CATALOG_FLAGS_FLAGSURL=http://localhost:5173/flags.json pnpm nx serve wanderlust-catalog`.
+
+**Footgun this hit once:** `java.net.http.HttpClient`'s default HTTP/2-with-upgrade-attempt
+behavior over plaintext hangs against Vite's dev server specifically — the request never completes
+and eventually times out with `HttpTimeoutException: Request cancelled`, on both JVM and native,
+even though `curl` against the exact same URL succeeds instantly. `FeatureFlagsConfig`'s HTTP
+client forces `HttpClient.Version.HTTP_1_1` explicitly to avoid this — if you ever see this same
+hang from a different Java HTTP client hitting a local dev server in this repo, try that first.
+
 ## Adding a flag
 
 1. Add the flag definition to `apps/homepage/public/flags.json`.
