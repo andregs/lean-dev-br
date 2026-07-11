@@ -6,6 +6,15 @@ on:
   pull_request:
     branches: [main]
 
+# push and pull_request both fire for the same commit once a PR exists (push has no PR-awareness
+# to skip itself) — group by the actual commit, shared across both event types via the same
+# `pull_request.head.sha || sha` pattern the native-smoke job already uses for image tags, so the
+# redundant run gets cancelled instead of both running the full (~7min, native-build-heavy)
+# workflow to completion.
+concurrency:
+  group: ci-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
