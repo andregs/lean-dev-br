@@ -79,10 +79,12 @@ export interface components {
     };
     Problem: {
       /** Format: uri */
-      type: string;
+      type?: string;
       title: string;
       status: number;
       detail?: string;
+      /** Format: uri-reference */
+      instance?: string;
     };
   };
   responses: never;

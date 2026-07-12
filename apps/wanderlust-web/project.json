@@ -42,6 +42,17 @@
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": false
+        },
+        "backend": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": false,
+          "fileReplacements": [
+            {
+              "replace": "apps/wanderlust-web/src/environments/environment.ts",
+              "with": "apps/wanderlust-web/src/environments/environment.backend.ts"
+            }
+          ]
         }
       }
     },
@@ -61,6 +72,10 @@
         },
         "development": {
           "buildTarget": "wanderlust-web:build:development"
+        },
+        "backend": {
+          "buildTarget": "wanderlust-web:build:backend",
+          "proxyConfig": "apps/wanderlust-web/proxy.conf.json"
         }
       }
     },

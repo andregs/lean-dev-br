@@ -4,3 +4,16 @@ spring:
   threads:
     virtual:
       enabled: true
+
+server:
+  port: 8080
+
+bff:
+  catalog:
+    base-url: http://localhost:8081
+    connect-timeout: 2s
+    read-timeout: 4s
+
+logging:
+  level:
+    '[br.dev.lean.wanderlust.bff]': DEBUG

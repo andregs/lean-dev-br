@@ -12,7 +12,15 @@
       "inputs": ["{projectRoot}/src/api/openapi.yaml"],
       "outputs": ["{projectRoot}/src/api/schema.d.ts"],
       "options": {
-        "command": "openapi-typescript {projectRoot}/src/api/openapi.yaml -o {projectRoot}/src/api/schema.d.ts",
+        "command": "openapi-typescript {projectRoot}/src/api/openapi.yaml -o {projectRoot}/src/api/schema.d.ts && prettier --write {projectRoot}/src/api/schema.d.ts",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "openapi-types-check": {
+      "executor": "nx:run-commands",
+      "inputs": ["{projectRoot}/src/api/openapi.yaml", "{projectRoot}/src/api/schema.d.ts"],
+      "options": {
+        "command": "openapi-typescript {projectRoot}/src/api/openapi.yaml -o {projectRoot}/src/api/schema.d.ts && prettier --write {projectRoot}/src/api/schema.d.ts && git diff --exit-code -- {projectRoot}/src/api/schema.d.ts",
         "cwd": "{workspaceRoot}"
       }
     }

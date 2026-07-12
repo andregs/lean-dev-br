@@ -69,7 +69,7 @@ jobs:
           E2E_FLAKE_RETRY: '1'
         run: |
           set -o pipefail
-          pnpm nx affected -t lint typecheck test test:bundle build e2e 2>&1 | tee ci-run.log
+          pnpm nx affected -t lint typecheck test test:bundle build e2e openapi-types-check 2>&1 | tee ci-run.log
 
       - name: Flag flaky tests
         if: always()
