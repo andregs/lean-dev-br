@@ -1,0 +1,15 @@
+spring:
+  config:
+    activate:
+      on-profile:
+        - prod
+
+logging:
+  level:
+    '[io.opentelemetry.exporter]': WARN
+    '[io.opentelemetry.sdk.trace.export]': WARN
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0 # no sampling — see relay-service's equivalent decision
