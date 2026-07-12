@@ -101,7 +101,6 @@ components:
     Problem:
       type: object
       required:
-        - type
         - title
         - status
       properties:
@@ -114,3 +113,6 @@ components:
           type: integer
         detail:
           type: string
+        instance:
+          type: string
+          format: uri-reference
