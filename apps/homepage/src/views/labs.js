@@ -11,6 +11,7 @@ export function renderLabs(root, { i18n, flags }) {
   root.className = 'labs';
   const showModulith = flags.getBooleanValue('labs-modulith', false);
   const showFederation = flags.getBooleanValue('labs-federation', false);
+  const showWanderlust = flags.getBooleanValue('labs-wanderlust', false);
   setHTML(
     root,
     `<div class="labs-inner">
@@ -46,6 +47,18 @@ export function renderLabs(root, { i18n, flags }) {
               <h2 class="lab-card-title">${i18n.t('labs.federation.title')}</h2>
             </div>
             <p class="lab-card-desc">${i18n.t('labs.federation.desc')}</p>
+          </a>
+        </li>`
+            : ''
+        }
+        ${
+          showWanderlust
+            ? `<li class="lab-card">
+          <a href="/labs/wanderlust/" class="lab-card-link">
+            <div class="lab-card-header">
+              <h2 class="lab-card-title">${i18n.t('labs.wanderlust.title')}</h2>
+            </div>
+            <p class="lab-card-desc">${i18n.t('labs.wanderlust.desc')}</p>
           </a>
         </li>`
             : ''
